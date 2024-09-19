@@ -45,7 +45,7 @@ e.g.
 
 1. Upload `occ-images.php` to the `/wp-content/plugins/` directory
 1. Activate the plugin through the 'Plugins' menu in WordPress
-1. Place `<?php do_action('occImages_hook'); ?>` in your templates
+1. Place `<?php do_action('occ-images_hook'); ?>` in your templates
 
 == Frequently Asked Questions ==
 

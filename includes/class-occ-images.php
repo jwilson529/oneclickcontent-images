@@ -1,5 +1,4 @@
 <?php
-
 /**
  * The file that defines the core plugin class
  *
@@ -44,9 +43,9 @@ class Occ_Images {
 	 *
 	 * @since    1.0.0
 	 * @access   protected
-	 * @var      string    $occImages    The string used to uniquely identify this plugin.
+	 * @var      string    $occ_images    The string used to uniquely identify this plugin.
 	 */
-	protected $occImages;
+	protected $occ_images;
 
 	/**
 	 * The current version of the plugin.
@@ -72,13 +71,12 @@ class Occ_Images {
 		} else {
 			$this->version = '1.0.0';
 		}
-		$this->occImages = 'occ-images';
+		$this->occ_images = 'occ-images';
 
 		$this->load_dependencies();
 		$this->set_locale();
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
-
 	}
 
 	/**
@@ -87,7 +85,7 @@ class Occ_Images {
 	 * Include the following files that make up the plugin:
 	 *
 	 * - Occ_Images_Loader. Orchestrates the hooks of the plugin.
-	 * - Occ_Images_i18n. Defines internationalization functionality.
+	 * - Occ_Images_I18n. Defines internationalization functionality.
 	 * - Occ_Images_Admin. Defines all hooks for the admin area.
 	 * - Occ_Images_Public. Defines all hooks for the public side of the site.
 	 *
@@ -103,33 +101,32 @@ class Occ_Images {
 		 * The class responsible for orchestrating the actions and filters of the
 		 * core plugin.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-occ-images-loader.php';
+		require_once plugin_dir_path( __DIR__ ) . 'includes/class-occ-images-loader.php';
 
 		/**
 		 * The class responsible for defining internationalization functionality
 		 * of the plugin.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-occ-images-i18n.php';
+		require_once plugin_dir_path( __DIR__ ) . 'includes/class-occ-images-i18n.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-occ-images-admin.php';
+		require_once plugin_dir_path( __DIR__ ) . 'admin/class-occ-images-admin.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the public-facing
 		 * side of the site.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-occ-images-public.php';
+		require_once plugin_dir_path( __DIR__ ) . 'public/class-occ-images-public.php';
 
 		$this->loader = new Occ_Images_Loader();
-
 	}
 
 	/**
 	 * Define the locale for this plugin for internationalization.
 	 *
-	 * Uses the Occ_Images_i18n class in order to set the domain and to register the hook
+	 * Uses the Occ_Images_I18n class in order to set the domain and to register the hook
 	 * with WordPress.
 	 *
 	 * @since    1.0.0
@@ -137,10 +134,9 @@ class Occ_Images {
 	 */
 	private function set_locale() {
 
-		$plugin_i18n = new Occ_Images_i18n();
+		$plugin_i18n = new Occ_Images_I18n();
 
 		$this->loader->add_action( 'plugins_loaded', $plugin_i18n, 'load_plugin_textdomain' );
-
 	}
 
 	/**
@@ -152,11 +148,10 @@ class Occ_Images {
 	 */
 	private function define_admin_hooks() {
 
-		$plugin_admin = new Occ_Images_Admin( $this->get_occImages(), $this->get_version() );
+		$plugin_admin = new Occ_Images_Admin( $this->get_occ_images(), $this->get_version() );
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
-
 	}
 
 	/**
@@ -168,11 +163,10 @@ class Occ_Images {
 	 */
 	private function define_public_hooks() {
 
-		$plugin_public = new Occ_Images_Public( $this->get_occImages(), $this->get_version() );
+		$plugin_public = new Occ_Images_Public( $this->get_occ_images(), $this->get_version() );
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
-
 	}
 
 	/**
@@ -191,8 +185,8 @@ class Occ_Images {
 	 * @since     1.0.0
 	 * @return    string    The name of the plugin.
 	 */
-	public function get_occImages() {
-		return $this->occImages;
+	public function get_occ_images() {
+		return $this->occ_images;
 	}
 
 	/**
@@ -214,5 +208,4 @@ class Occ_Images {
 	public function get_version() {
 		return $this->version;
 	}
-
 }

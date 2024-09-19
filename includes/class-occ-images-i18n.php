@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Define the internationalization functionality
  *
@@ -24,7 +23,7 @@
  * @subpackage Occ_Images/includes
  * @author     James Wilson <james@oneclickcontent.com>
  */
-class Occ_Images_i18n {
+class Occ_Images_I18n {
 
 
 	/**
@@ -39,9 +38,5 @@ class Occ_Images_i18n {
 			false,
 			dirname( dirname( plugin_basename( __FILE__ ) ) ) . '/languages/'
 		);
-
 	}
-
-
-
 }

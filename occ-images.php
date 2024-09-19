@@ -1,5 +1,4 @@
 <?php
-
 /**
  * The plugin bootstrap file
  *
@@ -41,7 +40,7 @@ define( 'OCC_IMAGES_VERSION', '1.0.0' );
  * The code that runs during plugin activation.
  * This action is documented in includes/class-occ-images-activator.php
  */
-function activate_occImages() {
+function activate_occ_images() {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-occ-images-activator.php';
 	Occ_Images_Activator::activate();
 }
@@ -50,13 +49,13 @@ function activate_occImages() {
  * The code that runs during plugin deactivation.
  * This action is documented in includes/class-occ-images-deactivator.php
  */
-function deactivate_occImages() {
+function deactivate_occ_images() {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-occ-images-deactivator.php';
 	Occ_Images_Deactivator::deactivate();
 }
 
-register_activation_hook( __FILE__, 'activate_occImages' );
-register_deactivation_hook( __FILE__, 'deactivate_occImages' );
+register_activation_hook( __FILE__, 'activate_occ-images' );
+register_deactivation_hook( __FILE__, 'deactivate_occ-images' );
 
 /**
  * The core plugin class that is used to define internationalization,
@@ -73,10 +72,9 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-occ-images.php';
  *
  * @since    1.0.0
  */
-function run_occImages() {
+function run_occ_images() {
 
 	$plugin = new Occ_Images();
 	$plugin->run();
-
 }
-run_occImages();
+run_occ_images();

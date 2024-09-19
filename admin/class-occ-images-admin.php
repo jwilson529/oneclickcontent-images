@@ -1,5 +1,4 @@
 <?php
-
 /**
  * The admin-specific functionality of the plugin.
  *
@@ -27,9 +26,9 @@ class Occ_Images_Admin {
 	 *
 	 * @since    1.0.0
 	 * @access   private
-	 * @var      string    $occImages    The ID of this plugin.
+	 * @var      string    $occ_images    The ID of this plugin.
 	 */
-	private $occImages;
+	private $occ_images;
 
 	/**
 	 * The version of this plugin.
@@ -44,14 +43,13 @@ class Occ_Images_Admin {
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string    $occImages       The name of this plugin.
-	 * @param      string    $version    The version of this plugin.
+	 * @param      string $occ_images       The name of this plugin.
+	 * @param      string $version    The version of this plugin.
 	 */
-	public function __construct( $occImages, $version ) {
+	public function __construct( $occ_images, $version ) {
 
-		$this->occImages = $occImages;
-		$this->version = $version;
-
+		$this->occ_images = $occ_images;
+		$this->version    = $version;
 	}
 
 	/**
@@ -73,8 +71,7 @@ class Occ_Images_Admin {
 		 * class.
 		 */
 
-		wp_enqueue_style( $this->occImages, plugin_dir_url( __FILE__ ) . 'css/occ-images-admin.css', array(), $this->version, 'all' );
-
+		wp_enqueue_style( $this->occ_images, plugin_dir_url( __FILE__ ) . 'css/occ-images-admin.css', array(), $this->version, 'all' );
 	}
 
 	/**
@@ -96,8 +93,6 @@ class Occ_Images_Admin {
 		 * class.
 		 */
 
-		wp_enqueue_script( $this->occImages, plugin_dir_url( __FILE__ ) . 'js/occ-images-admin.js', array( 'jquery' ), $this->version, false );
-
+		wp_enqueue_script( $this->occ_images, plugin_dir_url( __FILE__ ) . 'js/occ-images-admin.js', array( 'jquery' ), $this->version, false );
 	}
-
 }

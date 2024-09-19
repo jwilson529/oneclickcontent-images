@@ -1,0 +1,15 @@
+{
+    "name": "jameswilson/occ-images",
+    "autoload": {
+        "psr-4": {
+            "Jameswilson\\occ-images\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "James Wilson",
+            "email": "jwilson529@hotmail.com"
+        }
+    ],
+    "require": {}
+}

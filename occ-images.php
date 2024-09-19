@@ -54,8 +54,8 @@ function deactivate_occ_images() {
 	Occ_Images_Deactivator::deactivate();
 }
 
-register_activation_hook( __FILE__, 'activate_occ-images' );
-register_deactivation_hook( __FILE__, 'deactivate_occ-images' );
+register_activation_hook( __FILE__, 'activate_occ_images' );
+register_deactivation_hook( __FILE__, 'deactivate_occ_images' );
 
 /**
  * The core plugin class that is used to define internationalization,

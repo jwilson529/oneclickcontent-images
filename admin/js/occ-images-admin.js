@@ -1,32 +1,52 @@
-(function( $ ) {
-	'use strict';
+(function($) {
+    'use strict';
+    jQuery(document).ready(function($) {
+        $(document).on('click', '#generate_metadata_button', function(e) {
+            e.preventDefault();
+            var button = $(this);
+            var imageId = button.data('image-id');
 
-	/**
-	 * All of the code for your admin-facing JavaScript source
-	 * should reside in this file.
-	 *
-	 * Note: It has been assumed you will write jQuery code here, so the
-	 * $ function reference has been prepared for usage within the scope
-	 * of this function.
-	 *
-	 * This enables you to define handlers, for when the DOM is ready:
-	 *
-	 * $(function() {
-	 *
-	 * });
-	 *
-	 * When the window is loaded:
-	 *
-	 * $( window ).load(function() {
-	 *
-	 * });
-	 *
-	 * ...and/or other possibilities.
-	 *
-	 * Ideally, it is not considered best practise to attach more than a
-	 * single DOM-ready or window-load handler for a particular page.
-	 * Although scripts in the WordPress core, Plugins and Themes may be
-	 * practising this, we should strive to set a better example in our own work.
-	 */
+            // Disable the button to prevent multiple clicks.
+            button.attr('disabled', true).text('Generating...');
 
-})( jQuery );
+            $.ajax({
+                url: occ_images_admin_vars.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'occ_images_generate_metadata',
+                    nonce: occ_images_admin_vars.occ_images_ajax_nonce,
+                    image_id: imageId
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert('Metadata generated successfully.');
+
+                        // Get the attachment model
+                        var attachment = wp.media.attachment.get(imageId);
+
+                        // Fetch the updated data from the server
+                        attachment.fetch({
+                            success: function() {
+                                // Re-select the attachment to update the details view
+                                var selection = wp.media.frame.state().get('selection');
+                                if (selection) {
+                                    selection.reset(attachment);
+                                }
+                            }
+                        });
+
+                    } else {
+                        alert('Error: ' + response.data);
+                    }
+                },
+                error: function() {
+                    alert('An unexpected error occurred.');
+                },
+                complete: function() {
+                    // Re-enable the button.
+                    button.attr('disabled', false).text('Generate Metadata');
+                }
+            });
+        });
+    });
+})(jQuery);

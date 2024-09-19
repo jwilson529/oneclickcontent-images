@@ -1,19 +1,25 @@
 <?php
 /**
- * Class Occ_Images_Admin_Settings
+ * Settings and completion functionality of the plugin.
  *
- * Manages the admin settings page and handles image metadata generation for the OCC Images plugin.
+ * This class defines all the settings hooks and functions that handle
+ * connecting to the API and setting the image metadata.
+ *
+ * @link       https://oneclickcontent.com
+ * @since      1.0.0
+ * @package    Occ_Images
+ * @subpackage Occ_Images/admin
+ */
+
+/**
+ * OCC Images Admin Settings Class
+ *
+ * This class handles the admin settings page, including generating image metadata using the OpenAI API.
  *
  * @since 1.0.0
  * @package Occ_Images
  */
-
 class Occ_Images_Admin_Settings {
-
-	/*
-	--------------------------------------------*
-	 * Public Methods
-	 *--------------------------------------------*/
 
 	/**
 	 * Register the plugin settings page in the WordPress admin menu.
@@ -35,7 +41,7 @@ class Occ_Images_Admin_Settings {
 		?>
 		<div id="occ_images" class="wrap">
 			<h1><?php esc_html_e( 'OCC Images Settings', 'occ-images' ); ?></h1>
-			
+
 			<form method="post" action="options.php">
 				<?php
 				settings_fields( 'occ_images_settings' );
@@ -103,31 +109,7 @@ class Occ_Images_Admin_Settings {
 			'occ_images_settings_section',
 			array( 'label_for' => 'occ_images_ai_model' )
 		);
-
-		// Retrieve the API key.
-		$api_key = get_option( 'occ_images_openai_api_key' );
-
-		// Check if the API key is valid and register additional settings if needed.
-		if ( ! empty( $api_key ) && self::validate_openai_api_key( $api_key ) ) {
-			// Additional settings can be registered here if necessary.
-		} else {
-			// Display an error message if the API key is invalid.
-			add_settings_error(
-				'occ_images_openai_api_key',
-				'invalid-api-key',
-				sprintf(
-					__( 'The OpenAI API key is invalid. Please enter a valid API key in the <a href="%s">OCC Images settings</a> to use OCC Images.', 'occ-images' ),
-					esc_url( admin_url( 'options-general.php?page=occ-images-settings' ) )
-				),
-				'error'
-			);
-		}
 	}
-
-	/*
-	--------------------------------------------*
-	 * Settings Fields Callbacks
-	 *--------------------------------------------*/
 
 	/**
 	 * Callback for the settings section description.
@@ -157,7 +139,7 @@ class Occ_Images_Admin_Settings {
 
 			if ( $models && is_array( $models ) ) {
 				echo '<select id="occ_images_ai_model" name="occ_images_ai_model">';
-				echo '<option value="gpt-4"' . selected( $selected_model, 'gpt-4o-mini', false ) . '>' . esc_html__( 'Default (gpt-4o-mini)', 'occ-images' ) . '</option>';
+				echo '<option value="gpt-4o-mini"' . selected( $selected_model, 'gpt-4o-mini', false ) . '>' . esc_html__( 'Default (gpt-4o-mini)', 'occ-images' ) . '</option>';
 
 				foreach ( $models as $model ) {
 					echo '<option value="' . esc_attr( $model ) . '"' . selected( $selected_model, $model, false ) . '>' . esc_html( $model ) . '</option>';
@@ -174,14 +156,8 @@ class Occ_Images_Admin_Settings {
 		} else {
 			echo '<p class="occ-images-alert">';
 			esc_html_e( 'Please enter a valid OpenAI API key first.', 'occ-images' );
-			echo '</p>';
 		}
 	}
-
-	/*
-	--------------------------------------------*
-	 * Helper Methods for OpenAI API Interaction
-	 *--------------------------------------------*/
 
 	/**
 	 * Validates the OpenAI API key and fetches available models.
@@ -205,7 +181,6 @@ class Occ_Images_Admin_Settings {
 		);
 
 		if ( is_wp_error( $response ) ) {
-			error_log( 'Error validating OpenAI API key: ' . $response->get_error_message() );
 			return false;
 		}
 
@@ -220,14 +195,11 @@ class Occ_Images_Admin_Settings {
 				$data['data']
 			);
 
-			// Optionally, filter models that support function calling or image inputs.
+			// Filter supported models.
 			$supported_models = array_filter(
 				$models,
 				function ( $model ) {
-					// Define your supported models here.
-					// For example, 'gpt-4', 'gpt-3.5-turbo', etc.
 					$supported = array( 'gpt-4', 'gpt-4-vision', 'gpt-4-turbo', 'gpt-4o', 'gpt-4o-mini' );
-
 					return in_array( $model, $supported, true );
 				}
 			);
@@ -241,47 +213,49 @@ class Occ_Images_Admin_Settings {
 	}
 
 	/**
-	 * Generate metadata for an image using the Chat Completion API.
+	 * Generate metadata for an image using the OpenAI API.
 	 *
-	 * @param int $image_id The attachment ID of the image.
-	 * @return bool True on success, false on failure.
+	 * @param int $image_id The ID of the image attachment.
+	 * @return array|false The generated metadata on success, false on failure.
 	 */
 	public function occ_images_generate_metadata( $image_id ) {
-		error_log( 'Starting occ_images_generate_metadata for image ID ' . $image_id );
-
-		$api_key        = get_option( 'occ_images_openai_api_key' );
-		$selected_model = get_option( 'occ_images_ai_model', 'gpt-4' );
+		$api_key = get_option( 'occ_images_openai_api_key' );
+		$model   = get_option( 'occ_images_ai_model', 'gpt-4' );
 
 		if ( empty( $api_key ) ) {
-			error_log( 'API key is empty in occ_images_generate_metadata.' );
 			return false;
 		}
 
-		// Get the image URL
-		$image_url = wp_get_attachment_url( $image_id );
-
-		if ( ! $image_url ) {
-			error_log( 'Failed to get image URL for image ID ' . $image_id );
+		$image_path = get_attached_file( $image_id );
+		if ( ! $image_path || ! file_exists( $image_path ) ) {
 			return false;
 		}
 
-		// Prepare the messages array
+		$image_data   = file_get_contents( $image_path ); // Local file, not remote.
+		$image_base64 = base64_encode( $image_data ); // Encoded for API use.
+		$image_type   = wp_check_filetype( $image_path )['ext'];
+
 		$messages = array(
 			array(
 				'role'    => 'user',
-				'content' => 'Generate image metadata including title, description, alt text, and caption for the provided image.',
-			),
-			array(
-				'role'    => 'user',
-				'name'    => 'image',
-				'content' => $image_url,
+				'content' => array(
+					array(
+						'type' => 'text',
+						'text' => 'Generate image metadata including title, description, alt text, and caption for the provided image.',
+					),
+					array(
+						'type'      => 'image_url',
+						'image_url' => array(
+							'url' => 'data:image/' . $image_type . ';base64,' . $image_base64,
+						),
+					),
+				),
 			),
 		);
 
-		// Define the function for the assistant to use.
 		$function_definition = array(
 			'name'        => 'generate_image_metadata',
-			'description' => 'Generate image metadata including title, description, alt text, and caption based on the provided image.',
+			'description' => 'Generate image metadata including title, description, alt text, and caption.',
 			'parameters'  => array(
 				'type'       => 'object',
 				'properties' => array(
@@ -295,7 +269,7 @@ class Occ_Images_Admin_Settings {
 					),
 					'alt_text'    => array(
 						'type'        => 'string',
-						'description' => 'Alt text for accessibility purposes.',
+						'description' => 'Alt text for accessibility.',
 					),
 					'caption'     => array(
 						'type'        => 'string',
@@ -306,16 +280,14 @@ class Occ_Images_Admin_Settings {
 			),
 		);
 
-		// Prepare the request body
 		$body = array(
-			'model'         => $selected_model,
+			'model'         => $model,
 			'messages'      => $messages,
 			'functions'     => array( $function_definition ),
 			'function_call' => array( 'name' => 'generate_image_metadata' ),
 			'max_tokens'    => 500,
 		);
 
-		// Make the API request
 		$response = wp_remote_post(
 			'https://api.openai.com/v1/chat/completions',
 			array(
@@ -324,36 +296,30 @@ class Occ_Images_Admin_Settings {
 					'Authorization' => 'Bearer ' . $api_key,
 				),
 				'body'    => wp_json_encode( $body ),
-				'timeout' => 120, // Adjust as needed
+				'timeout' => 120,
 			)
 		);
 
 		if ( is_wp_error( $response ) ) {
-			error_log( 'Error in wp_remote_post in occ_images_generate_metadata: ' . $response->get_error_message() );
 			return false;
 		}
 
-		$response_body    = wp_remote_retrieve_body( $response );
-		$decoded_response = json_decode( $response_body, true );
+		$response_body = wp_remote_retrieve_body( $response );
+		$data          = json_decode( $response_body, true );
 
-		if ( isset( $decoded_response['error'] ) ) {
-			error_log( 'API error in occ_images_generate_metadata: ' . print_r( $decoded_response['error'], true ) );
+		if ( isset( $data['error'] ) ) {
 			return false;
 		}
 
-		// Extract the function call arguments
-		if ( isset( $decoded_response['choices'][0]['message']['function_call']['arguments'] ) ) {
-			$metadata_json = $decoded_response['choices'][0]['message']['function_call']['arguments'];
+		if ( isset( $data['choices'][0]['message']['function_call']['arguments'] ) ) {
+			$metadata_json = $data['choices'][0]['message']['function_call']['arguments'];
 			$metadata      = json_decode( $metadata_json, true );
 
 			if ( json_last_error() !== JSON_ERROR_NONE ) {
-				error_log( 'Failed to decode metadata JSON: ' . json_last_error_msg() );
 				return false;
 			}
 
-			error_log( 'Successfully retrieved metadata: ' . print_r( $metadata, true ) );
-
-			// Save the metadata to the image
+			// Save metadata to the image.
 			update_post_meta( $image_id, '_wp_attachment_image_alt', $metadata['alt_text'] );
 			wp_update_post(
 				array(
@@ -364,48 +330,32 @@ class Occ_Images_Admin_Settings {
 				)
 			);
 
-			// Return the metadata
 			return $metadata;
-		} else {
-			error_log( 'No function_call arguments in response: ' . $response_body );
-			return false;
 		}
+
+		return false;
 	}
-
-
-	/*
-	--------------------------------------------*
-	 * AJAX Handlers
-	 *--------------------------------------------*/
 
 	/**
 	 * AJAX handler to generate metadata for an image.
 	 */
 	public function occ_images_ajax_generate_metadata() {
-		// Check nonce and user permissions.
+		// Verify nonce and user permissions.
 		if ( ! check_ajax_referer( 'occ_images_ajax_nonce', 'nonce', false ) ) {
-			error_log( 'Nonce verification failed in occ_images_ajax_generate_metadata.' );
 			wp_send_json_error( 'Nonce verification failed.' );
 		}
 
 		if ( ! current_user_can( 'upload_files' ) ) {
-			error_log( 'User does not have permission to upload files in occ_images_ajax_generate_metadata.' );
 			wp_send_json_error( 'Permission denied.' );
 		}
 
-		// Get the image ID from the request.
 		$image_id = isset( $_POST['image_id'] ) ? absint( $_POST['image_id'] ) : 0;
-
 		if ( ! $image_id ) {
-			error_log( 'Invalid image ID in occ_images_ajax_generate_metadata.' );
 			wp_send_json_error( 'Invalid image ID.' );
 		}
 
-		// Generate metadata.
 		$metadata = $this->occ_images_generate_metadata( $image_id );
-
 		if ( $metadata ) {
-			// Send the metadata back in the AJAX response.
 			wp_send_json_success(
 				array(
 					'message'  => 'Metadata generated successfully.',
@@ -413,7 +363,6 @@ class Occ_Images_Admin_Settings {
 				)
 			);
 		} else {
-			error_log( 'Failed to generate metadata for image ID ' . $image_id . ' in occ_images_ajax_generate_metadata.' );
 			wp_send_json_error( 'Failed to generate metadata.' );
 		}
 	}

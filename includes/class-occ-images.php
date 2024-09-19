@@ -153,24 +153,24 @@ class Occ_Images {
 	 */
 	private function define_admin_hooks() {
 
-		$plugin_admin = new Occ_Images_Admin( $this->get_occ_images(), $this->get_version() );
-	    $plugin_admin_settings = new Occ_Images_Admin_Settings();
+		$plugin_admin          = new Occ_Images_Admin( $this->get_occ_images(), $this->get_version() );
+		$plugin_admin_settings = new Occ_Images_Admin_Settings();
 
-	    // Register the settings page and settings.
-	    $this->loader->add_action( 'admin_menu', $plugin_admin_settings, 'occ_images_register_options_page' );
-	    $this->loader->add_action( 'admin_init', $plugin_admin_settings, 'occ_images_register_settings' );
+		// Register the settings page and settings.
+		$this->loader->add_action( 'admin_menu', $plugin_admin_settings, 'occ_images_register_options_page' );
+		$this->loader->add_action( 'admin_init', $plugin_admin_settings, 'occ_images_register_settings' );
 
-	    // Handle admin notices.
-	    $this->loader->add_action( 'admin_notices', $plugin_admin_settings, 'display_admin_notices' );
+		// Handle admin notices.
+		$this->loader->add_action( 'admin_notices', $plugin_admin_settings, 'display_admin_notices' );
 
-	    // AJAX action for generating metadata.
-	    $this->loader->add_action( 'wp_ajax_occ_images_generate_metadata', $plugin_admin_settings, 'occ_images_ajax_generate_metadata' );
+		// AJAX action for generating metadata.
+		$this->loader->add_action( 'wp_ajax_occ_images_generate_metadata', $plugin_admin_settings, 'occ_images_ajax_generate_metadata' );
 
-	    // Add the "Generate Metadata" button to the Media Library.
-	    $this->loader->add_filter( 'attachment_fields_to_edit', $plugin_admin, 'add_generate_metadata_button', 10, 2 );
-	    // Enqueue admin styles and scripts.
-	    $this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
-	    $this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
+		// Add the "Generate Metadata" button to the Media Library.
+		$this->loader->add_filter( 'attachment_fields_to_edit', $plugin_admin, 'add_generate_metadata_button', 10, 2 );
+		// Enqueue admin styles and scripts.
+		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
+		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 	}
 
 

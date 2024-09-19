@@ -120,6 +120,11 @@ class Occ_Images {
 		require_once plugin_dir_path( __DIR__ ) . 'admin/class-occ-images-admin-settings.php';
 
 		/**
+		 * The class responsible for automatically running based on the user setting.
+		 */
+		require_once plugin_dir_path( __DIR__ ) . 'admin/class-occ-images-auto-generate.php';
+
+		/**
 		 * The class responsible for defining all actions that occur in the public-facing
 		 * side of the site.
 		 */
@@ -155,6 +160,8 @@ class Occ_Images {
 
 		$plugin_admin          = new Occ_Images_Admin( $this->get_occ_images(), $this->get_version() );
 		$plugin_admin_settings = new Occ_Images_Admin_Settings();
+
+		$plugin_auto_generate = new Occ_Images_Auto_Generate();
 
 		// Register the settings page and settings.
 		$this->loader->add_action( 'admin_menu', $plugin_admin_settings, 'occ_images_register_options_page' );

@@ -3,10 +3,10 @@ FILE: /Users/jameswilson/Local Sites/wp-clean-install/app/public/wp-content/plug
 ---------------------------------------------------------------------------------------------------------------------------------------------------------
 FOUND 0 ERRORS AND 2 WARNINGS AFFECTING 2 LINES
 ---------------------------------------------------------------------------------------------------------------------------------------------------------
- 234 | WARNING | file_get_contents() is discouraged. Use wp_remote_get() for remote URLs instead.
- 235 | WARNING | base64_encode() can be used to obfuscate code which is strongly discouraged. Please verify that the function is used for benign
+ 262 | WARNING | file_get_contents() is discouraged. Use wp_remote_get() for remote URLs instead.
+ 263 | WARNING | base64_encode() can be used to obfuscate code which is strongly discouraged. Please verify that the function is used for benign
      |         | reasons.
 ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Time: 477ms; Memory: 14MB
+Time: 502ms; Memory: 14MB
 

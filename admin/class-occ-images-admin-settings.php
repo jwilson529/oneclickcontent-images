@@ -82,6 +82,15 @@ class Occ_Images_Admin_Settings {
 			)
 		);
 
+		// Register the Auto Add Details on Upload checkbox with boolean sanitization.
+		register_setting(
+			'occ_images_settings',
+			'occ_images_auto_add_details',
+			array(
+				'sanitize_callback' => 'rest_sanitize_boolean',
+			)
+		);
+
 		// Add the main settings section.
 		add_settings_section(
 			'occ_images_settings_section',
@@ -109,6 +118,16 @@ class Occ_Images_Admin_Settings {
 			'occ_images_settings_section',
 			array( 'label_for' => 'occ_images_ai_model' )
 		);
+
+		// Add the Auto Add Details on Upload checkbox field.
+		add_settings_field(
+			'occ_images_auto_add_details',
+			__( 'Auto Add Details on Upload', 'occ-images' ),
+			array( $this, 'occ_images_auto_add_details_callback' ),
+			'occ_images_settings',
+			'occ_images_settings_section',
+			array( 'label_for' => 'occ_images_auto_add_details' )
+		);
 	}
 
 	/**
@@ -116,6 +135,15 @@ class Occ_Images_Admin_Settings {
 	 */
 	public function occ_images_settings_section_callback() {
 		echo '<p>' . esc_html__( 'Configure the settings for the OCC Images plugin.', 'occ-images' ) . '</p>';
+	}
+
+	/**
+	 * Callback for the Auto Add Details on Upload checkbox.
+	 */
+	public function occ_images_auto_add_details_callback() {
+		$checked = get_option( 'occ_images_auto_add_details', false );
+		echo '<input type="checkbox" id="occ_images_auto_add_details" name="occ_images_auto_add_details" value="1" ' . checked( 1, $checked, false ) . ' />';
+		echo '<p class="description">' . esc_html__( 'Automatically generate and add metadata details when images are uploaded.', 'occ-images' ) . '</p>';
 	}
 
 	/**

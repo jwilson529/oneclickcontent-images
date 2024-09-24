@@ -68,42 +68,42 @@ class Occ_Images_Admin {
 	 * including any necessary libraries like jQuery and the WordPress media library.
 	 */
 	public function enqueue_scripts() {
-	    // Enqueue the plugin's admin JavaScript file.
-	    wp_enqueue_script(
-	        $this->plugin_name,
-	        plugin_dir_url( __FILE__ ) . 'js/occ-images-admin.js',
-	        array( 'jquery' ),
-	        $this->version,
-	        true
-	    );
+		// Enqueue the plugin's admin JavaScript file.
+		wp_enqueue_script(
+			$this->plugin_name,
+			plugin_dir_url( __FILE__ ) . 'js/occ-images-admin.js',
+			array( 'jquery' ),
+			$this->version,
+			true
+		);
 
-	    // Enqueue the WordPress media library.
-	    wp_enqueue_media();
+		// Enqueue the WordPress media library.
+		wp_enqueue_media();
 
-	    // Get the user-selected metadata fields from plugin settings.
-	    $selected_fields = get_option( 'occ_images_metadata_fields', array() );
+		// Get the user-selected metadata fields from plugin settings.
+		$selected_fields = get_option( 'occ_images_metadata_fields', array() );
 
-	    // Ensure that the selected fields always exist in the expected format.
-	    $selected_fields = wp_parse_args(
-	        $selected_fields,
-	        array(
-	            'title'       => false,
-	            'description' => false,
-	            'alt_text'    => false,
-	            'caption'     => false,
-	        )
-	    );
+		// Ensure that the selected fields always exist in the expected format.
+		$selected_fields = wp_parse_args(
+			$selected_fields,
+			array(
+				'title'       => false,
+				'description' => false,
+				'alt_text'    => false,
+				'caption'     => false,
+			)
+		);
 
-	    // Localize the script to pass dynamic data to the JavaScript file.
-	    wp_localize_script(
-	        $this->plugin_name,
-	        'occ_images_admin_vars',
-	        array(
-	            'ajax_url'              => admin_url( 'admin-ajax.php' ),
-	            'occ_images_ajax_nonce' => wp_create_nonce( 'occ_images_ajax_nonce' ),
-	            'selected_fields'       => $selected_fields, // Pass user-selected fields to JavaScript
-	        )
-	    );
+		// Localize the script to pass dynamic data to the JavaScript file.
+		wp_localize_script(
+			$this->plugin_name,
+			'occ_images_admin_vars',
+			array(
+				'ajax_url'              => admin_url( 'admin-ajax.php' ),
+				'occ_images_ajax_nonce' => wp_create_nonce( 'occ_images_ajax_nonce' ),
+				'selected_fields'       => $selected_fields, // Pass user-selected fields to JavaScript
+			)
+		);
 	}
 
 

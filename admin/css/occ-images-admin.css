@@ -1,4 +1,156 @@
-/**
- * All of the CSS for your admin-specific functionality should be
- * included in this file.
- */
+/* General container styling */
+#occ_images.wrap {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Headings */
+#occ_images h1, #occ_images h2 {
+    color: #333;
+    font-weight: bold;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+/* Form table styling */
+#occ_images .form-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+#occ_images .form-table th {
+    text-align: left;
+    padding: 15px 10px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 1px solid #ddd;
+}
+
+#occ_images .form-table td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    font-size: 15px;
+}
+
+/* Input fields */
+#occ_images input[type="text"],
+#occ_images input[type="password"],
+#occ_images input[type="checkbox"],
+#occ_images select {
+    width: 100%;
+    padding: 10px;
+    font-size: 15px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Checkbox styling */
+#occ_images input[type="checkbox"] {
+    width: auto;
+    margin-right: 8px;
+    transform: scale(1.2);
+    vertical-align: middle;
+}
+
+/* Submit button styling */
+#occ_images .button-primary {
+    background-color: #007cba;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#occ_images .button-primary:hover {
+    background-color: #005a8c;
+}
+
+/* Success message styling */
+.notice.notice-success {
+    background-color: #e8f6ec;
+    border-left: 4px solid #48b56f;
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 4px;
+}
+
+.notice .notice-dismiss {
+    background: none;
+    border: none;
+    color: #48b56f;
+    font-size: 14px;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.notice .notice-dismiss:hover {
+    color: #007cba;
+}
+
+/* Bulk generation button */
+#bulk_generate_metadata_button {
+    background-color: #28a745;
+    color: white;
+    font-size: 16px;
+    border-radius: 4px;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-bottom: 20px;
+}
+
+#bulk_generate_metadata_button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+#bulk_generate_metadata_button:hover:not(:disabled) {
+    background-color: #218838;
+}
+
+/* Status div styling */
+#bulk_generate_status {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 4px;
+    max-height: 300px;
+    overflow-y: auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    font-size: 14px;
+}
+
+#bulk_generate_status p {
+    margin: 0;
+    padding: 5px 0;
+}
+
+#bulk_generate_status span {
+    font-weight: bold;
+    color: #28a745;
+}
+
+#bulk_generate_status p span.skipped {
+    color: #ffcc00;
+}
+
+
+.notice.notice-success {
+    display: none;
+}
+
+.notice.notice-success:first-of-type {
+    display: block;
+}

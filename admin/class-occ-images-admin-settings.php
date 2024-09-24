@@ -38,20 +38,33 @@ class Occ_Images_Admin_Settings {
 	 * Display the plugin options page.
 	 */
 	public function occ_images_options_page() {
-		?>
-		<div id="occ_images" class="wrap">
-			<h1><?php esc_html_e( 'OCC Images Settings', 'oneclickcontent-images' ); ?></h1>
+	    ?>
+	    <div id="occ_images" class="wrap">
+	        <h1><?php esc_html_e( 'OCC Images Settings', 'oneclickcontent-images' ); ?></h1>
 
-			<form method="post" action="options.php">
-				<?php
-				settings_fields( 'occ_images_settings' );
-				do_settings_sections( 'occ_images_settings' );
-				submit_button();
-				?>
-			</form>
-		</div>
-		<?php
+	        <form method="post" action="options.php">
+	            <?php
+	            settings_fields( 'occ_images_settings' );
+	            do_settings_sections( 'occ_images_settings' );
+	            submit_button();
+	            ?>
+	        </form>
+
+	        <!-- Bulk generation button -->
+	        <h2><?php esc_html_e( 'Bulk Generate Metadata for Media Library', 'oneclickcontent-images' ); ?></h2>
+	        <p><?php esc_html_e( 'Automatically generate metadata for images in your media library based on your settings.', 'oneclickcontent-images' ); ?></p>
+	        <button id="bulk_generate_metadata_button" class="button button-primary">
+	            <?php esc_html_e( 'Generate Metadata for Media Library', 'oneclickcontent-images' ); ?>
+	        </button>
+
+	        <!-- Status div for showing progress -->
+	        <div id="bulk_generate_status" style="margin-top: 20px;">
+	            <!-- Status messages will appear here -->
+	        </div>
+	    </div>
+	    <?php
 	}
+
 
 	/**
 	 * Display admin notices for settings errors or updates.
@@ -89,6 +102,32 @@ class Occ_Images_Admin_Settings {
 			array(
 				'sanitize_callback' => 'rest_sanitize_boolean',
 			)
+		);
+
+		// Register the metadata fields checkboxes.
+		register_setting(
+		    'occ_images_settings',
+		    'occ_images_metadata_fields',
+		    array(
+		        'sanitize_callback' => array($this, 'occ_images_sanitize_metadata_fields'),
+		    )
+		);
+
+		// Add the Metadata Fields section.
+		add_settings_section(
+		    'occ_images_metadata_section',
+		    __( 'Select Metadata Fields to Replace', 'oneclickcontent-images' ),
+		    array( $this, 'occ_images_metadata_section_callback' ),
+		    'occ_images_settings'
+		);
+
+		// Add checkboxes for metadata fields.
+		add_settings_field(
+		    'occ_images_metadata_fields',
+		    __( 'Metadata Fields', 'oneclickcontent-images' ),
+		    array( $this, 'occ_images_metadata_fields_callback' ),
+		    'occ_images_settings',
+		    'occ_images_metadata_section'
 		);
 
 		// Add the main settings section.
@@ -129,6 +168,51 @@ class Occ_Images_Admin_Settings {
 			array( 'label_for' => 'occ_images_auto_add_details' )
 		);
 	}
+
+	/**
+	 * Callback for the Metadata Fields section description.
+	 */
+	public function occ_images_metadata_section_callback() {
+	    echo '<p>' . esc_html__( 'Select which metadata fields you want to automatically generate and replace for images.', 'oneclickcontent-images' ) . '</p>';
+	}
+
+
+	/**
+	 * Callback to display checkboxes for metadata fields selection.
+	 */
+	public function occ_images_metadata_fields_callback() {
+	    $options = get_option( 'occ_images_metadata_fields', array() );
+	    
+	    $fields = array(
+	        'title'       => __( 'Title', 'oneclickcontent-images' ),
+	        'description' => __( 'Description', 'oneclickcontent-images' ),
+	        'alt_text'    => __( 'Alt Text', 'oneclickcontent-images' ),
+	        'caption'     => __( 'Caption', 'oneclickcontent-images' ),
+	    );
+
+	    foreach ( $fields as $key => $label ) {
+	        $checked = isset( $options[ $key ] ) ? 'checked' : '';
+	        echo '<input type="checkbox" id="occ_images_metadata_fields_' . esc_attr( $key ) . '" name="occ_images_metadata_fields[' . esc_attr( $key ) . ']" value="1" ' . esc_attr( $checked ) . ' />';
+	        echo '<label for="occ_images_metadata_fields_' . esc_attr( $key ) . '"> ' . esc_html( $label ) . '</label><br>';
+	    }
+	}
+
+	/**
+	 * Sanitize the metadata fields array.
+	 */
+	public function occ_images_sanitize_metadata_fields( $input ) {
+	    $valid = array();
+
+	    $fields = array( 'title', 'description', 'alt_text', 'caption' );
+	    foreach ( $fields as $field ) {
+	        if ( isset( $input[ $field ] ) ) {
+	            $valid[ $field ] = 1;
+	        }
+	    }
+
+	    return $valid;
+	}
+
 
 	/**
 	 * Callback for the settings section description.
@@ -248,15 +332,41 @@ class Occ_Images_Admin_Settings {
 	 */
 	public function occ_images_generate_metadata( $image_id ) {
 		$api_key = get_option( 'occ_images_openai_api_key' );
+		$api_key = get_option( 'occ_images_openai_api_key' );
 		$model   = get_option( 'occ_images_ai_model', 'gpt-4' );
 
 		if ( empty( $api_key ) ) {
-			return false;
+		    return false;
 		}
 
+		// Get the selected fields and the image path
+		$selected_fields = get_option( 'occ_images_metadata_fields', array() );
 		$image_path = get_attached_file( $image_id );
 		if ( ! $image_path || ! file_exists( $image_path ) ) {
-			return false;
+		    return false;
+		}
+
+		// Check for existing metadata and skip if it's already there
+		$skip = false;
+
+		if ( isset( $selected_fields['alt_text'] ) && get_post_meta( $image_id, '_wp_attachment_image_alt', true ) ) {
+		    $skip = true;
+		}
+
+		if ( isset( $selected_fields['title'] ) && get_the_title( $image_id ) ) {
+		    $skip = true;
+		}
+
+		if ( isset( $selected_fields['description'] ) && get_post_field( 'post_content', $image_id ) ) {
+		    $skip = true;
+		}
+
+		if ( isset( $selected_fields['caption'] ) && get_the_excerpt( $image_id ) ) {
+		    $skip = true;
+		}
+
+		if ( $skip ) {
+		    return false; // Skip this image
 		}
 
 		$image_data   = file_get_contents( $image_path ); // Local file, not remote.
@@ -347,16 +457,32 @@ class Occ_Images_Admin_Settings {
 				return false;
 			}
 
-			// Save metadata to the image.
-			update_post_meta( $image_id, '_wp_attachment_image_alt', $metadata['alt_text'] );
-			wp_update_post(
-				array(
-					'ID'           => $image_id,
-					'post_title'   => $metadata['title'],
-					'post_content' => $metadata['description'],
-					'post_excerpt' => $metadata['caption'],
-				)
-			);
+			// Get the metadata fields to replace from user settings.
+			$metadata_fields = get_option( 'occ_images_metadata_fields', array() );
+
+			// Save metadata based on user preferences.
+			if ( isset( $metadata_fields['alt_text'] ) ) {
+				update_post_meta( $image_id, '_wp_attachment_image_alt', $metadata['alt_text'] );
+			}
+
+			$update_data = array( 'ID' => $image_id );
+
+			// Only update the title if the user has enabled it.
+			if ( isset( $metadata_fields['title'] ) ) {
+				$update_data['post_title'] = $metadata['title'];
+			}
+
+			// Only update the description if the user has enabled it.
+			if ( isset( $metadata_fields['description'] ) ) {
+				$update_data['post_content'] = $metadata['description'];
+			}
+
+			// Only update the caption if the user has enabled it.
+			if ( isset( $metadata_fields['caption'] ) ) {
+				$update_data['post_excerpt'] = $metadata['caption'];
+			}
+
+			wp_update_post( $update_data );
 
 			return $metadata;
 		}

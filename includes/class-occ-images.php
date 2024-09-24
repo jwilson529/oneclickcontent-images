@@ -178,6 +178,7 @@ class Occ_Images {
 		// Enqueue admin styles and scripts.
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
+		$this->loader->add_action( 'wp_ajax_occ_images_get_all_media_ids', $plugin_auto_generate, 'occ_images_get_all_media_ids' );
 	}
 
 

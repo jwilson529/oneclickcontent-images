@@ -71,7 +71,7 @@ class Occ_Images_Public {
 		 * class.
 		 */
 
-		wp_enqueue_style( $this->occ_images, plugin_dir_url( __FILE__ ) . 'css/oneclickcontent-images-public.css', array(), $this->version, 'all' );
+		wp_enqueue_style( $this->occ_images, plugin_dir_url( __FILE__ ) . 'css/occ-images-public.css', array(), $this->version, 'all' );
 	}
 
 	/**
@@ -93,6 +93,6 @@ class Occ_Images_Public {
 		 * class.
 		 */
 
-		wp_enqueue_script( $this->occ_images, plugin_dir_url( __FILE__ ) . 'js/oneclickcontent-images-public.js', array( 'jquery' ), $this->version, false );
+		wp_enqueue_script( $this->occ_images, plugin_dir_url( __FILE__ ) . 'js/occ-images-public.js', array( 'jquery' ), $this->version, false );
 	}
 }

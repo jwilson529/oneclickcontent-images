@@ -50,4 +50,30 @@ class Occ_Images_Auto_Generate {
 		// Return the metadata (unmodified).
 		return $metadata;
 	}
+
+	// Add this in the same class where you handle AJAX
+	public function occ_images_get_all_media_ids() {
+	    // Verify the nonce
+	    check_ajax_referer( 'occ_images_ajax_nonce', 'nonce' );
+
+	    // Ensure the user has permission to upload files
+	    if ( ! current_user_can( 'upload_files' ) ) {
+	        wp_send_json_error( 'Permission denied.' );
+	    }
+
+	    // Query all images in the media library
+	    $args = array(
+	        'post_type'      => 'attachment',
+	        'post_status'    => 'inherit',
+	        'posts_per_page' => -1,
+	        'post_mime_type' => 'image'
+	    );
+
+	    $query = new WP_Query( $args );
+	    $image_ids = wp_list_pluck( $query->posts, 'ID' );
+
+	    // Return the list of image IDs
+	    wp_send_json_success( array( 'ids' => $image_ids ) );
+	}
+
 }

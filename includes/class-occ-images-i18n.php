@@ -34,7 +34,7 @@ class Occ_Images_I18n {
 	public function load_plugin_textdomain() {
 
 		load_plugin_textdomain(
-			'occ-images',
+			'oneclickcontent-images',
 			false,
 			dirname( dirname( plugin_basename( __FILE__ ) ) ) . '/languages/'
 		);

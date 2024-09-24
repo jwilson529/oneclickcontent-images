@@ -12,7 +12,7 @@
  * @package           Occ_Images
  *
  * @wordpress-plugin
- * Plugin Name:       occ-images
+ * Plugin Name:       OneClickContent - Images
  * Plugin URI:        https://oneclickcontent.com
  * Description:       Uploads images to OpenAI in order to auto generate titles, descriptions, captions and alt automatically.
  * Version:           1.1.0
@@ -20,7 +20,7 @@
  * Author URI:        https://oneclickcontent.com/
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
- * Text Domain:       occ-images
+ * Text Domain:       oneclickcontent-images
  * Domain Path:       /languages
  */
 

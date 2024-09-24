@@ -26,10 +26,10 @@ class Occ_Images_Admin_Settings {
 	 */
 	public function occ_images_register_options_page() {
 		add_options_page(
-			__( 'OCC Images Settings', 'occ-images' ),
-			__( 'OCC Images', 'occ-images' ),
+			__( 'OCC Images Settings', 'oneclickcontent-images' ),
+			__( 'OCC Images', 'oneclickcontent-images' ),
 			'manage_options',
-			'occ-images-settings',
+			'oneclickcontent-images-settings',
 			array( $this, 'occ_images_options_page' )
 		);
 	}
@@ -40,7 +40,7 @@ class Occ_Images_Admin_Settings {
 	public function occ_images_options_page() {
 		?>
 		<div id="occ_images" class="wrap">
-			<h1><?php esc_html_e( 'OCC Images Settings', 'occ-images' ); ?></h1>
+			<h1><?php esc_html_e( 'OCC Images Settings', 'oneclickcontent-images' ); ?></h1>
 
 			<form method="post" action="options.php">
 				<?php
@@ -94,7 +94,7 @@ class Occ_Images_Admin_Settings {
 		// Add the main settings section.
 		add_settings_section(
 			'occ_images_settings_section',
-			__( 'OCC Images Settings', 'occ-images' ),
+			__( 'OCC Images Settings', 'oneclickcontent-images' ),
 			array( $this, 'occ_images_settings_section_callback' ),
 			'occ_images_settings'
 		);
@@ -102,7 +102,7 @@ class Occ_Images_Admin_Settings {
 		// Add the OpenAI API key field.
 		add_settings_field(
 			'occ_images_openai_api_key',
-			__( 'OpenAI API Key', 'occ-images' ),
+			__( 'OpenAI API Key', 'oneclickcontent-images' ),
 			array( $this, 'occ_images_openai_api_key_callback' ),
 			'occ_images_settings',
 			'occ_images_settings_section',
@@ -112,7 +112,7 @@ class Occ_Images_Admin_Settings {
 		// Add the AI Model selection field.
 		add_settings_field(
 			'occ_images_ai_model',
-			__( 'AI Model', 'occ-images' ),
+			__( 'AI Model', 'oneclickcontent-images' ),
 			array( $this, 'occ_images_ai_model_callback' ),
 			'occ_images_settings',
 			'occ_images_settings_section',
@@ -122,7 +122,7 @@ class Occ_Images_Admin_Settings {
 		// Add the Auto Add Details on Upload checkbox field.
 		add_settings_field(
 			'occ_images_auto_add_details',
-			__( 'Auto Add Details on Upload', 'occ-images' ),
+			__( 'Auto Add Details on Upload', 'oneclickcontent-images' ),
 			array( $this, 'occ_images_auto_add_details_callback' ),
 			'occ_images_settings',
 			'occ_images_settings_section',
@@ -134,7 +134,7 @@ class Occ_Images_Admin_Settings {
 	 * Callback for the settings section description.
 	 */
 	public function occ_images_settings_section_callback() {
-		echo '<p>' . esc_html__( 'Configure the settings for the OCC Images plugin.', 'occ-images' ) . '</p>';
+		echo '<p>' . esc_html__( 'Configure the settings for the OCC Images plugin.', 'oneclickcontent-images' ) . '</p>';
 	}
 
 	/**
@@ -143,7 +143,7 @@ class Occ_Images_Admin_Settings {
 	public function occ_images_auto_add_details_callback() {
 		$checked = get_option( 'occ_images_auto_add_details', false );
 		echo '<input type="checkbox" id="occ_images_auto_add_details" name="occ_images_auto_add_details" value="1" ' . checked( 1, $checked, false ) . ' />';
-		echo '<p class="description">' . esc_html__( 'Automatically generate and add metadata details when images are uploaded.', 'occ-images' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Automatically generate and add metadata details when images are uploaded.', 'oneclickcontent-images' ) . '</p>';
 	}
 
 	/**
@@ -152,7 +152,7 @@ class Occ_Images_Admin_Settings {
 	public function occ_images_openai_api_key_callback() {
 		$value = get_option( 'occ_images_openai_api_key', '' );
 		echo '<input type="password" id="occ_images_openai_api_key" name="occ_images_openai_api_key" value="' . esc_attr( $value ) . '" />';
-		echo '<p class="description">' . wp_kses_post( __( 'Get your OpenAI API Key <a href="https://platform.openai.com/signup/">here</a>.', 'occ-images' ) ) . '</p>';
+		echo '<p class="description">' . wp_kses_post( __( 'Get your OpenAI API Key <a href="https://platform.openai.com/signup/">here</a>.', 'oneclickcontent-images' ) ) . '</p>';
 	}
 
 	/**
@@ -167,23 +167,23 @@ class Occ_Images_Admin_Settings {
 
 			if ( $models && is_array( $models ) ) {
 				echo '<select id="occ_images_ai_model" name="occ_images_ai_model">';
-				echo '<option value="gpt-4o-mini"' . selected( $selected_model, 'gpt-4o-mini', false ) . '>' . esc_html__( 'Default (gpt-4o-mini)', 'occ-images' ) . '</option>';
+				echo '<option value="gpt-4o-mini"' . selected( $selected_model, 'gpt-4o-mini', false ) . '>' . esc_html__( 'Default (gpt-4o-mini)', 'oneclickcontent-images' ) . '</option>';
 
 				foreach ( $models as $model ) {
 					echo '<option value="' . esc_attr( $model ) . '"' . selected( $selected_model, $model, false ) . '>' . esc_html( $model ) . '</option>';
 				}
 				echo '</select>';
 				echo '<p class="description">';
-				esc_html_e( 'These models support the function calling ability required to use OCC Images.', 'occ-images' );
+				esc_html_e( 'These models support the function calling ability required to use OCC Images.', 'oneclickcontent-images' );
 				echo '</p>';
 			} else {
-				echo '<p class="occ-images-alert">';
-				esc_html_e( 'Unable to retrieve models. Please check your API key.', 'occ-images' );
+				echo '<p class="oneclickcontent-images-alert">';
+				esc_html_e( 'Unable to retrieve models. Please check your API key.', 'oneclickcontent-images' );
 				echo '</p>';
 			}
 		} else {
-			echo '<p class="occ-images-alert">';
-			esc_html_e( 'Please enter a valid OpenAI API key first.', 'occ-images' );
+			echo '<p class="oneclickcontent-images-alert">';
+			esc_html_e( 'Please enter a valid OpenAI API key first.', 'oneclickcontent-images' );
 		}
 	}
 

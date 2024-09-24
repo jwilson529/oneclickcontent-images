@@ -54,7 +54,7 @@ class Occ_Images_Admin {
 	public function enqueue_styles() {
 		wp_enqueue_style(
 			$this->plugin_name,
-			plugin_dir_url( __FILE__ ) . 'css/occ-images-admin.css',
+			plugin_dir_url( __FILE__ ) . 'css/oneclickcontent-images-admin.css',
 			array(),
 			$this->version,
 			'all'
@@ -71,7 +71,7 @@ class Occ_Images_Admin {
 		// Enqueue the plugin's admin JavaScript file.
 		wp_enqueue_script(
 			$this->plugin_name,
-			plugin_dir_url( __FILE__ ) . 'js/occ-images-admin.js',
+			plugin_dir_url( __FILE__ ) . 'js/oneclickcontent-images-admin.js',
 			array( 'jquery' ),
 			$this->version,
 			true
@@ -104,9 +104,9 @@ class Occ_Images_Admin {
 	public function add_generate_metadata_button( $form_fields, $post ) {
 		// Add a custom "Generate Metadata" button to the Media Library.
 		$form_fields['generate_metadata'] = array(
-			'label' => __( 'Generate Metadata', 'occ-images' ),
+			'label' => __( 'Generate Metadata', 'oneclickcontent-images' ),
 			'input' => 'html',
-			'html'  => '<button type="button" class="button" id="generate_metadata_button" data-image-id="' . esc_attr( $post->ID ) . '">' . esc_html__( 'Generate Metadata', 'occ-images' ) . '</button>',
+			'html'  => '<button type="button" class="button" id="generate_metadata_button" data-image-id="' . esc_attr( $post->ID ) . '">' . esc_html__( 'Generate Metadata', 'oneclickcontent-images' ) . '</button>',
 		);
 
 		return $form_fields;

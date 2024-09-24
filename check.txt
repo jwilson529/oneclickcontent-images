@@ -1,5 +1,15 @@
 
-FILE: /Users/jameswilson/Local Sites/wp-clean-install/app/public/wp-content/plugins/occ-images/admin/class-occ-images-admin-settings.php
+FILE: /Users/jameswilson/Local Sites/wp-clean-install/app/public/wp-content/plugins/oneclickcontent-images/includes/class-occ-images.php
+----------------------------------------------------------------------------------------------------------------------------------------
+FOUND 1 ERROR AND 2 WARNINGS AFFECTING 2 LINES
+----------------------------------------------------------------------------------------------------------------------------------------
+  79 | WARNING | This comment is 84% valid code; is this commented out code?
+ 131 | WARNING | This comment is 47% valid code; is this commented out code?
+ 131 | ERROR   | Inline comments must end in full-stops, exclamation marks, or question marks
+----------------------------------------------------------------------------------------------------------------------------------------
+
+
+FILE: /Users/jameswilson/Local Sites/wp-clean-install/app/public/wp-content/plugins/oneclickcontent-images/admin/class-occ-images-admin-settings.php
 ---------------------------------------------------------------------------------------------------------------------------------------------------------
 FOUND 0 ERRORS AND 2 WARNINGS AFFECTING 2 LINES
 ---------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -8,5 +18,5 @@ FOUND 0 ERRORS AND 2 WARNINGS AFFECTING 2 LINES
      |         | reasons.
 ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Time: 502ms; Memory: 14MB
+Time: 530ms; Memory: 14MB
 

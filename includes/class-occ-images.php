@@ -71,12 +71,12 @@ class Occ_Images {
 		} else {
 			$this->version = '1.0.0';
 		}
-		$this->occ_images = 'occ-images';
+		$this->occ_images = 'oneclickcontent-images';
 
 		$this->load_dependencies();
 		$this->set_locale();
 		$this->define_admin_hooks();
-		$this->define_public_hooks();
+		// $this->define_public_hooks();
 	}
 
 	/**
@@ -128,7 +128,7 @@ class Occ_Images {
 		 * The class responsible for defining all actions that occur in the public-facing
 		 * side of the site.
 		 */
-		require_once plugin_dir_path( __DIR__ ) . 'public/class-occ-images-public.php';
+		// require_once plugin_dir_path( __DIR__ ) . 'public/class-occ-images-public.php';
 
 		$this->loader = new Occ_Images_Loader();
 	}

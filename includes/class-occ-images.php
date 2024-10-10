@@ -76,7 +76,6 @@ class Occ_Images {
 		$this->load_dependencies();
 		$this->set_locale();
 		$this->define_admin_hooks();
-		// $this->define_public_hooks();
 	}
 
 	/**
@@ -123,12 +122,6 @@ class Occ_Images {
 		 * The class responsible for automatically running based on the user setting.
 		 */
 		require_once plugin_dir_path( __DIR__ ) . 'admin/class-occ-images-auto-generate.php';
-
-		/**
-		 * The class responsible for defining all actions that occur in the public-facing
-		 * side of the site.
-		 */
-		// require_once plugin_dir_path( __DIR__ ) . 'public/class-occ-images-public.php';
 
 		$this->loader = new Occ_Images_Loader();
 	}
@@ -179,6 +172,10 @@ class Occ_Images {
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 		$this->loader->add_action( 'wp_ajax_occ_images_get_all_media_ids', $plugin_auto_generate, 'occ_images_get_all_media_ids' );
+
+		$this->loader->add_action( 'init', $plugin_admin, 'occ_register_custom_image_size' );
+
+		$this->loader->add_filter( 'image_size_names_choose', $plugin_admin, 'occ_add_custom_image_sizes' );
 	}
 
 

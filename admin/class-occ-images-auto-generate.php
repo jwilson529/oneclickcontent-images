@@ -2,7 +2,7 @@
 /**
  * Admin-specific functionality of the plugin.
  *
- * This class runs the automatic generation of metadata as the files are uploaded.
+ * This class handles the automatic generation of metadata as files are uploaded.
  *
  * @link       https://oneclickcontent.com
  * @since      1.0.0
@@ -21,7 +21,9 @@
 class Occ_Images_Auto_Generate {
 
 	/**
-	 * Hook into the media upload process to generate metadata.
+	 * Constructor.
+	 *
+	 * Hook into the media upload process to trigger automatic metadata generation.
 	 */
 	public function __construct() {
 		add_filter( 'wp_generate_attachment_metadata', array( $this, 'auto_generate_metadata' ), 10, 2 );
@@ -30,7 +32,7 @@ class Occ_Images_Auto_Generate {
 	/**
 	 * Automatically generate metadata for an image if the setting is enabled.
 	 *
-	 * @param array $metadata The current attachment metadata.
+	 * @param array $metadata      The current attachment metadata.
 	 * @param int   $attachment_id The attachment ID.
 	 * @return array The metadata (unmodified).
 	 */
@@ -51,17 +53,23 @@ class Occ_Images_Auto_Generate {
 		return $metadata;
 	}
 
-	// Add this in the same class where you handle AJAX
+	/**
+	 * Get all media IDs in the Media Library.
+	 *
+	 * This function is typically used for AJAX requests to retrieve all image IDs in the media library.
+	 *
+	 * @return void
+	 */
 	public function occ_images_get_all_media_ids() {
-		// Verify the nonce
+		// Verify the nonce.
 		check_ajax_referer( 'occ_images_ajax_nonce', 'nonce' );
 
-		// Ensure the user has permission to upload files
+		// Ensure the user has permission to upload files.
 		if ( ! current_user_can( 'upload_files' ) ) {
 			wp_send_json_error( 'Permission denied.' );
 		}
 
-		// Query all images in the media library
+		// Query all images in the media library.
 		$args = array(
 			'post_type'      => 'attachment',
 			'post_status'    => 'inherit',
@@ -72,7 +80,7 @@ class Occ_Images_Auto_Generate {
 		$query     = new WP_Query( $args );
 		$image_ids = wp_list_pluck( $query->posts, 'ID' );
 
-		// Return the list of image IDs
+		// Return the list of image IDs.
 		wp_send_json_success( array( 'ids' => $image_ids ) );
 	}
 }

@@ -101,7 +101,7 @@ class Occ_Images_Admin {
 			array(
 				'ajax_url'              => admin_url( 'admin-ajax.php' ),
 				'occ_images_ajax_nonce' => wp_create_nonce( 'occ_images_ajax_nonce' ),
-				'selected_fields'       => $selected_fields, // Pass user-selected fields to JavaScript
+				'selected_fields'       => $selected_fields,
 			)
 		);
 	}
@@ -127,5 +127,35 @@ class Occ_Images_Admin {
 		);
 
 		return $form_fields;
+	}
+
+
+	/**
+	 * Register a custom image size for the OCC plugin.
+	 *
+	 * This function registers a custom image size with the dimensions 500x500 pixels.
+	 *
+	 * @return void
+	 */
+	public function occ_register_custom_image_size() {
+		add_image_size( 'occ-image-api', 500, 500, true ); // 500x500 pixels, cropped.
+	}
+
+	/**
+	 * Add custom image size to the Media Library image size dropdown.
+	 *
+	 * This function adds the custom image size to the dropdown menu in the Media Library,
+	 * allowing users to select the 'OCC Image' size when inserting images into content.
+	 *
+	 * @param array $sizes Existing image sizes.
+	 * @return array Modified list of image sizes.
+	 */
+	public function occ_add_custom_image_sizes( $sizes ) {
+		return array_merge(
+			$sizes,
+			array(
+				'occ-image-api' => __( 'OCC Image', 'oneclickcontent-images' ),
+			)
+		);
 	}
 }

@@ -410,32 +410,44 @@ class Occ_Images_Admin_Settings {
 			return false;
 		}
 
-		// Prepare to check for and generate metadata only for missing fields.
+		// Prepare to check for and generate metadata only for selected fields.
 		$generate_metadata = array();
 
+		// Get the setting for overriding existing metadata.
 		$override_metadata = get_option( 'occ_images_override_metadata', false );
 
-		// Check for missing fields and prepare for generation if needed, or override if the option is set.
-		if ( isset( $selected_fields['alt_text'] ) && ( $override_metadata || ! get_post_meta( $image_id, '_wp_attachment_image_alt', true ) ) ) {
-			$generate_metadata['alt_text'] = true;
+		// Check if each field is selected in the settings and if we should generate metadata.
+		if ( isset( $selected_fields['alt_text'] ) ) {
+		    // Generate alt text metadata if the field is empty or override is enabled.
+		    if ( $override_metadata || ! get_post_meta( $image_id, '_wp_attachment_image_alt', true ) ) {
+		        $generate_metadata['alt_text'] = true;
+		    }
 		}
 
-		if ( isset( $selected_fields['title'] ) && ( $override_metadata || ! get_the_title( $image_id ) ) ) {
-			$generate_metadata['title'] = true;
+		if ( isset( $selected_fields['title'] ) ) {
+		    // Generate title metadata if the field is empty or override is enabled.
+		    if ( $override_metadata || ! get_the_title( $image_id ) ) {
+		        $generate_metadata['title'] = true;
+		    }
 		}
 
-		if ( isset( $selected_fields['description'] ) && ( $override_metadata || ! get_post_field( 'post_content', $image_id ) ) ) {
-			$generate_metadata['description'] = true;
+		if ( isset( $selected_fields['description'] ) ) {
+		    // Generate description metadata if the field is empty or override is enabled.
+		    if ( $override_metadata || ! get_post_field( 'post_content', $image_id ) ) {
+		        $generate_metadata['description'] = true;
+		    }
 		}
 
-		if ( isset( $selected_fields['caption'] ) && ( $override_metadata || empty( get_post_field( 'post_excerpt', $image_id ) ) ) ) {
-			$generate_metadata['caption'] = true;
+		if ( isset( $selected_fields['caption'] ) ) {
+		    // Generate caption metadata if the field is empty or override is enabled.
+		    if ( $override_metadata || empty( get_post_field( 'post_excerpt', $image_id ) ) ) {
+		        $generate_metadata['caption'] = true;
+		    }
 		}
-
 
 		// If no fields need to be generated, skip the metadata generation.
 		if ( empty( $generate_metadata ) ) {
-			return false;
+		    return false;
 		}
 
 		// Encode the image in base64 and prepare for the API request.

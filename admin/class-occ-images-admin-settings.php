@@ -70,15 +70,15 @@ class Occ_Images_Admin_Settings {
 	 * @return void
 	 */
 	public function display_admin_notices() {
-	    // Check if the current user can manage options and settings are updated.
-	    $settings_updated = filter_input( INPUT_GET, 'settings-updated', FILTER_SANITIZE_STRING );
+		// Check if the current user can manage options and settings are updated.
+		$settings_updated = sanitize_text_field( filter_input( INPUT_GET, 'settings-updated' ) );
 
-	    if ( current_user_can( 'manage_options' ) && $settings_updated && 'true' === $settings_updated ) {
-	        add_settings_error( 'occ_images_messages', 'occ_images_message', __( 'Settings saved.', 'oneclickcontent-images' ), 'updated' );
-	    }
+		if ( current_user_can( 'manage_options' ) && $settings_updated && 'true' === $settings_updated ) {
+			add_settings_error( 'occ_images_messages', 'occ_images_message', __( 'Settings saved.', 'oneclickcontent-images' ), 'updated' );
+		}
 
-	    // Display settings errors or messages.
-	    settings_errors( 'occ_images_messages' );
+		// Display settings errors or messages.
+		settings_errors( 'occ_images_messages' );
 	}
 
 
@@ -128,11 +128,11 @@ class Occ_Images_Admin_Settings {
 
 		// Register the Override Existing Metadata setting.
 		register_setting(
-		    'occ_images_settings',
-		    'occ_images_override_metadata',
-		    array(
-		        'sanitize_callback' => 'rest_sanitize_boolean',
-		    )
+			'occ_images_settings',
+			'occ_images_override_metadata',
+			array(
+				'sanitize_callback' => 'rest_sanitize_boolean',
+			)
 		);
 
 		// Add settings sections and fields.
@@ -198,12 +198,12 @@ class Occ_Images_Admin_Settings {
 
 		// Add the Override Existing Metadata checkbox field.
 		add_settings_field(
-		    'occ_images_override_metadata',
-		    __( 'Override Existing Metadata', 'oneclickcontent-images' ),
-		    array( $this, 'occ_images_override_metadata_callback' ),
-		    'occ_images_settings',
-		    'occ_images_settings_section',
-		    array( 'label_for' => 'occ_images_override_metadata' )
+			'occ_images_override_metadata',
+			__( 'Override Existing Metadata', 'oneclickcontent-images' ),
+			array( $this, 'occ_images_override_metadata_callback' ),
+			'occ_images_settings',
+			'occ_images_settings_section',
+			array( 'label_for' => 'occ_images_override_metadata' )
 		);
 	}
 
@@ -222,9 +222,9 @@ class Occ_Images_Admin_Settings {
 	 * @return void
 	 */
 	public function occ_images_override_metadata_callback() {
-	    $checked = get_option( 'occ_images_override_metadata', false );
-	    echo '<input type="checkbox" id="occ_images_override_metadata" name="occ_images_override_metadata" value="1" ' . checked( 1, $checked, false ) . ' />';
-	    echo '<p class="description">' . esc_html__( 'Check this box if you want to override existing metadata when generating new metadata.', 'oneclickcontent-images' ) . '</p>';
+		$checked = get_option( 'occ_images_override_metadata', false );
+		echo '<input type="checkbox" id="occ_images_override_metadata" name="occ_images_override_metadata" value="1" ' . checked( 1, $checked, false ) . ' />';
+		echo '<p class="description">' . esc_html__( 'Check this box if you want to override existing metadata when generating new metadata.', 'oneclickcontent-images' ) . '</p>';
 	}
 
 	/**
@@ -418,36 +418,36 @@ class Occ_Images_Admin_Settings {
 
 		// Check if each field is selected in the settings and if we should generate metadata.
 		if ( isset( $selected_fields['alt_text'] ) ) {
-		    // Generate alt text metadata if the field is empty or override is enabled.
-		    if ( $override_metadata || ! get_post_meta( $image_id, '_wp_attachment_image_alt', true ) ) {
-		        $generate_metadata['alt_text'] = true;
-		    }
+			// Generate alt text metadata if the field is empty or override is enabled.
+			if ( $override_metadata || ! get_post_meta( $image_id, '_wp_attachment_image_alt', true ) ) {
+				$generate_metadata['alt_text'] = true;
+			}
 		}
 
 		if ( isset( $selected_fields['title'] ) ) {
-		    // Generate title metadata if the field is empty or override is enabled.
-		    if ( $override_metadata || ! get_the_title( $image_id ) ) {
-		        $generate_metadata['title'] = true;
-		    }
+			// Generate title metadata if the field is empty or override is enabled.
+			if ( $override_metadata || ! get_the_title( $image_id ) ) {
+				$generate_metadata['title'] = true;
+			}
 		}
 
 		if ( isset( $selected_fields['description'] ) ) {
-		    // Generate description metadata if the field is empty or override is enabled.
-		    if ( $override_metadata || ! get_post_field( 'post_content', $image_id ) ) {
-		        $generate_metadata['description'] = true;
-		    }
+			// Generate description metadata if the field is empty or override is enabled.
+			if ( $override_metadata || ! get_post_field( 'post_content', $image_id ) ) {
+				$generate_metadata['description'] = true;
+			}
 		}
 
 		if ( isset( $selected_fields['caption'] ) ) {
-		    // Generate caption metadata if the field is empty or override is enabled.
-		    if ( $override_metadata || empty( get_post_field( 'post_excerpt', $image_id ) ) ) {
-		        $generate_metadata['caption'] = true;
-		    }
+			// Generate caption metadata if the field is empty or override is enabled.
+			if ( $override_metadata || empty( get_post_field( 'post_excerpt', $image_id ) ) ) {
+				$generate_metadata['caption'] = true;
+			}
 		}
 
 		// If no fields need to be generated, skip the metadata generation.
 		if ( empty( $generate_metadata ) ) {
-		    return false;
+			return false;
 		}
 
 		// Encode the image in base64 and prepare for the API request.

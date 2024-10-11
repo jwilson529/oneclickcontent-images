@@ -173,7 +173,7 @@ class Occ_Images {
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 		$this->loader->add_action( 'wp_ajax_occ_images_get_all_media_ids', $plugin_auto_generate, 'occ_images_get_all_media_ids' );
 
-		$this->loader->add_action( 'init', $plugin_admin, 'occ_register_custom_image_size' );
+		$this->loader->add_action( 'plugins_loaded', $plugin_admin, 'occ_register_custom_image_size' );
 
 		$this->loader->add_filter( 'image_size_names_choose', $plugin_admin, 'occ_add_custom_image_sizes' );
 	}

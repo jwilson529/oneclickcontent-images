@@ -21,7 +21,7 @@
  * @link       https://oneclickcontent.com
  * @since      1.0.0
  *
- * @package    Occ_Images
+ * @package    One_Click_Images
  */
 
 // If uninstall not called from WordPress, then exit.

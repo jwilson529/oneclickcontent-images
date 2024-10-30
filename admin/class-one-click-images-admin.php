@@ -7,18 +7,18 @@
  *
  * @link       https://oneclickcontent.com
  * @since      1.0.0
- * @package    Occ_Images
- * @subpackage Occ_Images/admin
+ * @package    One_Click_Images
+ * @subpackage One_Click_Images/admin
  */
 
 /**
- * Class Occ_Images_Admin
+ * Class One_Click_Images_Admin
  *
  * Admin-specific functionality of the OCC Images plugin.
  *
  * @since 1.0.0
  */
-class Occ_Images_Admin {
+class One_Click_Images_Admin {
 
 	/**
 	 * The name of the plugin.
@@ -54,7 +54,7 @@ class Occ_Images_Admin {
 	public function enqueue_styles() {
 		wp_enqueue_style(
 			$this->plugin_name,
-			plugin_dir_url( __FILE__ ) . 'css/occ-images-admin.css',
+			plugin_dir_url( __FILE__ ) . 'css/one-click-images-admin.css',
 			array(),
 			$this->version,
 			'all'
@@ -71,7 +71,7 @@ class Occ_Images_Admin {
 		// Enqueue the plugin's admin JavaScript file.
 		wp_enqueue_script(
 			$this->plugin_name,
-			plugin_dir_url( __FILE__ ) . 'js/occ-images-admin.js',
+			plugin_dir_url( __FILE__ ) . 'js/one-click-images-admin.js',
 			array( 'jquery' ),
 			$this->version,
 			true
@@ -81,7 +81,7 @@ class Occ_Images_Admin {
 		wp_enqueue_media();
 
 		// Get the user-selected metadata fields from plugin settings.
-		$selected_fields = get_option( 'occ_images_metadata_fields', array() );
+		$selected_fields = get_option( 'oneclick_images_metadata_fields', array() );
 
 		// Ensure that the selected fields always exist in the expected format.
 		$selected_fields = wp_parse_args(
@@ -97,11 +97,11 @@ class Occ_Images_Admin {
 		// Localize the script to pass dynamic data to the JavaScript file.
 		wp_localize_script(
 			$this->plugin_name,
-			'occ_images_admin_vars',
+			'oneclick_images_admin_vars',
 			array(
-				'ajax_url'              => admin_url( 'admin-ajax.php' ),
-				'occ_images_ajax_nonce' => wp_create_nonce( 'occ_images_ajax_nonce' ),
-				'selected_fields'       => $selected_fields,
+				'ajax_url'                   => admin_url( 'admin-ajax.php' ),
+				'oneclick_images_ajax_nonce' => wp_create_nonce( 'oneclick_images_ajax_nonce' ),
+				'selected_fields'            => $selected_fields,
 			)
 		);
 	}
@@ -137,8 +137,8 @@ class Occ_Images_Admin {
 	 *
 	 * @return void
 	 */
-	public function occ_register_custom_image_size() {
-		add_image_size( 'occ-image-api', 500, 500, true ); // 500x500 pixels, cropped.
+	public function oneclick_register_custom_image_size() {
+		add_image_size( 'one-click-image-api', 500, 500, true ); // 500x500 pixels, cropped.
 	}
 
 	/**
@@ -150,11 +150,11 @@ class Occ_Images_Admin {
 	 * @param array $sizes Existing image sizes.
 	 * @return array Modified list of image sizes.
 	 */
-	public function occ_add_custom_image_sizes( $sizes ) {
+	public function oneclick_add_custom_image_sizes( $sizes ) {
 		return array_merge(
 			$sizes,
 			array(
-				'occ-image-api' => __( 'OCC Image', 'oneclickcontent-images' ),
+				'one-click-image-api' => __( 'OCC Image', 'oneclickcontent-images' ),
 			)
 		);
 	}

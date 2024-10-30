@@ -1,5 +1,5 @@
 /* General container styling */
-#occ_images.wrap {
+#oneclick_images.wrap {
     max-width: 800px;
     margin: 0 auto;
     padding: 20px;
@@ -10,7 +10,7 @@
 }
 
 /* Headings */
-#occ_images h1, #occ_images h2 {
+#oneclick_images h1, #oneclick_images h2 {
     color: #333;
     font-weight: bold;
     font-size: 24px;
@@ -18,13 +18,13 @@
 }
 
 /* Form table styling */
-#occ_images .form-table {
+#oneclick_images .form-table {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 20px;
 }
 
-#occ_images .form-table th {
+#oneclick_images .form-table th {
     text-align: left;
     padding: 15px 10px;
     font-size: 16px;
@@ -33,17 +33,17 @@
     border-bottom: 1px solid #ddd;
 }
 
-#occ_images .form-table td {
+#oneclick_images .form-table td {
     padding: 10px;
     border-bottom: 1px solid #ddd;
     font-size: 15px;
 }
 
 /* Input fields */
-#occ_images input[type="text"],
-#occ_images input[type="password"],
-#occ_images input[type="checkbox"],
-#occ_images select {
+#oneclick_images input[type="text"],
+#oneclick_images input[type="password"],
+#oneclick_images input[type="checkbox"],
+#oneclick_images select {
     width: 100%;
     padding: 10px;
     font-size: 15px;
@@ -54,7 +54,7 @@
 }
 
 /* Checkbox styling */
-#occ_images input[type="checkbox"] {
+#oneclick_images input[type="checkbox"] {
     width: auto;
     margin-right: 8px;
     transform: scale(1.2);
@@ -62,7 +62,7 @@
 }
 
 /* Submit button styling */
-#occ_images .button-primary {
+#oneclick_images .button-primary {
     background-color: #007cba;
     color: #fff;
     border: none;
@@ -73,7 +73,7 @@
     transition: background-color 0.3s;
 }
 
-#occ_images .button-primary:hover {
+#oneclick_images .button-primary:hover {
     background-color: #005a8c;
 }
 

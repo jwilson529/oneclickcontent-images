@@ -8,8 +8,8 @@
  * @link       https://oneclickcontent.com
  * @since      1.0.0
  *
- * @package    Occ_Images
- * @subpackage Occ_Images/includes
+ * @package    One_Click_Images
+ * @subpackage One_Click_Images/includes
  */
 
 /**
@@ -19,11 +19,11 @@
  * so that it is ready for translation.
  *
  * @since      1.0.0
- * @package    Occ_Images
- * @subpackage Occ_Images/includes
+ * @package    One_Click_Images
+ * @subpackage One_Click_Images/includes
  * @author     James Wilson <james@oneclickcontent.com>
  */
-class Occ_Images_I18n {
+class One_Click_Images_I18n {
 
 
 	/**

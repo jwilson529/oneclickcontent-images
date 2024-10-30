@@ -16,18 +16,18 @@
 
             // Send an AJAX request to generate metadata for the image
             $.ajax({
-                url: occ_images_admin_vars.ajax_url,
+                url: oneclick_images_admin_vars.ajax_url,
                 type: 'POST',
                 data: {
-                    action: 'occ_images_generate_metadata', // WordPress action hook
-                    nonce: occ_images_admin_vars.occ_images_ajax_nonce, // Security nonce
+                    action: 'oneclick_images_generate_metadata', // WordPress action hook
+                    nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce, // Security nonce
                     image_id: imageId // ID of the image for which metadata is generated
                 },
                 success: function(response) {
                     // Check if the request was successful
                     if (response.success) {
                         // Get user-selected metadata fields
-                        var selectedFields = occ_images_admin_vars.selected_fields;
+                        var selectedFields = oneclick_images_admin_vars.selected_fields;
 
                         // Conditionally update the media modal fields based on user settings
                         if (selectedFields.alt_text) {
@@ -69,11 +69,11 @@
 
             // Fetch all attachment IDs via AJAX (we will loop over them)
             $.ajax({
-                url: occ_images_admin_vars.ajax_url,
+                url: oneclick_images_admin_vars.ajax_url,
                 type: 'POST',
                 data: {
-                    action: 'occ_images_get_all_media_ids', // This action retrieves all media IDs
-                    nonce: occ_images_admin_vars.occ_images_ajax_nonce
+                    action: 'oneclick_images_get_all_media_ids', // This action retrieves all media IDs
+                    nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce
                 },
                 success: function(response) {
                     if (response.success && response.data.ids.length > 0) {
@@ -100,11 +100,11 @@
 
             // Send an AJAX request to generate metadata for this image
             $.ajax({
-                url: occ_images_admin_vars.ajax_url,
+                url: oneclick_images_admin_vars.ajax_url,
                 type: 'POST',
                 data: {
-                    action: 'occ_images_generate_metadata', // Use your existing action
-                    nonce: occ_images_admin_vars.occ_images_ajax_nonce,
+                    action: 'oneclick_images_generate_metadata', // Use your existing action
+                    nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
                     image_id: imageId
                 },
                 success: function(response) {

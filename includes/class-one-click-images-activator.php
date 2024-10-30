@@ -5,8 +5,8 @@
  * @link       https://oneclickcontent.com
  * @since      1.0.0
  *
- * @package    Occ_Images
- * @subpackage Occ_Images/includes
+ * @package    One_Click_Images
+ * @subpackage One_Click_Images/includes
  */
 
 /**
@@ -15,11 +15,11 @@
  * This class defines all code necessary to run during the plugin's activation.
  *
  * @since      1.0.0
- * @package    Occ_Images
- * @subpackage Occ_Images/includes
+ * @package    One_Click_Images
+ * @subpackage One_Click_Images/includes
  * @author     James Wilson <james@oneclickcontent.com>
  */
-class Occ_Images_Activator {
+class One_Click_Images_Activator {
 
 	/**
 	 * Short Description. (use period)

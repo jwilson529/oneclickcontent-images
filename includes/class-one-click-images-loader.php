@@ -5,8 +5,8 @@
  * @link       https://oneclickcontent.com
  * @since      1.0.0
  *
- * @package    Occ_Images
- * @subpackage Occ_Images/includes
+ * @package    One_Click_Images
+ * @subpackage One_Click_Images/includes
  */
 
 /**
@@ -16,11 +16,11 @@
  * the plugin, and register them with the WordPress API. Call the
  * run function to execute the list of actions and filters.
  *
- * @package    Occ_Images
- * @subpackage Occ_Images/includes
+ * @package    One_Click_Images
+ * @subpackage One_Click_Images/includes
  * @author     James Wilson <james@oneclickcontent.com>
  */
-class Occ_Images_Loader {
+class One_Click_Images_Loader {
 
 	/**
 	 * The array of actions registered with WordPress.

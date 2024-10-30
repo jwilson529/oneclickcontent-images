@@ -9,10 +9,10 @@
  *
  * @link              https://oneclickcontent.com
  * @since             1.0.0
- * @package           Occ_Images
+ * @package           One_Click_Images
  *
  * @wordpress-plugin
- * Plugin Name:       OneClickContent - Images
+ * Plugin Name:       OneClickContent - Image Meta Generator
  * Plugin URI:        https://oneclickcontent.com
  * Description:       Uploads images to OpenAI in order to auto generate titles, descriptions, captions and alt automatically.
  * Version:           1.1.0
@@ -38,30 +38,30 @@ define( 'OCC_IMAGES_VERSION', '1.1.0' );
 
 /**
  * The code that runs during plugin activation.
- * This action is documented in includes/class-occ-images-activator.php
+ * This action is documented in includes/class-one-click-images-activator.php
  */
-function occ_images_activate() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-occ-images-activator.php';
-	Occ_Images_Activator::activate();
+function oneclick_images_activate() {
+	require_once plugin_dir_path( __FILE__ ) . 'includes/class-one-click-images-activator.php';
+	One_Click_Images_Activator::activate();
 }
 
 /**
  * The code that runs during plugin deactivation.
- * This action is documented in includes/class-occ-images-deactivator.php
+ * This action is documented in includes/class-one-click-images-deactivator.php
  */
-function occ_images_deactivate() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-occ-images-deactivator.php';
-	Occ_Images_Deactivator::deactivate();
+function oneclick_images_deactivate() {
+	require_once plugin_dir_path( __FILE__ ) . 'includes/class-one-click-images-deactivator.php';
+	One_Click_Images_Deactivator::deactivate();
 }
 
-register_activation_hook( __FILE__, 'occ_images_activate' );
-register_deactivation_hook( __FILE__, 'occ_images_deactivate' );
+register_activation_hook( __FILE__, 'oneclick_images_activate' );
+register_deactivation_hook( __FILE__, 'oneclick_images_deactivate' );
 
 /**
  * The core plugin class that is used to define internationalization,
  * admin-specific hooks, and public-facing site hooks.
  */
-require plugin_dir_path( __FILE__ ) . 'includes/class-occ-images.php';
+require plugin_dir_path( __FILE__ ) . 'includes/class-one-click-images.php';
 
 /**
  * Begins execution of the plugin.
@@ -72,9 +72,9 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-occ-images.php';
  *
  * @since    1.0.0
  */
-function run_occ_images() {
+function run_oneclick_images() {
 
-	$plugin = new Occ_Images();
+	$plugin = new One_Click_Images();
 	$plugin->run();
 }
-run_occ_images();
+run_oneclick_images();

@@ -6,19 +6,19 @@
  *
  * @link       https://oneclickcontent.com
  * @since      1.0.0
- * @package    Occ_Images
- * @subpackage Occ_Images/admin
+ * @package    One_Click_Images
+ * @subpackage One_Click_Images/admin
  */
 
 /**
- * Class Occ_Images_Auto_Generate
+ * Class One_Click_Images_Auto_Generate
  *
  * Handles automatic metadata generation when an image is uploaded.
  *
  * @since 1.0.0
- * @package Occ_Images
+ * @package One_Click_Images
  */
-class Occ_Images_Auto_Generate {
+class One_Click_Images_Auto_Generate {
 
 	/**
 	 * Constructor.
@@ -38,15 +38,15 @@ class Occ_Images_Auto_Generate {
 	 */
 	public function auto_generate_metadata( $metadata, $attachment_id ) {
 		// Check if the "Auto Add Details on Upload" option is enabled.
-		$auto_add = get_option( 'occ_images_auto_add_details', false );
+		$auto_add = get_option( 'oneclick_images_auto_add_details', false );
 
 		// Only run the API call if the option is enabled.
 		if ( $auto_add ) {
 			// Get the existing instance of the admin settings class or call the metadata generation function.
-			$occ_images_admin = new Occ_Images_Admin_Settings();
+			$oneclick_images_admin = new One_Click_Images_Admin_Settings();
 
 			// Run the metadata generation function.
-			$occ_images_admin->occ_images_generate_metadata( $attachment_id );
+			$oneclick_images_admin->oneclick_images_generate_metadata( $attachment_id );
 		}
 
 		// Return the metadata (unmodified).
@@ -60,9 +60,9 @@ class Occ_Images_Auto_Generate {
 	 *
 	 * @return void
 	 */
-	public function occ_images_get_all_media_ids() {
+	public function oneclick_images_get_all_media_ids() {
 		// Verify the nonce.
-		check_ajax_referer( 'occ_images_ajax_nonce', 'nonce' );
+		check_ajax_referer( 'oneclick_images_ajax_nonce', 'nonce' );
 
 		// Ensure the user has permission to upload files.
 		if ( ! current_user_can( 'upload_files' ) ) {

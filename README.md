@@ -6,7 +6,7 @@
 **Requires at least:** 5.0  
 **Tested up to:** 6.3  
 **Requires PHP:** 7.2  
-**Stable tag:** trunk  
+**Stable tag:** 1.1.0  
 **License:** GPLv2 or later  
 **License URI:** [GPLv2 License](https://www.gnu.org/licenses/gpl-2.0.html)  
 
@@ -28,10 +28,10 @@ Automatically generate image metadata using OpenAI's GPT models with vision capa
 ## Installation
 
 1. **Upload the Plugin:**
-   - Upload the `oneclickcontent-images` folder to the `/wp-content/plugins/` directory.
+   - Upload the `one-click-images` folder to the `/wp-content/plugins/` directory.
 
 2. **Activate the Plugin:**
-   - Activate through the 'Plugins' menu in WordPress.
+   - Activate through the **Plugins** menu in WordPress.
 
 3. **Configure Settings:**
    - Navigate to **Settings > OneClickContent - Images**.
@@ -40,7 +40,7 @@ Automatically generate image metadata using OpenAI's GPT models with vision capa
    - Optionally enable **Auto Add Details on Upload** to generate metadata automatically during image uploads.
 
 4. **Generate Metadata:**
-   - Go to your Media Library.
+   - Go to your **Media Library**.
    - Select an image and click the **"Generate Metadata"** button.
 
 ## Frequently Asked Questions

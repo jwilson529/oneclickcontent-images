@@ -1,10 +1,23 @@
 
-FILE: ...Users/jameswilson/Local Sites/wp-clean-install/app/public/wp-content/plugins/oneclickcontent-images/admin/class-one-click-images-admin-settings.php
+FILE: /Users/jameswilson/Local Sites/wp-clean-install/app/public/wp-content/plugins/one-click-images/admin/class-one-click-images-admin-settings.php
 ---------------------------------------------------------------------------------------------------------------------------------------------------------
-FOUND 0 ERRORS AND 1 WARNING AFFECTING 1 LINE
+FOUND 0 ERRORS AND 2 WARNINGS AFFECTING 2 LINES
 ---------------------------------------------------------------------------------------------------------------------------------------------------------
- 456 | WARNING | file_get_contents() is discouraged. Use wp_remote_get() for remote URLs instead.
+ 412 | WARNING | file_get_contents() is discouraged. Use wp_remote_get() for remote URLs instead.
+ 417 | WARNING | base64_encode() can be used to obfuscate code which is strongly discouraged. Please verify that the function is used for benign
+     |         | reasons.
 ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Time: 442ms; Memory: 16MB
+
+FILE: /Users/jameswilson/Local Sites/wp-clean-install/app/public/wp-content/plugins/one-click-images/admin/class-one-click-images-admin.php
+-------------------------------------------------------------------------------------------------------------------------------------------
+FOUND 0 ERRORS AND 4 WARNINGS AFFECTING 2 LINES
+-------------------------------------------------------------------------------------------------------------------------------------------
+ 61 | WARNING | Processing form data without nonce verification.
+ 61 | WARNING | Processing form data without nonce verification.
+ 85 | WARNING | Processing form data without nonce verification.
+ 85 | WARNING | Processing form data without nonce verification.
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+Time: 523ms; Memory: 18MB
 

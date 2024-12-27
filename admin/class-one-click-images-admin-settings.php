@@ -1,7 +1,7 @@
 <?php
 /**
- * Plugin Name: OCC Images Admin Settings
- * Description: Settings and completion functionality for OCC Images plugin.
+ * Plugin Name: OneClickContent Image Meta Admin Settings
+ * Description: Settings and completion functionality for OneClickContent Image Meta plugin.
  * Version: 1.0.0
  * Author: OneClickContent
  * Author URI: https://oneclickcontent.com
@@ -13,7 +13,7 @@
  */
 
 /**
- * OCC Images Admin Settings Class.
+ * OneClickContent Image Meta Admin Settings Class.
  *
  * This class handles the admin settings page, including generating image metadata using the OpenAI API.
  *
@@ -28,8 +28,8 @@ class One_Click_Images_Admin_Settings {
 	 */
 	public function oneclick_images_register_options_page() {
 		add_options_page(
-			__( 'OCC Images Settings', 'oneclickcontent-images' ),
-			__( 'OCC Images', 'oneclickcontent-images' ),
+			__( 'OneClickContent Image Meta Settings', 'oneclickcontent-images' ),
+			__( 'OneClickContent Image Meta', 'oneclickcontent-images' ),
 			'manage_options',
 			'oneclickcontent-images-settings',
 			array( $this, 'oneclick_images_options_page' )
@@ -42,9 +42,12 @@ class One_Click_Images_Admin_Settings {
 	 * @return void
 	 */
 	public function oneclick_images_options_page() {
+		$license_status = get_option( 'oneclick_images_license_status', 'unknown' );
 		?>
 		<div id="oneclick_images" class="wrap">
-			<h1><?php esc_html_e( 'OCC Images Settings', 'oneclickcontent-images' ); ?></h1>
+			<h1><?php esc_html_e( 'OneClickContent Image Meta Settings', 'oneclickcontent-images' ); ?></h1>
+			
+			<!-- Settings Form -->
 			<form method="post" action="options.php">
 				<?php
 				settings_fields( 'oneclick_images_settings' );
@@ -52,6 +55,8 @@ class One_Click_Images_Admin_Settings {
 				submit_button();
 				?>
 			</form>
+
+			<!-- Bulk Generate Metadata for Media Library -->
 			<h2><?php esc_html_e( 'Bulk Generate Metadata for Media Library', 'oneclickcontent-images' ); ?></h2>
 			<p><?php esc_html_e( 'Automatically generate metadata for images in your media library based on your settings.', 'oneclickcontent-images' ); ?></p>
 			<button id="bulk_generate_metadata_button" class="button button-primary">
@@ -60,9 +65,13 @@ class One_Click_Images_Admin_Settings {
 			<div id="bulk_generate_status" style="margin-top: 20px;">
 				<!-- Status messages will appear here -->
 			</div>
+
+
 		</div>
 		<?php
 	}
+
+
 
 	/**
 	 * Display admin notices for settings errors or updates.
@@ -83,7 +92,6 @@ class One_Click_Images_Admin_Settings {
 
 
 
-
 	/**
 	 * Register plugin settings and add settings fields.
 	 *
@@ -93,7 +101,7 @@ class One_Click_Images_Admin_Settings {
 		// Register the OpenAI API key setting.
 		register_setting(
 			'oneclick_images_settings',
-			'oneclick_images_openai_api_key',
+			'oneclick_images_openai_license_key',
 			array(
 				'sanitize_callback' => 'sanitize_text_field',
 			)
@@ -135,6 +143,17 @@ class One_Click_Images_Admin_Settings {
 			)
 		);
 
+		// Register the Language setting.
+		register_setting(
+			'oneclick_images_settings',
+			'oneclick_images_language',
+			array(
+				'type'              => 'string',
+				'sanitize_callback' => 'sanitize_text_field',
+				'default'           => 'en', // Default to English.
+			)
+		);
+
 		// Add settings sections and fields.
 		$this->add_settings_sections_and_fields();
 	}
@@ -164,27 +183,9 @@ class One_Click_Images_Admin_Settings {
 		// Main settings section.
 		add_settings_section(
 			'oneclick_images_settings_section',
-			__( 'OCC Images Settings', 'oneclickcontent-images' ),
+			__( 'OneClickContent Image Meta Settings', 'oneclickcontent-images' ),
 			array( $this, 'oneclick_images_settings_section_callback' ),
 			'oneclick_images_settings'
-		);
-
-		add_settings_field(
-			'oneclick_images_openai_api_key',
-			__( 'OpenAI API Key', 'oneclickcontent-images' ),
-			array( $this, 'oneclick_images_openai_api_key_callback' ),
-			'oneclick_images_settings',
-			'oneclick_images_settings_section',
-			array( 'label_for' => 'oneclick_images_openai_api_key' )
-		);
-
-		add_settings_field(
-			'oneclick_images_ai_model',
-			__( 'AI Model', 'oneclickcontent-images' ),
-			array( $this, 'oneclick_images_ai_model_callback' ),
-			'oneclick_images_settings',
-			'oneclick_images_settings_section',
-			array( 'label_for' => 'oneclick_images_ai_model' )
 		);
 
 		add_settings_field(
@@ -205,6 +206,71 @@ class One_Click_Images_Admin_Settings {
 			'oneclick_images_settings_section',
 			array( 'label_for' => 'oneclick_images_override_metadata' )
 		);
+
+		// Add Language Selection field.
+		add_settings_field(
+			'oneclick_images_language',
+			__( 'Language', 'oneclickcontent-images' ),
+			array( $this, 'oneclick_images_language_callback' ),
+			'oneclick_images_settings',
+			'oneclick_images_settings_section',
+			array( 'label_for' => 'oneclick_images_language' )
+		);
+
+		add_settings_field(
+			'oneclick_images_openai_license_key',
+			__( 'OneClickContent License Key', 'oneclickcontent-images' ),
+			array( $this, 'oneclick_images_openai_license_key_callback' ),
+			'oneclick_images_settings',
+			'oneclick_images_settings_section',
+			array( 'label_for' => 'oneclick_images_openai_license_key' )
+		);
+	}
+
+
+	/**
+	 * Callback for the Language dropdown field.
+	 *
+	 * @return void
+	 */
+	public function oneclick_images_language_callback() {
+		$languages = array(
+			'en' => __( 'English', 'oneclickcontent-images' ),
+			'es' => __( 'Spanish', 'oneclickcontent-images' ),
+			'fr' => __( 'French', 'oneclickcontent-images' ),
+			'de' => __( 'German', 'oneclickcontent-images' ),
+			'it' => __( 'Italian', 'oneclickcontent-images' ),
+			'zh' => __( 'Chinese', 'oneclickcontent-images' ),
+			'ja' => __( 'Japanese', 'oneclickcontent-images' ),
+		);
+
+		$selected_language = get_option( 'oneclick_images_language', 'en' );
+
+		echo '<select id="oneclick_images_language" name="oneclick_images_language">';
+		foreach ( $languages as $key => $label ) {
+			echo '<option value="' . esc_attr( $key ) . '"' . selected( $selected_language, $key, false ) . '>' . esc_html( $label ) . '</option>';
+		}
+		echo '</select>';
+	}
+
+	/**
+	 * Get the label for a language code.
+	 *
+	 * @param string $language_code The language code.
+	 * @return string The human-readable label.
+	 */
+	private function get_language_label( $language_code ) {
+		$languages = array(
+			'en' => 'English',
+			'es' => 'Spanish',
+			'fr' => 'French',
+			'de' => 'German',
+			'it' => 'Italian',
+			'zh' => 'Chinese',
+			'ja' => 'Japanese',
+		);
+
+		return isset( $languages[ $language_code ] ) ? $languages[ $language_code ] : 'English';
 	}
 
 	/**
@@ -272,7 +338,7 @@ class One_Click_Images_Admin_Settings {
 	 * @return void
 	 */
 	public function oneclick_images_settings_section_callback() {
-		echo '<p>' . esc_html__( 'Configure the settings for the OCC Images plugin.', 'oneclickcontent-images' ) . '</p>';
+		echo '<p>' . esc_html__( 'Configure the settings for the OneClickContent Image Meta plugin.', 'oneclickcontent-images' ) . '</p>';
 	}
 
 	/**
@@ -291,184 +357,198 @@ class One_Click_Images_Admin_Settings {
 	 *
 	 * @return void
 	 */
-	public function oneclick_images_openai_api_key_callback() {
-		$value = get_option( 'oneclick_images_openai_api_key', '' );
-		echo '<input type="password" id="oneclick_images_openai_api_key" name="oneclick_images_openai_api_key" value="' . esc_attr( $value ) . '" />';
-		echo '<p class="description">' . wp_kses_post( __( 'Get your OpenAI API Key <a href="https://platform.openai.com/signup/">here</a>.', 'oneclickcontent-images' ) ) . '</p>';
+	public function oneclick_images_openai_license_key_callback() {
+		$value = get_option( 'oneclick_images_openai_license_key', '' );
+
+		echo '<input type="password" id="oneclick_images_openai_license_key" name="oneclick_images_openai_license_key" value="' . esc_attr( $value ) . '" />';
+		echo '<button type="button" id="validate_license_button" class="button button-secondary" style="margin-left: 10px;">' . esc_html__( 'Validate License', 'oneclickcontent-images' ) . '</button>';
+		echo '<span id="license_status_label" style="margin-left: 10px; font-weight: bold;"></span>';
+		echo '<div id="license_status_message" style="margin-top: 10px;"></div>';
+		echo '<p class="description">' . wp_kses_post( __( 'Get your OneClickContent License Key <a href="https://oneclickcontent.com/">here</a>.', 'oneclickcontent-images' ) ) . '</p>';
 	}
 
-	/**
-	 * Callback for the AI Model setting field.
-	 *
-	 * @return void
-	 */
-	public function oneclick_images_ai_model_callback() {
-		$selected_model = get_option( 'oneclick_images_ai_model', 'gpt-4' );
-		$api_key        = get_option( 'oneclick_images_openai_api_key' );
 
-		if ( ! empty( $api_key ) ) {
-			$models = self::validate_openai_api_key( $api_key );
-
-			if ( $models && is_array( $models ) ) {
-				echo '<select id="oneclick_images_ai_model" name="oneclick_images_ai_model">';
-				echo '<option value="gpt-4o-mini"' . selected( $selected_model, 'gpt-4o-mini', false ) . '>' . esc_html__( 'Default (gpt-4o-mini)', 'oneclickcontent-images' ) . '</option>';
-
-				foreach ( $models as $model ) {
-					echo '<option value="' . esc_attr( $model ) . '"' . selected( $selected_model, $model, false ) . '>' . esc_html( $model ) . '</option>';
-				}
-				echo '</select>';
-				echo '<p class="description">' . esc_html__( 'These models support the function calling ability required to use OCC Images.', 'oneclickcontent-images' ) . '</p>';
-			} else {
-				echo '<p class="oneclickcontent-images-alert">';
-				esc_html_e( 'Unable to retrieve models. Please check your API key.', 'oneclickcontent-images' );
-				echo '</p>';
-			}
-		} else {
-			echo '<p class="oneclickcontent-images-alert">';
-			esc_html_e( 'Please enter a valid OpenAI API key first.', 'oneclickcontent-images' );
-		}
-	}
-
-	/**
-	 * Validates the OpenAI API key and fetches available models.
-	 *
-	 * @param string $api_key The API key to validate.
-	 * @return array|bool List of models if successful, false otherwise.
-	 */
-	public static function validate_openai_api_key( $api_key ) {
-		if ( empty( $api_key ) ) {
-			return false;
-		}
-
-		$response = wp_remote_get(
-			'https://api.openai.com/v1/models',
-			array(
-				'headers' => array(
-					'Content-Type'  => 'application/json',
-					'Authorization' => 'Bearer ' . $api_key,
-				),
-			)
-		);
-
-		if ( is_wp_error( $response ) ) {
-			return false;
-		}
-
-		$body = wp_remote_retrieve_body( $response );
-		$data = json_decode( $body, true );
-
-		if ( isset( $data['data'] ) && is_array( $data['data'] ) ) {
-			$models = array_map(
-				function ( $model ) {
-					return $model['id'];
-				},
-				$data['data']
-			);
-
-			// Filter supported models.
-			$supported_models = array_filter(
-				$models,
-				function ( $model ) {
-					$supported = array( 'gpt-4', 'gpt-4-vision', 'gpt-4-turbo', 'gpt-4o', 'gpt-4o-mini' );
-					return in_array( $model, $supported, true );
-				}
-			);
-
-			if ( ! empty( $supported_models ) ) {
-				return $supported_models;
-			}
-		}
-
-		return false;
-	}
 
 	/**
 	 * Generate metadata for an image using the OpenAI API.
 	 *
 	 * @param int $image_id The ID of the image attachment.
-	 * @return array|false The generated metadata on success, false on failure.
+	 * @return array|false The generated metadata on success, or an array with error details on failure.
 	 */
 	public function oneclick_images_generate_metadata( $image_id ) {
-		$api_key = get_option( 'oneclick_images_openai_api_key' );
-		$model   = get_option( 'oneclick_images_ai_model', 'gpt-4' );
 
-		if ( empty( $api_key ) ) {
-			return false;
-		}
+		// Retrieve API key from settings.
+		$api_key = get_option( 'oneclick_images_openai_license_key' );
 
-		// Get the selected fields to generate metadata for.
-		$selected_fields = get_option( 'oneclick_images_metadata_fields', array() );
+		// Determine the API endpoint based on the presence of an API key.
+		$remote_url = empty( $api_key )
+			? 'https://oneclickcontent.com/wp-json/free-trial/v1/generate-meta'
+			: 'https://oneclickcontent.com/wp-json/subscriber/v1/generate-meta';
 
-		// Get the custom 500x500 image size if it exists, otherwise use full size.
+		// Get metadata generation settings.
+		$selected_fields   = get_option( 'oneclick_images_metadata_fields', array() );
+		$override_metadata = get_option( 'oneclick_images_override_metadata', false );
+
+		// Retrieve the image file path.
 		$image_path = $this->get_custom_image_size_path( $image_id, 'one-click-image-api' );
 
 		if ( ! $image_path || ! file_exists( $image_path ) ) {
 			$image_path = get_attached_file( $image_id );
 		}
 
+		// Return false if the image path is invalid.
 		if ( ! $image_path || ! file_exists( $image_path ) ) {
 			return false;
 		}
 
-		// Prepare to check for and generate metadata only for selected fields.
+		// Determine which metadata fields need generation.
+		$generate_metadata = $this->determine_metadata_to_generate( $image_id, $selected_fields, $override_metadata );
+
+		if ( empty( $generate_metadata ) ) {
+			return false;
+		}
+
+		// Read and encode the image file.
+		$image_data = file_get_contents( $image_path );
+		if ( false === $image_data ) {
+			return false;
+		}
+
+		$image_base64 = base64_encode( $image_data );
+		$image_type   = wp_check_filetype( $image_path )['ext'];
+
+		// Prepare API request payload.
+		$messages = $this->prepare_messages_payload( $image_base64, $image_type );
+
+		$body = array(
+			'messages'      => $messages,
+			'functions'     => array( $this->get_function_definition() ),
+			'function_call' => array( 'name' => 'generate_image_metadata' ),
+			'max_tokens'    => 500,
+			'origin_url'    => home_url(),
+			'license_key'   => $api_key,
+		);
+
+		// Send the request to the API.
+		$response = wp_remote_post(
+			$remote_url,
+			array(
+				'headers' => array(
+					'Content-Type' => 'application/json',
+					'api-key'      => $api_key,
+				),
+				'body'    => wp_json_encode( $body ),
+				'timeout' => 120,
+			)
+		);
+
+		// Handle errors in the API response.
+		if ( is_wp_error( $response ) ) {
+			return array(
+				'success' => false,
+				'error'   => 'Failed to communicate with the metadata service.',
+				'details' => $response->get_error_message(),
+			);
+		}
+
+		// Decode and validate the API response body.
+		$response_body = wp_remote_retrieve_body( $response );
+		$data          = json_decode( $response_body, true );
+		if ( json_last_error() !== JSON_ERROR_NONE ) {
+			return array(
+				'success' => false,
+				'error'   => 'Invalid response from metadata service.',
+				'details' => json_last_error_msg(),
+			);
+		}
+
+		if ( isset( $data['error'] ) ) {
+			return array(
+				'success' => false,
+				'error'   => $data['error'],
+				'limit'   => isset( $data['limit'] ) ? $data['limit'] : null,
+				'message' => isset( $data['message'] ) ? $data['message'] : '',
+				'ad_url'  => isset( $data['ad_url'] ) ? $data['ad_url'] : '',
+			);
+		}
+
+		// Process and save the generated metadata.
+		$processed_metadata = $this->process_and_save_metadata( $image_id, $data, $generate_metadata );
+		if ( $processed_metadata ) {
+			return array(
+				'success'  => true,
+				'metadata' => $processed_metadata,
+			);
+		} else {
+			return array(
+				'success' => false,
+				'error'   => 'Metadata processing failed.',
+			);
+		}
+	}
+
+	/**
+	 * Determine which metadata fields need generation.
+	 *
+	 * @param int   $image_id         The ID of the image attachment.
+	 * @param array $selected_fields  The metadata fields selected for generation.
+	 * @param bool  $override_metadata Whether to override existing metadata.
+	 * @return array Metadata fields that need to be generated.
+	 */
+	private function determine_metadata_to_generate( $image_id, $selected_fields, $override_metadata ) {
 		$generate_metadata = array();
 
-		// Get the setting for overriding existing metadata.
-		$override_metadata = get_option( 'oneclick_images_override_metadata', false );
-
-		// Check if each field is selected in the settings and if we should generate metadata.
 		if ( isset( $selected_fields['alt_text'] ) ) {
-			// Generate alt text metadata if the field is empty or override is enabled.
 			if ( $override_metadata || ! get_post_meta( $image_id, '_wp_attachment_image_alt', true ) ) {
 				$generate_metadata['alt_text'] = true;
 			}
 		}
 
 		if ( isset( $selected_fields['title'] ) ) {
-			// Generate title metadata if the field is empty or override is enabled.
 			if ( $override_metadata || ! get_the_title( $image_id ) ) {
 				$generate_metadata['title'] = true;
 			}
 		}
 
 		if ( isset( $selected_fields['description'] ) ) {
-			// Generate description metadata if the field is empty or override is enabled.
 			if ( $override_metadata || ! get_post_field( 'post_content', $image_id ) ) {
 				$generate_metadata['description'] = true;
 			}
 		}
 
 		if ( isset( $selected_fields['caption'] ) ) {
-			// Generate caption metadata if the field is empty or override is enabled.
 			if ( $override_metadata || empty( get_post_field( 'post_excerpt', $image_id ) ) ) {
 				$generate_metadata['caption'] = true;
 			}
 		}
 
-		// If no fields need to be generated, skip the metadata generation.
-		if ( empty( $generate_metadata ) ) {
-			return false;
-		}
+		return $generate_metadata;
+	}
 
-		// Retrieve the image data. Using file_get_contents() here because this is a local file path,
-		// and wp_remote_get() is only suitable for remote URLs.
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file
-		$image_data = file_get_contents( $image_path );
+	/**
+	 * Prepare the messages payload for the API request.
+	 *
+	 * @param string $image_base64 The base64-encoded image data.
+	 * @param string $image_type   The image file type.
+	 * @return array The messages payload.
+	 */
+	private function prepare_messages_payload( $image_base64, $image_type ) {
+		// Get the selected language from the settings.
+		$selected_language = get_option( 'oneclick_images_language', 'en' );
 
-		// Encode the image in base64 specifically for API submission purposes.
-		// This use of base64_encode() is benign and is not intended for obfuscation.
-		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
-		$image_base64 = base64_encode( $image_data );
+		// Add the language instruction to the AI prompt.
+		$language_instruction = sprintf(
+			'Generate image metadata including title, description, alt text, and caption for the provided image in %s.',
+			$this->get_language_label( $selected_language )
+		);
 
-		$image_type = wp_check_filetype( $image_path )['ext'];
-
-		$messages = array(
+		return array(
 			array(
 				'role'    => 'user',
 				'content' => array(
 					array(
 						'type' => 'text',
-						'text' => 'Generate image metadata including title, description, alt text, and caption for the provided image.',
+						'text' => $language_instruction,
 					),
 					array(
 						'type'      => 'image_url',
@@ -479,8 +559,15 @@ class One_Click_Images_Admin_Settings {
 				),
 			),
 		);
+	}
 
-		$function_definition = array(
+	/**
+	 * Get the function definition for metadata generation.
+	 *
+	 * @return array The function definition.
+	 */
+	private function get_function_definition() {
+		return array(
 			'name'        => 'generate_image_metadata',
 			'description' => 'Generate image metadata including title, description, alt text, and caption.',
 			'parameters'  => array(
@@ -506,47 +593,27 @@ class One_Click_Images_Admin_Settings {
 				'required'   => array( 'title', 'description', 'alt_text', 'caption' ),
 			),
 		);
+	}
 
-		$body = array(
-			'model'         => $model,
-			'messages'      => $messages,
-			'functions'     => array( $function_definition ),
-			'function_call' => array( 'name' => 'generate_image_metadata' ),
-			'max_tokens'    => 500,
-		);
-
-		$response = wp_remote_post(
-			'https://api.openai.com/v1/chat/completions',
-			array(
-				'headers' => array(
-					'Content-Type'  => 'application/json',
-					'Authorization' => 'Bearer ' . $api_key,
-				),
-				'body'    => wp_json_encode( $body ),
-				'timeout' => 120,
-			)
-		);
-
-		if ( is_wp_error( $response ) ) {
-			return false;
-		}
-
-		$response_body = wp_remote_retrieve_body( $response );
-		$data          = json_decode( $response_body, true );
-
-		if ( isset( $data['error'] ) ) {
-			return false;
-		}
-
+	/**
+	 * Process and save the generated metadata.
+	 *
+	 * @param int   $image_id          The ID of the image attachment.
+	 * @param array $data              The API response data.
+	 * @param array $generate_metadata The metadata fields to save.
+	 * @return array|false The saved metadata or false on failure.
+	 */
+	private function process_and_save_metadata( $image_id, $data, $generate_metadata ) {
 		if ( isset( $data['choices'][0]['message']['function_call']['arguments'] ) ) {
 			$metadata_json = $data['choices'][0]['message']['function_call']['arguments'];
 			$metadata      = json_decode( $metadata_json, true );
 
 			if ( json_last_error() !== JSON_ERROR_NONE ) {
+
 				return false;
 			}
 
-			// Update only the missing metadata fields.
+			// Save metadata to the appropriate fields.
 			if ( isset( $generate_metadata['alt_text'] ) ) {
 				update_post_meta( $image_id, '_wp_attachment_image_alt', $metadata['alt_text'] );
 			}
@@ -573,7 +640,7 @@ class One_Click_Images_Admin_Settings {
 				wp_update_post(
 					array(
 						'ID'           => $image_id,
-						'post_excerpt' => $metadata['caption'], // Caption field is stored in post_excerpt.
+						'post_excerpt' => $metadata['caption'],
 					)
 				);
 			}
@@ -584,17 +651,101 @@ class One_Click_Images_Admin_Settings {
 		return false;
 	}
 
+
+
 	/**
-	 * Retrieve the path of the specified image size.
+	 * Retrieve the path of the specified image size or generate it in WebP format if missing.
 	 *
 	 * @param int    $image_id The image ID.
 	 * @param string $size The image size to retrieve.
-	 * @return string|false The path to the image, or false if not found.
+	 * @return string|false The path to the image, or false if generation fails.
 	 */
 	private function get_custom_image_size_path( $image_id, $size ) {
+
 		$image_info = wp_get_attachment_image_src( $image_id, $size );
-		return ( $image_info && isset( $image_info[0] ) ) ? get_attached_file( $image_id ) : false;
+		if ( $image_info && isset( $image_info[0] ) ) {
+			$image_path = get_attached_file( $image_id );
+
+			// Ensure the resized image exists.
+			$resized_path = str_replace(
+				wp_basename( $image_path ),
+				wp_basename( $image_info[0] ),
+				$image_path
+			);
+
+			// Check if the resized image exists; if not, generate it.
+			if ( ! file_exists( $resized_path ) ) {
+
+				$generated = $this->generate_image_size_as_webp( $image_id, $size, $resized_path );
+				if ( $generated ) {
+					return $resized_path;
+				} else {
+					return false;
+				}
+			}
+
+			return $resized_path;
+		}
+
+		return false;
 	}
+
+	/**
+	 * Generate the specified image size in WebP format.
+	 *
+	 * @param int    $image_id The image ID.
+	 * @param string $size The image size to generate.
+	 * @param string $output_path The output path for the generated WebP image.
+	 * @return bool True on success, false on failure.
+	 */
+	private function generate_image_size_as_webp( $image_id, $size, $output_path ) {
+
+		$image_path = get_attached_file( $image_id );
+		if ( ! file_exists( $image_path ) ) {
+			return false;
+		}
+
+		$image = wp_get_image_editor( $image_path );
+
+		if ( is_wp_error( $image ) ) {
+			return false;
+		}
+
+		// Get original dimensions.
+		$original_size   = $image->get_size();
+		$original_width  = $original_size['width'];
+		$original_height = $original_size['height'];
+		$longest_edge    = max( $original_width, $original_height );
+
+		// Determine target size for optimization.
+		$max_size      = 1200; // Resize the longest edge to a maximum of 1200px.
+		$resize_width  = $original_width;
+		$resize_height = $original_height;
+
+		if ( $longest_edge > $max_size ) {
+			$scale_factor  = $max_size / $longest_edge;
+			$resize_width  = (int) round( $original_width * $scale_factor );
+			$resize_height = (int) round( $original_height * $scale_factor );
+		}
+
+		// Resize the image.
+		$resized = $image->resize( $resize_width, $resize_height, false );
+		if ( is_wp_error( $resized ) ) {
+			return false;
+		}
+
+		// Generate the WebP file.
+		$image->set_quality( 90 ); // Adjust quality as needed.
+		$saved = $image->save( $output_path, 'image/webp' );
+
+		if ( is_wp_error( $saved ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+
 
 
 

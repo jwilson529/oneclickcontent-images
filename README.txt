@@ -1,13 +1,13 @@
 === OneClickContent - Images ===
-Contributors: jwilson529
-Donate link: https://oneclickcontent.com/donate
-Tags: images, metadata, OpenAI, AI, accessibility
-Requires at least: 5.0
-Tested up to: 6.3
-Requires PHP: 7.2
-Stable tag: trunk
-License: GPLv2 or later
-License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Contributors: jwilson529  
+Donate link: https://oneclickcontent.com/donate  
+Tags: images, metadata, OpenAI, AI, accessibility  
+Requires at least: 5.0  
+Tested up to: 6.3  
+Requires PHP: 7.2  
+Stable tag: 1.1.0  
+License: GPLv2 or later  
+License URI: https://www.gnu.org/licenses/gpl-2.0.html  
 
 Automatically generate image metadata using OpenAI's GPT models with vision capabilities.
 
@@ -15,22 +15,22 @@ Automatically generate image metadata using OpenAI's GPT models with vision capa
 
 **OneClickContent - Images** is a WordPress plugin that enhances your images by automatically generating metadata using OpenAI's GPT models with vision capabilities. Improve your website's SEO and accessibility by adding descriptive titles, alt texts, captions, and descriptions to your images effortlessly.
 
-**Features:**
+= Features: =
 
-- **Automated Metadata Generation:** Generate image titles, descriptions, alt texts, and captions with a single click.
-- **Auto Add on Upload:** Automatically generate metadata for images upon upload based on plugin settings.
-- **OpenAI Integration:** Utilizes advanced GPT models with vision capabilities for accurate and descriptive metadata.
-- **Seamless Integration:** Easily accessible within the WordPress Media Library.
-- **Customizable Settings:** Configure your OpenAI API key, select preferred AI models, and enable/disable auto metadata generation on upload.
-- **Improved Accessibility:** Enhance user experience for visitors using assistive technologies.
+* Automated Metadata Generation: Generate image titles, descriptions, alt texts, and captions with a single click.
+* Auto Add on Upload: Automatically generate metadata for images upon upload based on plugin settings.
+* OpenAI Integration: Utilizes advanced GPT models with vision capabilities for accurate and descriptive metadata.
+* Seamless Integration: Easily accessible within the WordPress Media Library.
+* Customizable Settings: Configure your OpenAI API key, select preferred AI models, and enable/disable auto metadata generation on upload.
+* Improved Accessibility: Enhance user experience for visitors using assistive technologies.
 
 == Installation ==
 
 1. **Upload the Plugin:**
-   - Upload the `oneclickcontent-images` folder to the `/wp-content/plugins/` directory.
+   - Upload the `one-click-images` folder to the `/wp-content/plugins/` directory.
 
 2. **Activate the Plugin:**
-   - Activate through the 'Plugins' menu in WordPress.
+   - Activate through the Plugins menu in WordPress.
 
 3. **Configure Settings:**
    - Navigate to **Settings > OneClickContent - Images**.
@@ -39,7 +39,7 @@ Automatically generate image metadata using OpenAI's GPT models with vision capa
    - Optionally enable **Auto Add Details on Upload** to generate metadata automatically during image uploads.
 
 4. **Generate Metadata:**
-   - Go to your Media Library.
+   - Go to your **Media Library**.
    - Select an image and click the **"Generate Metadata"** button.
 
 == Frequently Asked Questions ==

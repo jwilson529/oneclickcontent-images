@@ -45,6 +45,7 @@ class One_Click_Images_Admin {
 		$this->version     = $version;
 	}
 
+
 	/**
 	 * Enqueue the admin-specific stylesheets for the plugin.
 	 *
@@ -52,13 +53,21 @@ class One_Click_Images_Admin {
 	 * loaded for any custom styles used by the plugin.
 	 */
 	public function enqueue_styles() {
-		wp_enqueue_style(
-			$this->plugin_name,
-			plugin_dir_url( __FILE__ ) . 'css/one-click-images-admin.css',
-			array(),
-			$this->version,
-			'all'
-		);
+		global $pagenow;
+
+		// Load styles only on relevant screens or the plugin's settings page.
+		if (
+			in_array( $pagenow, array( 'upload.php', 'post.php', 'post-new.php' ), true ) ||
+			( 'options-general.php' === $pagenow && isset( $_GET['page'] ) && 'oneclickcontent-images-settings' === $_GET['page'] )
+		) {
+			wp_enqueue_style(
+				$this->plugin_name,
+				plugin_dir_url( __FILE__ ) . 'css/one-click-images-admin.css',
+				array(),
+				$this->version,
+				'all'
+			);
+		}
 	}
 
 	/**
@@ -68,45 +77,69 @@ class One_Click_Images_Admin {
 	 * including any necessary libraries like jQuery and the WordPress media library.
 	 */
 	public function enqueue_scripts() {
-		// Enqueue the plugin's admin JavaScript file.
-		wp_enqueue_script(
-			$this->plugin_name,
-			plugin_dir_url( __FILE__ ) . 'js/one-click-images-admin.js',
-			array( 'jquery' ),
-			$this->version,
-			true
-		);
+		global $pagenow;
 
-		// Enqueue the WordPress media library.
-		wp_enqueue_media();
+		// Load scripts only on relevant screens or the plugin's settings page.
+		if (
+			in_array( $pagenow, array( 'upload.php', 'post.php', 'post-new.php' ), true ) ||
+			( 'options-general.php' === $pagenow && isset( $_GET['page'] ) && 'oneclickcontent-images-settings' === $_GET['page'] )
+		) {
+			// Enqueue the plugin's admin JavaScript file.
+			wp_enqueue_script(
+				$this->plugin_name,
+				plugin_dir_url( __FILE__ ) . 'js/one-click-images-admin.js',
+				array( 'jquery' ),
+				$this->version,
+				true
+			);
 
-		// Get the user-selected metadata fields from plugin settings.
-		$selected_fields = get_option( 'oneclick_images_metadata_fields', array() );
+			// Enqueue the error-check script.
+			wp_enqueue_script(
+				$this->plugin_name . '-error-check',
+				plugin_dir_url( __FILE__ ) . 'js/one-click-error-check.js',
+				array( 'jquery' ),
+				$this->version,
+				true
+			);
 
-		// Ensure that the selected fields always exist in the expected format.
-		$selected_fields = wp_parse_args(
-			$selected_fields,
-			array(
-				'title'       => false,
-				'description' => false,
-				'alt_text'    => false,
-				'caption'     => false,
-			)
-		);
+			// Enqueue the WordPress media library.
+			wp_enqueue_media();
 
-		// Localize the script to pass dynamic data to the JavaScript file.
-		wp_localize_script(
-			$this->plugin_name,
-			'oneclick_images_admin_vars',
-			array(
-				'ajax_url'                   => admin_url( 'admin-ajax.php' ),
-				'oneclick_images_ajax_nonce' => wp_create_nonce( 'oneclick_images_ajax_nonce' ),
-				'selected_fields'            => $selected_fields,
-			)
-		);
+			// Get the user-selected metadata fields from plugin settings.
+			$selected_fields = get_option( 'oneclick_images_metadata_fields', array() );
+
+			// Ensure that the selected fields always exist in the expected format.
+			$selected_fields = wp_parse_args(
+				$selected_fields,
+				array(
+					'title'       => false,
+					'description' => false,
+					'alt_text'    => false,
+					'caption'     => false,
+				)
+			);
+
+			// Localize scripts with necessary data.
+			wp_localize_script(
+				$this->plugin_name,
+				'oneclick_images_admin_vars',
+				array(
+					'ajax_url'                   => admin_url( 'admin-ajax.php' ),
+					'oneclick_images_ajax_nonce' => wp_create_nonce( 'oneclick_images_ajax_nonce' ),
+					'selected_fields'            => $selected_fields,
+				)
+			);
+
+			wp_localize_script(
+				$this->plugin_name . '-error-check',
+				'oneclick_images_admin_vars',
+				array(
+					'ajax_url'                   => admin_url( 'admin-ajax.php' ),
+					'oneclick_images_ajax_nonce' => wp_create_nonce( 'oneclick_images_ajax_nonce' ),
+				)
+			);
+		}
 	}
-
-
 
 	/**
 	 * Add a custom "Generate Metadata" button to the Media Library's attachment details.

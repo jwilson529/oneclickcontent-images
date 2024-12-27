@@ -1,4 +1,8 @@
-/* General container styling */
+/***********************************************
+ * General Styling
+ ***********************************************/
+
+/* Container Styling */
 #oneclick_images.wrap {
     max-width: 800px;
     margin: 0 auto;
@@ -9,15 +13,22 @@
     font-family: 'Helvetica Neue', Arial, sans-serif;
 }
 
-/* Headings */
-#oneclick_images h1, #oneclick_images h2 {
+/***********************************************
+ * Headings
+ ***********************************************/
+#oneclick_images h1,
+#oneclick_images h2 {
     color: #333;
     font-weight: bold;
     font-size: 24px;
     margin-bottom: 20px;
 }
 
-/* Form table styling */
+/***********************************************
+ * Form Styling
+ ***********************************************/
+
+/* Form Table */
 #oneclick_images .form-table {
     width: 100%;
     border-collapse: collapse;
@@ -39,7 +50,7 @@
     font-size: 15px;
 }
 
-/* Input fields */
+/* Input Fields */
 #oneclick_images input[type="text"],
 #oneclick_images input[type="password"],
 #oneclick_images input[type="checkbox"],
@@ -53,7 +64,7 @@
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-/* Checkbox styling */
+/* Checkbox Styling */
 #oneclick_images input[type="checkbox"] {
     width: auto;
     margin-right: 8px;
@@ -61,7 +72,11 @@
     vertical-align: middle;
 }
 
-/* Submit button styling */
+/***********************************************
+ * Buttons
+ ***********************************************/
+
+/* Submit Button */
 #oneclick_images .button-primary {
     background-color: #007cba;
     color: #fff;
@@ -77,29 +92,7 @@
     background-color: #005a8c;
 }
 
-/* Success message styling */
-.notice.notice-success {
-    background-color: #e8f6ec;
-    border-left: 4px solid #48b56f;
-    padding: 15px;
-    margin: 20px 0;
-    border-radius: 4px;
-}
-
-.notice .notice-dismiss {
-    background: none;
-    border: none;
-    color: #48b56f;
-    font-size: 14px;
-    cursor: pointer;
-    transition: color 0.2s;
-}
-
-.notice .notice-dismiss:hover {
-    color: #007cba;
-}
-
-/* Bulk generation button */
+/* Bulk Generation Button */
 #bulk_generate_metadata_button {
     background-color: #28a745;
     color: white;
@@ -121,7 +114,59 @@
     background-color: #218838;
 }
 
-/* Status div styling */
+/***********************************************
+ * Notifications
+ ***********************************************/
+
+/* Success Message */
+.notice.notice-success {
+    background-color: #e8f6ec;
+    border-left: 4px solid #48b56f;
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 4px;
+    display: none; /* Default state */
+}
+
+.notice.notice-success:first-of-type {
+    display: block; /* Show first success notice */
+}
+
+.notice .notice-dismiss {
+    background: none;
+    border: none;
+    color: #48b56f;
+    font-size: 14px;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.notice .notice-dismiss:hover {
+    color: #007cba;
+}
+
+/* Error Notice */
+.oneclick-error-notice {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    padding: 15px;
+    z-index: 1000;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+}
+
+.oneclick-error-notice a {
+    color: #721c24;
+    text-decoration: underline;
+}
+
+/***********************************************
+ * Bulk Generation Status
+ ***********************************************/
 #bulk_generate_status {
     background-color: #f8f9fa;
     padding: 20px;
@@ -146,11 +191,116 @@
     color: #ffcc00;
 }
 
+/***********************************************
+ * Modal Styling
+ ***********************************************/
 
-.notice.notice-success {
+/* Modal Overlay */
+.occ-subscription-modal {
     display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 160001; /* Higher than the Media Library */
+    background: rgba(0, 0, 0, 0.6);
+    overflow: auto;
 }
 
-.notice.notice-success:first-of-type {
+.occ-subscription-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1;
+}
+
+/* Modal Content */
+.occ-subscription-modal-content {
+    position: relative;
+    margin: 5% auto;
+    padding: 20px;
+    width: 90%;
+    max-width: 600px;
+    background: #fff;
+    border-radius: 8px;
+    z-index: 160002; /* Ensure content is above the overlay */
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Modal Close Button */
+.occ-subscription-modal-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+/***********************************************
+ * Subscription Options
+ ***********************************************/
+
+/* Options Container */
+.occ-subscription-options {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    gap: 20px;
+}
+
+.occ-subscription-tier {
+    flex: 1;
+    min-width: 150px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #f9f9f9;
+    text-align: center;
+}
+
+.occ-subscription-tier h3 {
+    margin: 0 0 10px;
+}
+
+.occ-subscription-tier strong {
     display: block;
+    margin: 10px 0;
+    font-size: 1.2em;
+    color: #333;
+}
+
+.occ-subscription-button {
+    display: inline-block;
+    padding: 10px 15px;
+    color: #fff;
+    background: #0073aa;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background 0.3s;
+}
+
+.occ-subscription-button:hover {
+    background: #005f8d;
+}
+
+/* Modal Link */
+.occ-subscription-modal-link {
+    display: block;
+    margin-top: 20px;
+    color: #0073aa;
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+.occ-subscription-modal-link:hover {
+    text-decoration: none;
+}
+
+#occ-subscription-modal .occ-subscription-tier a:active, #occ-subscription-modal .occ-subscription-tier a:hover {
+    color: #fff;
 }

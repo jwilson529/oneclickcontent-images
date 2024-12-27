@@ -122,6 +122,7 @@ class One_Click_Images {
 		 * The class responsible for automatically running based on the user setting.
 		 */
 		require_once plugin_dir_path( __DIR__ ) . 'admin/class-one-click-images-auto-generate.php';
+		require_once plugin_dir_path( __DIR__ ) . 'admin/class-one-click-images-license-update.php';
 
 		$this->loader = new One_Click_Images_Loader();
 	}
@@ -156,6 +157,8 @@ class One_Click_Images {
 
 		$plugin_auto_generate = new One_Click_Images_Auto_Generate();
 
+		$plugin_license_update = new One_Click_Images_License_Update( 'https://oneclickcontent.com/wp-json/oneclick/v1/', 'oneclickcontent-images', $this->get_version() );
+
 		// Register the settings page and settings.
 		$this->loader->add_action( 'admin_menu', $plugin_admin_settings, 'oneclick_images_register_options_page' );
 		$this->loader->add_action( 'admin_init', $plugin_admin_settings, 'oneclick_images_register_settings' );
@@ -172,10 +175,17 @@ class One_Click_Images {
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 		$this->loader->add_action( 'wp_ajax_oneclick_images_get_all_media_ids', $plugin_auto_generate, 'oneclick_images_get_all_media_ids' );
+		$this->loader->add_action( 'wp_ajax_check_image_error', $plugin_auto_generate, 'check_image_error' );
 
 		$this->loader->add_action( 'plugins_loaded', $plugin_admin, 'oneclick_register_custom_image_size' );
 
 		$this->loader->add_filter( 'image_size_names_choose', $plugin_admin, 'oneclick_add_custom_image_sizes' );
+
+		$this->loader->add_action( 'admin_init', $plugin_license_update, 'check_for_update' );
+		$this->loader->add_action( 'admin_init', $plugin_license_update, 'validate_license_on_init' );
+		$this->loader->add_filter( 'site_transient_update_plugins', $plugin_license_update, 'one_click_images_add_update_icon', 20 );
+		$this->loader->add_action( 'wp_ajax_validate_license', $plugin_license_update, 'ajax_validate_license' );
+		$this->loader->add_action( 'wp_ajax_get_license_status', $plugin_license_update, 'ajax_get_license_status' );
 	}
 
 

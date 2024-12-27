@@ -304,3 +304,32 @@
 #occ-subscription-modal .occ-subscription-tier a:active, #occ-subscription-modal .occ-subscription-tier a:hover {
     color: #fff;
 }
+
+/* Progress Bar Styling */
+.progress {
+    background-color: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    text-align: center;
+    line-height: 20px;
+    font-size: 14px;
+    color: white;
+    transition: width 0.5s ease;
+}
+
+/* Usage States */
+.bg-success {
+    background-color: #28a745 !important;
+}
+
+.bg-warning {
+    background-color: #ffc107 !important;
+    color: #333 !important;
+}
+
+.bg-danger {
+    background-color: #dc3545 !important;
+}

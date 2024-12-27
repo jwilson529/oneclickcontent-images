@@ -3,8 +3,8 @@ FILE: /Users/jameswilson/Local Sites/wp-clean-install/app/public/wp-content/plug
 ---------------------------------------------------------------------------------------------------------------------------------------------------------
 FOUND 0 ERRORS AND 2 WARNINGS AFFECTING 2 LINES
 ---------------------------------------------------------------------------------------------------------------------------------------------------------
- 412 | WARNING | file_get_contents() is discouraged. Use wp_remote_get() for remote URLs instead.
- 417 | WARNING | base64_encode() can be used to obfuscate code which is strongly discouraged. Please verify that the function is used for benign
+ 434 | WARNING | file_get_contents() is discouraged. Use wp_remote_get() for remote URLs instead.
+ 439 | WARNING | base64_encode() can be used to obfuscate code which is strongly discouraged. Please verify that the function is used for benign
      |         | reasons.
 ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -19,5 +19,27 @@ FOUND 0 ERRORS AND 4 WARNINGS AFFECTING 2 LINES
  85 | WARNING | Processing form data without nonce verification.
 -------------------------------------------------------------------------------------------------------------------------------------------
 
-Time: 523ms; Memory: 18MB
+
+FILE: /Users/jameswilson/Local Sites/wp-clean-install/app/public/wp-content/plugins/one-click-images/admin/class-one-click-images-license-update.php
+----------------------------------------------------------------------------------------------------------------------------------------------------
+FOUND 5 ERRORS AND 10 WARNINGS AFFECTING 13 LINES
+----------------------------------------------------------------------------------------------------------------------------------------------------
+ 383 | ERROR   | Visibility must be declared on method "oneclick_images_ajax_check_usage"
+ 384 | WARNING | error_log() found. Debug code should not normally be used in production.
+ 387 | ERROR   | $_POST['nonce'] not unslashed before sanitization. Use wp_unslash() or similar
+ 387 | ERROR   | Detected usage of a non-sanitized input variable: $_POST['nonce']
+ 389 | WARNING | error_log() found. Debug code should not normally be used in production.
+ 398 | WARNING | error_log() found. Debug code should not normally be used in production.
+ 402 | WARNING | error_log() found. Debug code should not normally be used in production.
+ 402 | ERROR   | String concat is not required here; use a single string instead
+ 421 | WARNING | error_log() found. Debug code should not normally be used in production.
+ 428 | WARNING | error_log() found. Debug code should not normally be used in production.
+ 429 | WARNING | error_log() found. Debug code should not normally be used in production.
+ 435 | WARNING | error_log() found. Debug code should not normally be used in production.
+ 440 | ERROR   | Use Yoda Condition checks, you must.
+ 442 | WARNING | error_log() found. Debug code should not normally be used in production.
+ 446 | WARNING | error_log() found. Debug code should not normally be used in production.
+----------------------------------------------------------------------------------------------------------------------------------------------------
+
+Time: 535ms; Memory: 20MB
 

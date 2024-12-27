@@ -56,6 +56,30 @@ class One_Click_Images_Admin_Settings {
 				?>
 			</form>
 
+			<!-- Usage Information Section -->
+			<h2><?php esc_html_e( 'Usage Information', 'oneclickcontent-images' ); ?></h2>
+			<p><?php esc_html_e( 'Check your current usage and remaining image generation allowance.', 'oneclickcontent-images' ); ?></p>
+
+			<!-- Usage Summary -->
+			<div id="usage_status" style="margin-top: 20px;">
+				<strong id="usage_count">
+					<!-- Dynamic usage data will be updated here -->
+					Loading usage data...
+				</strong>
+				<div class="progress" style="margin-top: 10px; height: 20px;">
+					<div 
+						id="usage_progress" 
+						class="progress-bar bg-success" 
+						role="progressbar" 
+						aria-valuenow="0" 
+						aria-valuemin="0" 
+						aria-valuemax="100" 
+						style="width: 0%;">
+						0%
+					</div>
+				</div>
+			</div>
+
 			<!-- Bulk Generate Metadata for Media Library -->
 			<h2><?php esc_html_e( 'Bulk Generate Metadata for Media Library', 'oneclickcontent-images' ); ?></h2>
 			<p><?php esc_html_e( 'Automatically generate metadata for images in your media library based on your settings.', 'oneclickcontent-images' ); ?></p>
@@ -65,8 +89,6 @@ class One_Click_Images_Admin_Settings {
 			<div id="bulk_generate_status" style="margin-top: 20px;">
 				<!-- Status messages will appear here -->
 			</div>
-
-
 		</div>
 		<?php
 	}
@@ -101,7 +123,7 @@ class One_Click_Images_Admin_Settings {
 		// Register the OpenAI API key setting.
 		register_setting(
 			'oneclick_images_settings',
-			'oneclick_images_openai_license_key',
+			'oneclick_images_license_key',
 			array(
 				'sanitize_callback' => 'sanitize_text_field',
 			)
@@ -218,12 +240,12 @@ class One_Click_Images_Admin_Settings {
 		);
 
 		add_settings_field(
-			'oneclick_images_openai_license_key',
+			'oneclick_images_license_key',
 			__( 'OneClickContent License Key', 'oneclickcontent-images' ),
-			array( $this, 'oneclick_images_openai_license_key_callback' ),
+			array( $this, 'oneclick_images_license_key_callback' ),
 			'oneclick_images_settings',
 			'oneclick_images_settings_section',
-			array( 'label_for' => 'oneclick_images_openai_license_key' )
+			array( 'label_for' => 'oneclick_images_license_key' )
 		);
 	}
 
@@ -357,10 +379,10 @@ class One_Click_Images_Admin_Settings {
 	 *
 	 * @return void
 	 */
-	public function oneclick_images_openai_license_key_callback() {
-		$value = get_option( 'oneclick_images_openai_license_key', '' );
+	public function oneclick_images_license_key_callback() {
+		$value = get_option( 'oneclick_images_license_key', '' );
 
-		echo '<input type="password" id="oneclick_images_openai_license_key" name="oneclick_images_openai_license_key" value="' . esc_attr( $value ) . '" />';
+		echo '<input type="password" id="oneclick_images_license_key" name="oneclick_images_license_key" value="' . esc_attr( $value ) . '" />';
 		echo '<button type="button" id="validate_license_button" class="button button-secondary" style="margin-left: 10px;">' . esc_html__( 'Validate License', 'oneclickcontent-images' ) . '</button>';
 		echo '<span id="license_status_label" style="margin-left: 10px; font-weight: bold;"></span>';
 		echo '<div id="license_status_message" style="margin-top: 10px;"></div>';
@@ -378,7 +400,7 @@ class One_Click_Images_Admin_Settings {
 	public function oneclick_images_generate_metadata( $image_id ) {
 
 		// Retrieve API key from settings.
-		$api_key = get_option( 'oneclick_images_openai_license_key' );
+		$api_key = get_option( 'oneclick_images_license_key' );
 
 		// Determine the API endpoint based on the presence of an API key.
 		$remote_url = empty( $api_key )

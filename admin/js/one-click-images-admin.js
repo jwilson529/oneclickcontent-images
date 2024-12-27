@@ -312,9 +312,81 @@
         }
 
         fetchLicenseStatus();
+        fetchUsageStatus();
 
         $('#validate_license_button').on('click', function() {
             validateLicense();
         });
+
+        // Function to update the usage status UI
+        function updateUsageStatusUI(usedCount, totalAllowed, remainingCount) {
+            const usageCount = $('#usage_count');
+            const usageProgress = $('#usage_progress');
+
+            // Update the usage text
+            usageCount.html(`
+                <strong>Used:</strong> ${usedCount} of ${totalAllowed} images 
+                (${remainingCount} remaining)
+            `);
+
+            // Update the progress bar
+            const percentageUsed = (usedCount / totalAllowed) * 100;
+            usageProgress.css('width', `${Math.min(percentageUsed, 100)}%`);
+            usageProgress.attr('aria-valuenow', Math.min(percentageUsed, 100));
+            usageProgress.text(`${Math.round(percentageUsed)}% Used`);
+
+            // Change progress bar color based on usage
+            if (percentageUsed >= 90) {
+                usageProgress.removeClass('bg-success bg-warning').addClass('bg-danger'); // Danger when >90%
+            } else if (percentageUsed >= 70) {
+                usageProgress.removeClass('bg-success bg-danger').addClass('bg-warning'); // Warning when >70%
+            } else {
+                usageProgress.removeClass('bg-warning bg-danger').addClass('bg-success'); // Success when <70%
+            }
+        }
+
+        // Fetch usage information via AJAX
+        function fetchUsageStatus() {
+            console.log('Starting fetchUsageStatus()...');
+
+            $.ajax({
+                url: ajaxurl, // Provided by WordPress
+                type: 'POST',
+                data: {
+                    action: 'check_usage',
+                    nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
+                },
+                beforeSend: function () {
+                    console.log(
+                        'Sending AJAX request to check_usage with nonce:',
+                        oneclick_images_admin_vars.oneclick_images_ajax_nonce
+                    );
+                },
+                success: function (response) {
+                    console.log('AJAX response received:', response);
+
+                    if (response.success) {
+                        const { used_count, usage_limit, addon_count, remaining_count } = response.data;
+                        const totalAllowed = parseInt(usage_limit) + parseInt(addon_count);
+                        console.log(`Usage data: Used ${used_count}, Allowed ${totalAllowed}, Remaining ${remaining_count}`);
+                        updateUsageStatusUI(used_count, totalAllowed, remaining_count);
+                    } else {
+                        console.error('Error in AJAX response:', response.error || 'Unknown error');
+                        $('#usage_count').html('<strong>Error:</strong> Unable to fetch usage information.');
+                        $('#usage_progress').css('width', '0%').text('0%');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('AJAX request failed:', status, error);
+                    console.debug('XHR object:', xhr);
+                    $('#usage_count').html('<strong>Error:</strong> An error occurred while fetching usage information.');
+                    $('#usage_progress').css('width', '0%').text('0%');
+                },
+                complete: function () {
+                    console.log('fetchUsageStatus() completed.');
+                },
+            });
+        }
+
     });
 })(jQuery);

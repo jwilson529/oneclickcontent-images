@@ -1,61 +1,87 @@
 # OneClickContent - Images
 
-**Contributors:** jwilson529  
-**Donate link:** [Donate](https://oneclickcontent.com/donate)  
-**Tags:** images, metadata, OpenAI, AI, accessibility  
-**Requires at least:** 5.0  
-**Tested up to:** 6.3  
-**Requires PHP:** 7.2  
-**Stable tag:** 1.1.0  
-**License:** GPLv2 or later  
-**License URI:** [GPLv2 License](https://www.gnu.org/licenses/gpl-2.0.html)  
+**Contributors**: jwilson529  
+**Donate link**: [Donate](https://oneclickcontent.com/donate)  
+**Tags**: images, metadata, OpenAI, AI, accessibility, multilingual  
+**Requires at least**: 5.0  
+**Tested up to**: 6.3  
+**Requires PHP**: 7.2  
+**Stable tag**: 1.1.1  
+**License**: GPLv2 or later  
+**License URI**: [GPLv2](https://www.gnu.org/licenses/gpl-2.0.html)  
 
-Automatically generate image metadata using OpenAI's GPT models with vision capabilities.
+Automatically generate image metadata using OpenAI's GPT models with vision capabilities, now with multilingual support.
+
+---
 
 ## Description
 
-**OneClickContent - Images** is a WordPress plugin that enhances your images by automatically generating metadata using OpenAI's GPT models with vision capabilities. Improve your website's SEO and accessibility by adding descriptive titles, alt texts, captions, and descriptions to your images effortlessly.
+**OneClickContent - Images** is a WordPress plugin that enhances your images by automatically generating metadata using AI technology. Improve your website's SEO and accessibility by adding descriptive titles, alt texts, captions, and descriptions to your images effortlessly.
 
 ### Features:
 
-- **Automated Metadata Generation:** Generate image titles, descriptions, alt texts, and captions with a single click.
-- **Auto Add on Upload:** Automatically generate metadata for images upon upload based on plugin settings.
-- **OpenAI Integration:** Utilizes advanced GPT models with vision capabilities for accurate and descriptive metadata.
-- **Seamless Integration:** Easily accessible within the WordPress Media Library.
-- **Customizable Settings:** Configure your OpenAI API key, select preferred AI models, and enable/disable auto metadata generation on upload.
-- **Improved Accessibility:** Enhance user experience for visitors using assistive technologies.
+- **Automated Metadata Generation**: Generate image titles, descriptions, alt texts, and captions with a single click.
+- **Auto Add on Upload**: Automatically generate metadata for images upon upload based on plugin settings.
+- **Multilingual Support**: Generate metadata in multiple languages, including English, Spanish, French, German, Italian, Chinese, and Japanese.
+- **Free Trial**: Process up to 5 images for free—no upfront subscription required.
+- **License-Based Usage**: Use your **OneClickContent license key** to unlock unlimited metadata generation.
+- **Seamless Integration**: Easily accessible within the WordPress Media Library.
+- **Improved Accessibility**: Enhance user experience for visitors using assistive technologies.
+
+---
+
+## Transparency
+
+To provide metadata generation, this plugin sends the following data to **oneclickcontent.com**:
+- **Image Data**: Either the image itself or its URL.
+- **Website URL**: Used for licensing and debugging.
+- **License Key**: Used to verify your subscription.
+
+From there, this data is processed by **OpenAI's GPT-4o-mini model** (or other models as we adapt to the latest advancements in AI) to generate metadata. This process is fully managed by **OneClickContent**, and you do not need an OpenAI API key.
+
+---
 
 ## Installation
 
-1. **Upload the Plugin:**
+1. **Upload the Plugin**:
    - Upload the `one-click-images` folder to the `/wp-content/plugins/` directory.
 
-2. **Activate the Plugin:**
-   - Activate through the **Plugins** menu in WordPress.
+2. **Activate the Plugin**:
+   - Activate through the Plugins menu in WordPress.
 
-3. **Configure Settings:**
+3. **Configure Settings**:
    - Navigate to **Settings > OneClickContent - Images**.
-   - Enter your OpenAI API key.
-   - Select the AI model you wish to use.
+   - Enter your **OneClickContent license key**.
+   - Choose the desired language for metadata generation.
    - Optionally enable **Auto Add Details on Upload** to generate metadata automatically during image uploads.
 
-4. **Generate Metadata:**
+4. **Generate Metadata**:
    - Go to your **Media Library**.
    - Select an image and click the **"Generate Metadata"** button.
+
+---
 
 ## Frequently Asked Questions
 
 ### Do I need an OpenAI API key to use this plugin?
 
-Yes, a valid OpenAI API key with access to GPT models that support vision capabilities is required.
+No. The plugin handles all AI integration through **OneClickContent**. You only need a valid license key for extended usage beyond the free trial.
+
+### What is the free trial?
+
+The plugin allows you to generate metadata for up to 5 images for free. After the trial, you will need a valid license key from **oneclickcontent.com** to continue generating metadata.
 
 ### Which AI models are supported?
 
-The plugin supports models like `gpt-4`, `gpt-4-vision`, `gpt-4-turbo`, `gpt-4o`, and `gpt-4o-mini`.
+The plugin currently uses the GPT-4o-mini model but will adapt to the latest advancements in AI models to ensure optimal performance.
 
 ### Is my image data sent to OpenAI?
 
-Yes, your image data or URLs are sent to OpenAI's API to generate metadata. Please ensure compliance with OpenAI's policies and terms of service.
+Yes, your image data (or URLs), along with your website URL and license key, is sent to **oneclickcontent.com** for processing and then forwarded to OpenAI for metadata generation. You do not interact directly with OpenAI.
+
+### Can I choose a specific language for metadata?
+
+Yes! The plugin supports multiple languages, including English, Spanish, French, German, Italian, Chinese, and Japanese. Select your preferred language from the plugin's settings page.
 
 ### Can I edit the generated metadata?
 
@@ -65,31 +91,44 @@ Absolutely! After generation, you can review and edit the metadata in the Media 
 
 If enabled, the plugin will automatically generate metadata for any images you upload to the Media Library, saving you time.
 
+---
+
 ## Screenshots
 
-1. **Settings Page:** Configure your OpenAI API key, select an AI model, and enable auto metadata generation on upload.
-2. **Media Library Integration:** Generate metadata directly from the Media Library.
-3. **Generated Metadata:** View and edit the generated metadata for your images.
+1. **Settings Page**: Configure your OneClickContent license key, select a language, and enable auto metadata generation on upload.
+2. **Media Library Integration**: Generate metadata directly from the Media Library.
+3. **Generated Metadata**: View and edit the generated metadata for your images.
+4. **Language Selection**: Choose your preferred language for metadata generation.
+
+---
 
 ## Changelog
 
-### 1.1.0
+### 1.1.1
+- Added multilingual support for metadata generation (English, Spanish, French, German, Italian, Chinese, Japanese).
+- Improved transparency regarding data sent to oneclickcontent.com and OpenAI.
+- Simplified user requirements—no OpenAI API key needed.
 
-* Added "Auto Add Details on Upload" feature to automatically generate metadata for uploaded images.
+### 1.1.0
+- Added "Auto Add Details on Upload" feature to automatically generate metadata for uploaded images.
 
 ### 1.0.0
+- Initial release of OneClickContent - Images.
 
-* Initial release of OneClickContent - Images.
+---
 
 ## Upgrade Notice
 
-### 1.1.0
+### 1.1.1
+- Added multilingual support and improved transparency. Please review the updated plugin description.
 
-* Added "Auto Add Details on Upload" feature.
+### 1.1.0
+- Added "Auto Add Details on Upload" feature.
 
 ### 1.0.0
+- Initial release.
 
-* Initial release.
+---
 
 ## License
 

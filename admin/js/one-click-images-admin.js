@@ -3,67 +3,157 @@
 
     jQuery(document).ready(function($) {
 
-
-        // Function to show the "Saving..." or "Saved!" message near the input label
+        /**
+         * Function to show a "Saving..." or "Saved!" message near the input label.
+         *
+         * @param {HTMLElement} element - The input element triggering the message.
+         * @param {string} message - The message to display.
+         * @param {string} type - The type of message ('success', 'error', or 'info').
+         */
         function showSavingMessage(element, message, type) {
-
             let $label;
 
-            // Check if the input is in the Metadata Fields section (within a td)
-            if ($(element).closest('td').length) {
-                // Find the label directly after the input
-                $label = $(element).next('label');
+            // 1. Check if it's a metadata field checkbox.
+            if ($(element).hasClass('metadata-field-checkbox')) {
+                $label = $(element).next('label'); // Now the label is directly after, so this is correct.
             }
-
-            // Fallback for inputs where labels are in th
-            if (!$label || $label.length === 0) {
+            // 2. Check if the element has a label immediately following it.
+            else if ($(element).next('label').length) {
+              $label = $(element).next('label');
+            }
+            // 3. Fallback: Find a label within the closest table row (for other inputs in tables).
+            else if ($(element).closest('tr').length) {
                 $label = $(element).closest('tr').find('th label');
+            }
+            //4. Fallback if the element is not in a table row but has a label in a th.
+            else if ($(element).closest('th').length){
+              $label = $(element).closest('th').find('label');
+            }
+            // 5. Last resort: Find a label associated by for attribute.
+            else if ($(element).attr('id')){
+              $label = $(`label[for="${$(element).attr('id')}"]`);
             }
 
             const messageClass = type === 'success' ? 'saving-success' : 'saving-error';
 
-            if ($label.length === 0) {
-                return;
-            }
-
-            // Remove existing messages
             $label.find('.saving-message').remove();
+            $label.append(`<span class="saving-message ${messageClass}">${message}</span>`);
 
-            // Add the new message
-            $label.append(
-                `<span class="saving-message ${messageClass}" style="margin-left: 10px;">${message}</span>`
-            );
-
-            // Remove the message after 3 seconds if it's not "Saving..."
             if (message !== 'Saving...') {
                 setTimeout(() => {
                     $label.find('.saving-message').fadeOut(400, function() {
                         $(this).remove();
                     });
-                }, 3000);
+                }, 2000);
             }
         }
 
-        // Auto-save on input or select change
+        // Update your event listener to be more specific.
+        $('#oneclick_images_settings_form input[type="checkbox"], #oneclick_images_settings_form select').on('change', function() {
+            const element = this;
+            promiseSaveSettings(element).catch((error) => {
+                console.error('[OneClickContent] Error during saveSettings:', error);
+            });
+        });
+
+
+        /**
+         * Handle auto-save on input or select change.
+         */
         $('#oneclick_images_settings_form input, #oneclick_images_settings_form select').on('change', function() {
             const element = this;
-            saveSettings(element);
+
+            promiseSaveSettings(element).catch((error) => {
+                console.error('[OneClickContent] Error during saveSettings:', error);
+            });
         });
 
-        // Auto-save for license key on keyup
+        /**
+         * Auto-save for license key on keyup event.
+         */
         $('#oneclick_images_license_key').on('keyup', function() {
             const element = this;
-            saveSettings(element);
-            fetchLicenseStatus();
+
+            promiseSaveSettings(element)
+                .then(() => promiseFetchLicenseStatus())
+                .then(() => promiseFetchUsageStatus())
+                .catch((error) => {
+                    console.error('[OneClickContent] Error during sequential execution:', error);
+                });
         });
 
-        // Save settings via AJAX
-        function saveSettings(element) {
+        /**
+         * Save settings via AJAX wrapped in a Promise.
+         *
+         * @param {HTMLElement} element - The triggering element.
+         * @return {Promise} Promise resolving after settings are saved.
+         */
+        function promiseSaveSettings(element) {
+            return new Promise((resolve, reject) => {
+                const formData = $('#oneclick_images_settings_form').serialize();
 
+                // Show "Saving..." message.
+                showSavingMessage(element, ' Saving...', 'info');
+
+                $.ajax({
+                    url: oneclick_images_admin_vars.ajax_url,
+                    type: 'POST',
+                    data: {
+                        action: 'oneclick_images_save_settings',
+                        _ajax_nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
+                        settings: formData,
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            showSavingMessage(element, ' Saved!', 'success');
+                            resolve();
+                        } else {
+                            showSavingMessage(element, ' Failed to Save!', 'error');
+                            reject('Failed to save settings');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        showSavingMessage(element, ' Error occurred!', 'error');
+                        reject(error);
+                    },
+                });
+            });
+        }
+
+        /**
+         * Fetch license status wrapped in a Promise.
+         *
+         * @return {Promise} Promise resolving after fetching license status.
+         */
+        function promiseFetchLicenseStatus() {
+            return new Promise((resolve) => {
+                fetchLicenseStatus();
+                resolve();
+            });
+        }
+
+        /**
+         * Fetch usage status wrapped in a Promise.
+         *
+         * @return {Promise} Promise resolving after fetching usage status.
+         */
+        function promiseFetchUsageStatus() {
+            return new Promise((resolve) => {
+                fetchUsageStatus();
+                resolve();
+            });
+        }
+
+        /**
+         * Save settings via AJAX.
+         *
+         * @param {HTMLElement} element - The triggering element.
+         */
+        function saveSettings(element) {            
             const formData = $('#oneclick_images_settings_form').serialize();
 
-            // Show "Saving..." message
-            showSavingMessage(element, 'Saving...', 'info');
+            // Show "Saving..." message.
+            showSavingMessage(element, ' Saving...', 'info');
 
             $.ajax({
                 url: oneclick_images_admin_vars.ajax_url,
@@ -75,23 +165,25 @@
                 },
                 success: function(response) {
                     if (response.success) {
-                        showSavingMessage(element, 'Saved!', 'success');
+                        showSavingMessage(element, ' Saved!', 'success');
                     } else {
-                        showSavingMessage(element, 'Failed to Save!', 'error');
+                        showSavingMessage(element, ' Failed to Save!', 'error');
                     }
                 },
                 error: function(xhr, status, error) {
-                    showSavingMessage(element, 'Error occurred!', 'error');
+                    showSavingMessage(element, ' Error occurred!', 'error');
                 },
             });
         }
 
 
-        // Handle bulk metadata generation when the button is clicked
+        /**
+         * Handle bulk metadata generation when the button is clicked.
+         */
         $(document).on('click', '#bulk_generate_metadata_button', function(e) {
             e.preventDefault();
 
-            // Confirm before proceeding
+            // Confirm the bulk action.
             if (!confirm('Are you sure you want to generate metadata for all images in the media library? This might take some time.')) {
                 return;
             }
@@ -100,13 +192,13 @@
             button.attr('disabled', true).text('Generating...');
             $('#bulk_generate_status').empty();
 
-            // Fetch all attachment IDs
+            // Fetch all attachment IDs via AJAX.
             $.ajax({
                 url: oneclick_images_admin_vars.ajax_url,
                 type: 'POST',
                 data: {
                     action: 'oneclick_images_get_all_media_ids',
-                    nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce
+                    nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
                 },
                 success: function(response) {
                     if (response.success && response.data.ids.length > 0) {
@@ -115,10 +207,22 @@
                         $('#bulk_generate_status').append('<p>No media items found.</p>');
                         button.attr('disabled', false).text('Generate Metadata for Media Library');
                     }
-                }
+                },
+                error: function(xhr, status, error) {
+                    $('#bulk_generate_status').append('<p>Error fetching media IDs. Please try again later.</p>');
+                    button.attr('disabled', false).text('Generate Metadata for Media Library');
+                },
             });
         });
 
+
+        let updateCounter = 0;
+        /**
+         * Process metadata generation for the next image.
+         *
+         * @param {Array} ids - Array of media attachment IDs.
+         * @param {number} index - Current index of the image being processed.
+         */
         function processNextImage(ids, index) {
             if (index >= ids.length) {
                 $('#bulk_generate_status').append('<p>All media items processed.</p>');
@@ -128,83 +232,7 @@
 
             const imageId = ids[index];
 
-            $.ajax({
-                url: oneclick_images_admin_vars.ajax_url,
-                type: 'POST',
-                data: {
-                    action: 'oneclick_images_generate_metadata',
-                    nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
-                    image_id: imageId
-                },
-                success: function(response) {
-                    if (typeof response !== 'object') {
-                        $('#bulk_generate_status').append('<p>Error: Invalid response format for ID ' + imageId + '.</p>');
-                        processNextImage(ids, index + 1);
-                        return;
-                    }
-
-                    if (response.success === true && response.data && response.data.metadata) {
-                        const metadata = response.data.metadata;
-
-                        if (metadata.error === 'Usage limit reached. Please upgrade your subscription or purchase more blocks.') {
-                            showSubscriptionPrompt(
-                                metadata.error,
-                                metadata.message,
-                                metadata.ad_url
-                            );
-
-                            $('#bulk_generate_metadata_button').attr('disabled', false).text('Generate Metadata for Media Library');
-                            return;
-                        }
-
-                        if (metadata.error && metadata.error.startsWith('Image validation failed')) {
-                            showImageRejectionModal(metadata.error);
-                            $('#bulk_generate_status').append(
-                                '<p>' + imageId + ' - <span style="color:orange;">Rejected: </span>' + metadata.error + '</p>'
-                            );
-                            processNextImage(ids, index + 1);
-                            return;
-                        }
-
-                        if (metadata.success) {
-                            $('#bulk_generate_status').append(
-                                '<p>' + imageId + ' - <span style="color:green;">Done</span></p>'
-                            );
-                        } else {
-                            $('#bulk_generate_status').append('<p>Skipped ' + imageId + ' (Already has details).</p>');
-                        }
-                    } else {
-                        $('#bulk_generate_status').append('<p>Skipped ' + imageId + ' (Unexpected response).</p>');
-                    }
-
-                    processNextImage(ids, index + 1);
-                },
-                error: function(xhr, status, error) {
-                    $('#bulk_generate_status').append('<p>Error processing ID ' + imageId + ': ' + error + '</p>');
-                    processNextImage(ids, index + 1);
-                }
-            });
-        }
-
-        /**
-         * Handles metadata generation for a specific image when the button is clicked.
-         */
-        $(document).on('click', '#generate_metadata_button', function(e) {
-            e.preventDefault();
-
-            // Initialize button and image ID variables
-            var button = $(this);
-            var imageId = button.data('image-id');
-
-            if (!imageId) {
-                // Exit early if no image ID is found
-                return;
-            }
-
-            // Disable button and show loading state
-            button.attr('disabled', true).text('Generating...');
-
-            // Send AJAX request to generate metadata
+            // Generate metadata for the current image via AJAX.
             $.ajax({
                 url: oneclick_images_admin_vars.ajax_url,
                 type: 'POST',
@@ -215,46 +243,168 @@
                 },
                 success: function(response) {
                     if (typeof response !== 'object') {
-                        // Handle invalid response format
+                        $('#bulk_generate_status').append('<p>Error: Invalid response format for ID ' + imageId + '.</p>');
+                        processNextImage(ids, index + 1);
+                        return;
+                    }
+
+                    if (response.success && response.data && response.data.metadata) {
+                        console.log(response);
+                        const metadata = response.data.metadata.metadata || {}; // Correctly access the nested metadata
+
+                        // Handle usage limit or free trial limit errors
+                        if (
+                            metadata.error === 'Usage limit reached. Please upgrade your subscription or purchase more blocks.' ||
+                            metadata.error === 'Free trial limit reached. Please subscribe to continue.'
+                        ) {
+                            showSubscriptionPrompt(metadata.error, metadata.message, metadata.ad_url);
+                            $('#bulk_generate_metadata_button').attr('disabled', false).text('Generate Metadata for Media Library');
+                            return;
+                        }
+
+                        // Handle image validation errors.
+                        if (metadata.error && metadata.error.startsWith('Image validation failed')) {
+                            showImageRejectionModal(metadata.error);
+                            $('#bulk_generate_status').append(
+                                `<p>${imageId} - <span style="color:orange;">Rejected: </span>${metadata.error}</p>`
+                            );
+                            processNextImage(ids, index + 1);
+                            return;
+                        }
+
+                        // Handle successful metadata generation.
+                        if (response.data.metadata.success) {
+                            // Generate the media library edit link
+                            const mediaLibraryUrl = `/wp-admin/post.php?post=${imageId}&action=edit`;
+
+                            const newData = metadata; // Use the correct nested metadata object
+
+                            // Build metadata table rows
+                            const metadataRows = Object.entries(newData).length > 0
+                                ? Object.entries(newData)
+                                    .map(([key, value]) => `<tr><td>${key}</td><td>${value}</td></tr>`)
+                                    .join('')
+                                : '<tr><td colspan="2">No metadata available</td></tr>'; // Fallback if no data
+
+                            const metadataTable = `
+                                <table class="metadata-table">
+                                    <tr><th>Key</th><th>Value</th></tr>
+                                    ${metadataRows}
+                                </table>
+                            `;
+
+                            $('#bulk_generate_status').append(
+                                `<div class="status-item">
+                                    <p>
+                                        <a href="${mediaLibraryUrl}" target="_blank" style="text-decoration: none; color: green;">${imageId} - Done</a>
+                                    </p>
+                                    ${metadataTable}
+                                </div>`
+                            );
+                        } else {
+                            $('#bulk_generate_status').append(
+                                `<p>${imageId} - <span style="color:gray;">Skipped (Already has details).</span></p>`
+                            );
+                        }
+                    } else {
+                        $('#bulk_generate_status').append(
+                            `<p>${imageId} - <span style="color:gray;">Skipped (Unexpected response).</span></p>`
+                        );
+                    }
+
+                    processNextImage(ids, index + 1);
+                    if (++updateCounter % 5 === 0) {
+                        fetchUsageStatus();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    $('#bulk_generate_status').append('<p>Error processing ID ' + imageId + ': ' + error + '</p>');
+                    processNextImage(ids, index + 1);
+                    if (++updateCounter % 5 === 0) {
+                        fetchUsageStatus();
+                    }
+                },
+            });
+        }
+
+        /**
+         * Handles metadata generation for a specific image when the button is clicked.
+         */
+        $(document).on('click', '#generate_metadata_button', function(e) {
+            e.preventDefault();
+
+            // Initialize button and image ID variables.
+            const button = $(this);
+            const imageId = button.data('image-id');
+
+            // Exit early if no image ID is found.
+            if (!imageId) {
+                return;
+            }
+
+            // Disable the button and show a loading state.
+            button.attr('disabled', true).text('Generating...');
+
+            // Send AJAX request to generate metadata for the specific image.
+            $.ajax({
+                url: oneclick_images_admin_vars.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'oneclick_images_generate_metadata',
+                    nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
+                    image_id: imageId,
+                },
+                success: function(response) {
+                    if (typeof response !== 'object') {
+                        // Handle invalid response format.
                         showGeneralErrorModal('An unexpected error occurred. Please try again.');
                         return;
                     }
 
-                    if (response.success === true && response.data && response.data.metadata) {
+                    if (response.success && response.data && response.data.metadata) {
                         const metadata = response.data.metadata;
 
-                        // Handle specific errors
-                        if (metadata.error === 'Usage limit reached. Please upgrade your subscription or purchase more blocks.') {
-                            showSubscriptionPrompt(metadata.error, metadata.message, metadata.ad_url);
-                            return;
+                        console.log(response);
+
+                        // Handle specific errors.
+                        if (metadata.error) {
+                            // Handle usage limit or free trial limit errors
+                            if (
+                                metadata.error === 'Usage limit reached. Please upgrade your subscription or purchase more blocks.' ||
+                                metadata.error === 'Free trial limit reached. Please subscribe to continue.'
+                            ) {
+                                showSubscriptionPrompt(metadata.error, metadata.message, metadata.ad_url);
+                                return;
+                            }
+
+                            if (metadata.error.startsWith('Image validation failed')) {
+                                showImageRejectionModal(metadata.error);
+                                return;
+                            }
+
+                            if (metadata.error.startsWith('No metadata fields require generation')) {
+                                showGeneralErrorModal('The image already has all metadata fields filled, and "Override Metadata" is disabled.');
+                                return;
+                            }
                         }
 
-                        if (metadata.error && metadata.error.startsWith('Image validation failed')) {
-                            showImageRejectionModal(metadata.error);
-                            return;
-                        }
-
-                        if (metadata.error && metadata.error.startsWith('No metadata fields require generation')) {
-                            showGeneralErrorModal('The image already has all metadata fields filled, and "Override Metadata" is disabled.');
-                            return;
-                        }
-
+                        // Handle successful metadata generation.
                         if (metadata.success) {
-                            updateMetadataFields(metadata.metadata); // Update metadata fields
+                            updateMetadataFields(metadata.metadata); // Update metadata fields in the UI.
                         } else {
                             showGeneralErrorModal('Metadata generation was skipped or an unexpected issue occurred.');
                         }
                     } else {
-                        // Handle unexpected response structure or failure
+                        // Handle unexpected response structure or failure.
                         showGeneralErrorModal('An unexpected error occurred.');
                     }
                 },
-                error: function() {
-                    // Handle AJAX errors
+                error: function(xhr, status, error) {
+                    // Handle AJAX errors.
                     showGeneralErrorModal('An error occurred while processing the request. Please try again.');
                 },
                 complete: function() {
-                    // Re-enable the button after the request is complete
+                    // Re-enable the button after the request is complete.
                     button.attr('disabled', false).text('Generate Metadata');
                 },
             });
@@ -265,34 +415,30 @@
          * @param {string} message - The error message to display in the modal.
          */
         function showImageRejectionModal(message) {
-
-            // Construct the modal HTML
             const modalHtml = `
                 <div id="occ-image-rejection-modal" class="occ-modal" role="dialog" aria-labelledby="image-rejection-modal-title">
                     <div class="occ-modal-overlay"></div>
                     <div class="occ-modal-content" tabindex="0">
                         <span class="occ-modal-close dashicons dashicons-no" aria-label="Close"></span>
-                        <h2 id="image-rejection-modal-title">
-                            <span class="dashicons dashicons-warning"></span> Image Rejected
-                        </h2>
+                        <h2 id="image-rejection-modal-title"><span class="dashicons dashicons-warning"></span> Image Rejected</h2>
                         <p>${message}</p>
                         <button class="occ-modal-button occ-close-modal">OK</button>
                     </div>
                 </div>
             `;
 
-            // Append modal to body
             $('body').append(modalHtml);
 
             const modal = $('#occ-image-rejection-modal');
+            modal.removeAttr('aria-hidden');
+            modal.find('.occ-modal-content').focus();
             modal.fadeIn();
 
-            // Attach close handlers
+            // Close modal on clicking close button, overlay, or pressing Escape
             modal.find('.occ-modal-close, .occ-modal-overlay, .occ-close-modal').on('click', function() {
                 closeModal(modal);
             });
 
-            // Close modal on Escape key press
             $(document).on('keydown', function(e) {
                 if (e.key === 'Escape') {
                     closeModal(modal);
@@ -310,7 +456,11 @@
             });
         }
 
-        // Function to show the general error modal (if needed)
+        /**
+         * Displays a general error modal with a specified message.
+         *
+         * @param {string} message - The error message to display in the modal.
+         */
         function showGeneralErrorModal(message) {
             const modalHtml = `
                 <div id="occ-general-error-modal" class="occ-modal" role="dialog" aria-labelledby="general-error-modal-title">
@@ -331,17 +481,20 @@
                 </div>
             `;
 
-            // Append modal to body
+            // Append the modal HTML to the body.
             $('body').append(modalHtml);
 
             const modal = $('#occ-general-error-modal');
+
+            // Show the modal with a fade-in effect.
             modal.fadeIn();
 
-            // Attach close handlers
+            // Attach event handlers for closing the modal.
             modal.find('.occ-modal-close, .occ-modal-overlay, .occ-close-modal').on('click', function() {
                 modal.fadeOut(() => modal.remove());
             });
 
+            // Close the modal when the 'Escape' key is pressed.
             $(document).on('keydown', function(e) {
                 if (e.key === 'Escape') {
                     modal.fadeOut(() => modal.remove());
@@ -349,7 +502,7 @@
             });
         }
 
-        // Ensure these functions are globally accessible
+        // Expose functions to the global scope for reuse.
         window.showImageRejectionModal = showImageRejectionModal;
         window.showGeneralErrorModal = showGeneralErrorModal;
         window.showSubscriptionPrompt = showSubscriptionPrompt;
@@ -456,50 +609,7 @@
             });
         }
 
-        // Ensure these functions are globally accessible
-        window.showImageRejectionModal = showImageRejectionModal;
-        window.showSubscriptionPrompt = showSubscriptionPrompt;
 
-
-        // Function to show the image rejection modal
-        function showImageRejectionModal(message) {
-            const modalHtml = `
-                <div id="occ-image-rejection-modal" class="occ-modal" role="dialog" aria-labelledby="image-rejection-modal-title">
-                    <div class="occ-modal-overlay"></div>
-                    <div class="occ-modal-content" tabindex="0">
-                        <span class="occ-modal-close dashicons dashicons-no" aria-label="Close"></span>
-                        <h2 id="image-rejection-modal-title"><span class="dashicons dashicons-warning"></span> Image Rejected</h2>
-                        <p>${message}</p>
-                        <button class="occ-modal-button occ-close-modal">OK</button>
-                    </div>
-                </div>
-            `;
-
-            $('body').append(modalHtml);
-
-            const modal = $('#occ-image-rejection-modal');
-            modal.removeAttr('aria-hidden');
-            modal.find('.occ-modal-content').focus();
-            modal.fadeIn();
-
-            // Close modal on clicking close button, overlay, or pressing Escape
-            modal.find('.occ-modal-close, .occ-modal-overlay, .occ-close-modal').on('click', function() {
-                closeModal(modal);
-            });
-
-            $(document).on('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    closeModal(modal);
-                }
-            });
-        }
-
-        // Function to close and remove the modal
-        function closeModal(modal) {
-            modal.fadeOut(function() {
-                $(this).remove();
-            });
-        }
 
         function showSubscriberLimitPrompt(error, limit) {
             const modalHtml = `
@@ -564,35 +674,11 @@
             });
         }
 
-        // Handle license validation
-        function validateLicense() {
-            updateLicenseStatusUI('validating', 'Validating license...');
-
-            $.ajax({
-                url: ajaxurl,
-                type: 'POST',
-                data: {
-                    action: 'validate_license',
-                },
-                success: function(response) {
-                    if (response.success) {
-                        const status = response.data.status === 'active' ? 'active' : 'invalid';
-                        updateLicenseStatusUI(status, response.data.message);
-                    } else {
-                        updateLicenseStatusUI('invalid', response.data.message || 'License validation failed.');
-                    }
-                },
-                error: function() {
-                    updateLicenseStatusUI('error', 'An error occurred during license validation.');
-                },
-            });
-        }
-
         fetchLicenseStatus();
         fetchUsageStatus();
 
         $('#validate_license_button').on('click', function() {
-            validateLicense();
+            fetchLicenseStatus();
         });
 
         // Function to update the usage status UI

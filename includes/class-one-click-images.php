@@ -172,6 +172,10 @@ class One_Click_Images {
 
 		// Add the "Generate Metadata" button to the Media Library.
 		$this->loader->add_filter( 'attachment_fields_to_edit', $plugin_admin, 'add_generate_metadata_button', 10, 2 );
+		$this->loader->add_filter( 'bulk_actions-upload', $plugin_admin, 'add_generate_details_bulk_action', 10, 2 );
+		$this->loader->add_filter( 'handle_bulk_actions-upload', $plugin_admin, 'handle_generate_details_bulk_action', 10, 3 );
+		$this->loader->add_filter( 'admin_notices', $plugin_admin, 'generate_details_bulk_action_admin_notice' );
+
 		// Enqueue admin styles and scripts.
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );

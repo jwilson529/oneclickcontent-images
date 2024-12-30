@@ -55,13 +55,11 @@ class One_Click_Images_Admin_Settings {
 				<h1 class="jumbotron-title"><?php esc_html_e( 'OneClickContent Image Details Settings', 'oneclickcontent-images' ); ?></h1>
 			</div>
 
-
 			<!-- Settings Form -->
 			<form method="post" action="options.php" id="oneclick_images_settings_form">
 				<?php
 				settings_fields( 'oneclick_images_settings' );
 				do_settings_sections( 'oneclick_images_settings' );
-
 				?>
 			</form>
 
@@ -71,24 +69,35 @@ class One_Click_Images_Admin_Settings {
 			<!-- Usage Information Section -->
 			<div class="usage-info-section">
 				<h2><?php esc_html_e( 'Usage Information', 'oneclickcontent-images' ); ?></h2>
-				<p><?php esc_html_e( 'Track your current usage and remaining image generation allowance.', 'oneclickcontent-images' ); ?></p>
 
-				<!-- Usage Summary -->
-				<div id="usage_status" class="usage-summary">
-					<strong id="usage_count">Loading usage data...</strong>
-					<div class="progress">
-						<div 
-							id="usage_progress" 
-							class="progress-bar bg-success" 
-							role="progressbar" 
-							aria-valuenow="0" 
-							aria-valuemin="0" 
-							aria-valuemax="100" 
-							style="width: 0%;">
-							0%
+				<?php if ( 'active' !== $license_status ) : ?>
+					<!-- Free Trial Message -->
+					<p class="free-trial-message">
+						<?php esc_html_e( 'You are currently using the free trial version of OneClickContent Images. To unlock full features, please subscribe.', 'oneclickcontent-images' ); ?>
+					</p>
+					<a href="https://yourwebsite.com/subscribe" target="_blank" class="button button-primary">
+						<?php esc_html_e( 'Subscribe Now', 'oneclickcontent-images' ); ?>
+					</a>
+				<?php else : ?>
+					<p><?php esc_html_e( 'Track your current usage and remaining image generation allowance.', 'oneclickcontent-images' ); ?></p>
+
+					<!-- Usage Summary -->
+					<div id="usage_status" class="usage-summary">
+						<strong id="usage_count">Loading usage data...</strong>
+						<div class="progress">
+							<div 
+								id="usage_progress" 
+								class="progress-bar bg-success" 
+								role="progressbar" 
+								aria-valuenow="0" 
+								aria-valuemin="0" 
+								aria-valuemax="100" 
+								style="width: 0%;">
+								0%
+							</div>
 						</div>
 					</div>
-				</div>
+				<?php endif; ?>
 			</div>
 
 			<!-- Divider -->
@@ -108,7 +117,6 @@ class One_Click_Images_Admin_Settings {
 		</div>
 		<?php
 	}
-
 
 	/**
 	 * Display admin notices for settings errors or updates.
@@ -346,7 +354,7 @@ class One_Click_Images_Admin_Settings {
 
 		foreach ( $fields as $key => $label ) {
 			$checked = isset( $options[ $key ] ) ? 'checked' : '';
-			echo '<input type="checkbox" id="oneclick_images_metadata_fields_' . esc_attr( $key ) . '" name="oneclick_images_metadata_fields[' . esc_attr( $key ) . ']" value="1" ' . esc_attr( $checked ) . ' />';
+			echo '<input type="checkbox" class="metadata-field-checkbox" id="oneclick_images_metadata_fields_' . esc_attr( $key ) . '" name="oneclick_images_metadata_fields[' . esc_attr( $key ) . ']" value="1" ' . esc_attr( $checked ) . ' />';
 			echo '<label for="oneclick_images_metadata_fields_' . esc_attr( $key ) . '"> ' . esc_html( $label ) . '</label><br>';
 		}
 	}
@@ -409,31 +417,40 @@ class One_Click_Images_Admin_Settings {
 	/**
 	 * Handles saving settings for the OneClickContent Images plugin via AJAX.
 	 *
+	 * This function processes the submitted form data, verifies security using a nonce,
+	 * sanitizes and saves the settings into the WordPress options table.
+	 *
 	 * @return void Responds with a JSON success or error message.
 	 */
 	public function oneclick_images_save_settings() {
 		// Verify nonce for security.
-		if ( empty( $_POST['_ajax_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_ajax_nonce'] ) ), 'oneclick_images_ajax_nonce' ) ) {
+		if ( ! isset( $_POST['_ajax_nonce'] ) || ! wp_verify_nonce( wp_unslash( $_POST['_ajax_nonce'] ), 'oneclick_images_ajax_nonce' ) ) {
 			wp_send_json_error( __( 'Invalid nonce.', 'text-domain' ) );
 		}
 
-		// Ensure the 'settings' data exists and is a string.
-		if ( empty( $_POST['settings'] ) || ! is_string( $_POST['settings'] ) ) {
-			wp_send_json_error( __( 'Settings data missing or invalid.', 'text-domain' ) );
+		// Check if the 'settings' data is set and parse it.
+		if ( ! isset( $_POST['settings'] ) ) {
+			wp_send_json_error( __( 'Settings data missing.', 'text-domain' ) );
 		}
 
-		// Parse and sanitize settings.
-		$raw_settings = sanitize_text_field( wp_unslash( $_POST['settings'] ) ); // Explicitly sanitize the raw input.
-		parse_str( $raw_settings, $settings );
+		parse_str( wp_unslash( $_POST['settings'] ), $settings );
 
 		// Sanitize and save each setting.
 		if ( isset( $settings['oneclick_images_metadata_fields'] ) && is_array( $settings['oneclick_images_metadata_fields'] ) ) {
 			update_option( 'oneclick_images_metadata_fields', array_map( 'sanitize_text_field', $settings['oneclick_images_metadata_fields'] ) );
 		}
 
-		update_option( 'oneclick_images_auto_add_details', isset( $settings['oneclick_images_auto_add_details'] ) ? absint( $settings['oneclick_images_auto_add_details'] ) : 0 );
+		if ( isset( $settings['oneclick_images_auto_add_details'] ) ) {
+			update_option( 'oneclick_images_auto_add_details', absint( $settings['oneclick_images_auto_add_details'] ) );
+		} else {
+			update_option( 'oneclick_images_auto_add_details', 0 );
+		}
 
-		update_option( 'oneclick_images_override_metadata', isset( $settings['oneclick_images_override_metadata'] ) ? absint( $settings['oneclick_images_override_metadata'] ) : 0 );
+		if ( isset( $settings['oneclick_images_override_metadata'] ) ) {
+			update_option( 'oneclick_images_override_metadata', absint( $settings['oneclick_images_override_metadata'] ) );
+		} else {
+			update_option( 'oneclick_images_override_metadata', 0 );
+		}
 
 		if ( isset( $settings['oneclick_images_language'] ) ) {
 			update_option( 'oneclick_images_language', sanitize_text_field( $settings['oneclick_images_language'] ) );

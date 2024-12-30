@@ -163,6 +163,78 @@ class One_Click_Images_Admin {
 	}
 
 
+
+	/**
+	 * Add the "Generate Details" bulk action to the Media Library.
+	 *
+	 * @param array $bulk_actions Existing bulk actions.
+	 * @return array Modified bulk actions.
+	 */
+	public function add_generate_details_bulk_action( $bulk_actions ) {
+		$bulk_actions['generate_details'] = __( 'Generate Details', 'oneclickcontent-images' );
+		return $bulk_actions;
+	}
+
+	/**
+	 * Handle the "Generate Details" bulk action.
+	 *
+	 * @param string $redirect_to URL to redirect to after processing.
+	 * @param string $action The bulk action being processed.
+	 * @param array  $post_ids Array of selected media item IDs.
+	 * @return string Modified redirect URL with query parameters.
+	 */
+	public function handle_generate_details_bulk_action( $redirect_to, $action, $post_ids ) {
+		if ( 'generate_details' !== $action ) {
+			return $redirect_to;
+		}
+
+		// Check if the nonce exists and is valid.
+		$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['_wpnonce'] ) ) : '';
+		if ( ! wp_verify_nonce( $nonce, 'bulk-media' ) ) {
+			wp_die( esc_html__( 'Security check failed.', 'oneclickcontent-images' ) );
+		}
+
+		// Ensure the class exists.
+		if ( ! class_exists( 'One_Click_Images_Admin_Settings' ) ) {
+			return $redirect_to; // Fail gracefully if the class is not loaded.
+		}
+
+		$admin_settings = new One_Click_Images_Admin_Settings();
+
+		// Process each selected media item.
+		foreach ( $post_ids as $post_id ) {
+			// Sanitize post ID and call the existing method to generate metadata.
+			$admin_settings->oneclick_images_generate_metadata( intval( $post_id ) );
+		}
+
+		// Add a query parameter to the redirect URL to indicate success.
+		$redirect_to = add_query_arg( 'generated_details', count( $post_ids ), $redirect_to );
+		return $redirect_to;
+	}
+
+	/**
+	 * Display an admin notice after processing the bulk action.
+	 */
+	public function generate_details_bulk_action_admin_notice() {
+		// Check if the 'generated_details' parameter exists and is valid.
+		if ( isset( $_REQUEST['generated_details'] ) ) {
+			// Sanitize the value to ensure it's a safe integer.
+			$count = intval( wp_unslash( $_REQUEST['generated_details'] ) );
+
+			// Display the success notice.
+			printf(
+				'<div class="notice notice-success is-dismissible"><p>%s</p></div>',
+				esc_html(
+					sprintf(
+						/* translators: %d is the number of media items processed. */
+						__( 'Metadata generated for %d media items.', 'oneclickcontent-images' ),
+						$count
+					)
+				)
+			);
+		}
+	}
+
 	/**
 	 * Register a custom image size for the OCC plugin.
 	 *

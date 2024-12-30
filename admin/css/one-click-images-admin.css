@@ -534,3 +534,23 @@
 .saving-message.saving-error {
     color: red;
 }
+
+.metadata-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.metadata-table th, .metadata-table td {
+    border: 1px solid #ccc;
+    padding: 5px;
+    text-align: left;
+}
+
+.metadata-table th {
+    background-color: #f9f9f9;
+}
+
+.status-item {
+    margin-bottom: 15px;
+}

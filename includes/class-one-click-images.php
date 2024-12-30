@@ -165,6 +165,7 @@ class One_Click_Images {
 
 		// Handle admin notices.
 		$this->loader->add_action( 'admin_notices', $plugin_admin_settings, 'display_admin_notices' );
+		$this->loader->add_action( 'wp_ajax_oneclick_images_save_settings', $plugin_admin_settings, 'oneclick_images_save_settings' );
 
 		// AJAX action for generating metadata.
 		$this->loader->add_action( 'wp_ajax_oneclick_images_generate_metadata', $plugin_admin_settings, 'oneclick_images_ajax_generate_metadata' );

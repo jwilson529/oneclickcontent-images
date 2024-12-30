@@ -61,7 +61,7 @@ class One_Click_Images_Admin_Settings {
 				<?php
 				settings_fields( 'oneclick_images_settings' );
 				do_settings_sections( 'oneclick_images_settings' );
-				submit_button();
+
 				?>
 			</form>
 
@@ -94,12 +94,12 @@ class One_Click_Images_Admin_Settings {
 			<!-- Divider -->
 			<hr class="settings-divider" />
 
-			<!-- Bulk Generate Metadata Section -->
+			<!-- Bulk Generate Details Section -->
 			<div class="bulk-generate-section">
-				<h2><?php esc_html_e( 'Bulk Generate Metadata for Media Library', 'oneclickcontent-images' ); ?></h2>
-				<p><?php esc_html_e( 'Automatically generate metadata for images in your media library based on your settings.', 'oneclickcontent-images' ); ?></p>
+				<h2><?php esc_html_e( 'Bulk Generate Details for Media Library', 'oneclickcontent-images' ); ?></h2>
+				<p><?php esc_html_e( 'Automatically generate details for images in your media library based on your settings.', 'oneclickcontent-images' ); ?></p>
 				<button id="bulk_generate_metadata_button" class="button button-primary">
-					<?php esc_html_e( 'Generate Metadata for Media Library', 'oneclickcontent-images' ); ?>
+					<?php esc_html_e( 'Generate Details for Media Library', 'oneclickcontent-images' ); ?>
 				</button>
 				<div id="bulk_generate_status" class="bulk-generate-status">
 					<!-- Status messages will appear here -->
@@ -237,7 +237,7 @@ class One_Click_Images_Admin_Settings {
 		// Add the Override Existing Metadata checkbox field.
 		add_settings_field(
 			'oneclick_images_override_metadata',
-			__( 'Override Existing Metadata', 'oneclickcontent-images' ),
+			__( 'Override Existing Details', 'oneclickcontent-images' ),
 			array( $this, 'oneclick_images_override_metadata_callback' ),
 			'oneclick_images_settings',
 			'oneclick_images_settings_section',
@@ -327,7 +327,7 @@ class One_Click_Images_Admin_Settings {
 	public function oneclick_images_override_metadata_callback() {
 		$checked = get_option( 'oneclick_images_override_metadata', false );
 		echo '<input type="checkbox" id="oneclick_images_override_metadata" name="oneclick_images_override_metadata" value="1" ' . checked( 1, $checked, false ) . ' />';
-		echo '<p class="description">' . esc_html__( 'Check this box if you want to override existing metadata when generating new metadata.', 'oneclickcontent-images' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Check this box if you want to override existing metadata details when generating new metadata.', 'oneclickcontent-images' ) . '</p>';
 	}
 
 	/**
@@ -407,6 +407,48 @@ class One_Click_Images_Admin_Settings {
 
 
 	/**
+	 * Handles saving settings for the OneClickContent Images plugin via AJAX.
+	 *
+	 * @return void Responds with a JSON success or error message.
+	 */
+	public function oneclick_images_save_settings() {
+		// Verify nonce for security.
+		if ( empty( $_POST['_ajax_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_ajax_nonce'] ) ), 'oneclick_images_ajax_nonce' ) ) {
+			wp_send_json_error( __( 'Invalid nonce.', 'text-domain' ) );
+		}
+
+		// Ensure the 'settings' data exists and is a string.
+		if ( empty( $_POST['settings'] ) || ! is_string( $_POST['settings'] ) ) {
+			wp_send_json_error( __( 'Settings data missing or invalid.', 'text-domain' ) );
+		}
+
+		// Parse and sanitize settings.
+		$raw_settings = sanitize_text_field( wp_unslash( $_POST['settings'] ) ); // Explicitly sanitize the raw input.
+		parse_str( $raw_settings, $settings );
+
+		// Sanitize and save each setting.
+		if ( isset( $settings['oneclick_images_metadata_fields'] ) && is_array( $settings['oneclick_images_metadata_fields'] ) ) {
+			update_option( 'oneclick_images_metadata_fields', array_map( 'sanitize_text_field', $settings['oneclick_images_metadata_fields'] ) );
+		}
+
+		update_option( 'oneclick_images_auto_add_details', isset( $settings['oneclick_images_auto_add_details'] ) ? absint( $settings['oneclick_images_auto_add_details'] ) : 0 );
+
+		update_option( 'oneclick_images_override_metadata', isset( $settings['oneclick_images_override_metadata'] ) ? absint( $settings['oneclick_images_override_metadata'] ) : 0 );
+
+		if ( isset( $settings['oneclick_images_language'] ) ) {
+			update_option( 'oneclick_images_language', sanitize_text_field( $settings['oneclick_images_language'] ) );
+		}
+
+		if ( isset( $settings['oneclick_images_license_key'] ) ) {
+			update_option( 'oneclick_images_license_key', sanitize_text_field( $settings['oneclick_images_license_key'] ) );
+		}
+
+		// Respond with success.
+		wp_send_json_success();
+	}
+
+
+	/**
 	 * Generate metadata for an image using the OpenAI API.
 	 *
 	 * @param int $image_id The ID of the image attachment.
@@ -428,8 +470,6 @@ class One_Click_Images_Admin_Settings {
 
 		// Retrieve the image file path.
 		$image_path = $this->get_custom_image_size_path( $image_id, 'one-click-image-api' );
-
-		error_log( $image_path );
 
 		if ( ! $image_path || ! file_exists( $image_path ) ) {
 			$image_path = get_attached_file( $image_id );

@@ -520,3 +520,17 @@
         transform: translateY(0);
     }
 }
+
+
+.saving-message {
+    font-size: 0.9em;
+    font-weight: bold;
+}
+
+.saving-message.saving-success {
+    color: green;
+}
+
+.saving-message.saving-error {
+    color: red;
+}

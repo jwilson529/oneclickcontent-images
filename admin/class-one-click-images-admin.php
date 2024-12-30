@@ -53,12 +53,12 @@ class One_Click_Images_Admin {
 	 * loaded for any custom styles used by the plugin.
 	 */
 	public function enqueue_styles() {
-		global $pagenow;
+		$screen = get_current_screen();
 
 		// Load styles only on relevant screens or the plugin's settings page.
 		if (
-			in_array( $pagenow, array( 'upload.php', 'post.php', 'post-new.php' ), true ) ||
-			( 'options-general.php' === $pagenow && isset( $_GET['page'] ) && 'oneclickcontent-images-settings' === $_GET['page'] )
+			in_array( $screen->base, array( 'upload', 'post', 'post-new' ), true ) ||
+			( 'settings_page_oneclickcontent-images-settings' === $screen->id )
 		) {
 			wp_enqueue_style(
 				$this->plugin_name,
@@ -77,12 +77,12 @@ class One_Click_Images_Admin {
 	 * including any necessary libraries like jQuery and the WordPress media library.
 	 */
 	public function enqueue_scripts() {
-		global $pagenow;
+		$screen = get_current_screen();
 
 		// Load scripts only on relevant screens or the plugin's settings page.
 		if (
-			in_array( $pagenow, array( 'upload.php', 'post.php', 'post-new.php' ), true ) ||
-			( 'options-general.php' === $pagenow && isset( $_GET['page'] ) && 'oneclickcontent-images-settings' === $_GET['page'] )
+			in_array( $screen->base, array( 'upload', 'post', 'post-new' ), true ) ||
+			( 'settings_page_oneclickcontent-images-settings' === $screen->id )
 		) {
 			// Enqueue the plugin's admin JavaScript file.
 			wp_enqueue_script(
@@ -132,7 +132,7 @@ class One_Click_Images_Admin {
 
 			wp_localize_script(
 				$this->plugin_name . '-error-check',
-				'oneclick_images_admin_vars',
+				'oneclick_images_error_vars',
 				array(
 					'ajax_url'                   => admin_url( 'admin-ajax.php' ),
 					'oneclick_images_ajax_nonce' => wp_create_nonce( 'oneclick_images_ajax_nonce' ),

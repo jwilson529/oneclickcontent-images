@@ -3,6 +3,90 @@
 
     jQuery(document).ready(function($) {
 
+
+        // Function to show the "Saving..." or "Saved!" message near the input label
+        function showSavingMessage(element, message, type) {
+
+            let $label;
+
+            // Check if the input is in the Metadata Fields section (within a td)
+            if ($(element).closest('td').length) {
+                // Find the label directly after the input
+                $label = $(element).next('label');
+            }
+
+            // Fallback for inputs where labels are in th
+            if (!$label || $label.length === 0) {
+                $label = $(element).closest('tr').find('th label');
+            }
+
+            const messageClass = type === 'success' ? 'saving-success' : 'saving-error';
+
+            if ($label.length === 0) {
+                return;
+            }
+
+            // Remove existing messages
+            $label.find('.saving-message').remove();
+
+            // Add the new message
+            $label.append(
+                `<span class="saving-message ${messageClass}" style="margin-left: 10px;">${message}</span>`
+            );
+
+            // Remove the message after 3 seconds if it's not "Saving..."
+            if (message !== 'Saving...') {
+                setTimeout(() => {
+                    $label.find('.saving-message').fadeOut(400, function() {
+                        $(this).remove();
+                    });
+                }, 3000);
+            }
+        }
+
+        // Auto-save on input or select change
+        $('#oneclick_images_settings_form input, #oneclick_images_settings_form select').on('change', function() {
+            const element = this;
+            saveSettings(element);
+        });
+
+        // Auto-save for license key on keyup
+        $('#oneclick_images_license_key').on('keyup', function() {
+            const element = this;
+            saveSettings(element);
+            fetchLicenseStatus();
+        });
+
+        // Save settings via AJAX
+        function saveSettings(element) {
+
+            const formData = $('#oneclick_images_settings_form').serialize();
+
+            // Show "Saving..." message
+            showSavingMessage(element, 'Saving...', 'info');
+
+            $.ajax({
+                url: oneclick_images_admin_vars.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'oneclick_images_save_settings',
+                    _ajax_nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
+                    settings: formData,
+                },
+                success: function(response) {
+                    if (response.success) {
+                        showSavingMessage(element, 'Saved!', 'success');
+                    } else {
+                        showSavingMessage(element, 'Failed to Save!', 'error');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    showSavingMessage(element, 'Error occurred!', 'error');
+                },
+            });
+        }
+
+
         // Handle bulk metadata generation when the button is clicked
         $(document).on('click', '#bulk_generate_metadata_button', function(e) {
             e.preventDefault();
@@ -87,7 +171,7 @@
                                 '<p>' + imageId + ' - <span style="color:green;">Done</span></p>'
                             );
                         } else {
-                            $('#bulk_generate_status').append('<p>Skipped ' + imageId + ' (Already has metadata or error).</p>');
+                            $('#bulk_generate_status').append('<p>Skipped ' + imageId + ' (Already has details).</p>');
                         }
                     } else {
                         $('#bulk_generate_status').append('<p>Skipped ' + imageId + ' (Unexpected response).</p>');
@@ -102,25 +186,23 @@
             });
         }
 
-        // Handle metadata generation for a specific image
-        $(document).on('click', '#generate_metadata_button', function (e) {
+        /**
+         * Handles metadata generation for a specific image when the button is clicked.
+         */
+        $(document).on('click', '#generate_metadata_button', function(e) {
             e.preventDefault();
-
-            console.log('Generate Metadata button clicked.');
 
             // Initialize button and image ID variables
             var button = $(this);
             var imageId = button.data('image-id');
-            console.log('Image ID retrieved from data attribute:', imageId);
 
             if (!imageId) {
-                console.error('No Image ID found. Aborting metadata generation.');
+                // Exit early if no image ID is found
                 return;
             }
 
             // Disable button and show loading state
             button.attr('disabled', true).text('Generating...');
-            console.log('Button disabled and loading state shown.');
 
             // Send AJAX request to generate metadata
             $.ajax({
@@ -131,16 +213,9 @@
                     nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
                     image_id: imageId,
                 },
-                beforeSend: function () {
-                    console.log('AJAX request is about to be sent with data:', {
-                        action: 'oneclick_images_generate_metadata',
-                        nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
-                        image_id: imageId,
-                    });
-                },
-                success: function (response) {
+                success: function(response) {
                     if (typeof response !== 'object') {
-                        console.error('Invalid response format:', response);
+                        // Handle invalid response format
                         showGeneralErrorModal('An unexpected error occurred. Please try again.');
                         return;
                     }
@@ -150,46 +225,37 @@
 
                         // Handle specific errors
                         if (metadata.error === 'Usage limit reached. Please upgrade your subscription or purchase more blocks.') {
-                            console.log('Triggering subscription prompt...');
-                            showSubscriptionPrompt(
-                                metadata.error,
-                                metadata.message,
-                                metadata.ad_url
-                            );
+                            showSubscriptionPrompt(metadata.error, metadata.message, metadata.ad_url);
                             return;
                         }
 
                         if (metadata.error && metadata.error.startsWith('Image validation failed')) {
-                            console.log('Triggering image rejection modal...');
                             showImageRejectionModal(metadata.error);
                             return;
                         }
 
                         if (metadata.error && metadata.error.startsWith('No metadata fields require generation')) {
-                            console.log('Triggering general error modal for skipped metadata generation...');
                             showGeneralErrorModal('The image already has all metadata fields filled, and "Override Metadata" is disabled.');
                             return;
                         }
 
                         if (metadata.success) {
-                            console.log('Metadata successfully generated:', metadata.metadata);
                             updateMetadataFields(metadata.metadata); // Update metadata fields
                         } else {
-                            console.warn('Metadata generation skipped or unexpected issue occurred.');
                             showGeneralErrorModal('Metadata generation was skipped or an unexpected issue occurred.');
                         }
                     } else {
-                        console.error('Unexpected response structure or failure:', response);
+                        // Handle unexpected response structure or failure
                         showGeneralErrorModal('An unexpected error occurred.');
                     }
                 },
-                error: function (xhr, status, error) {
-                    console.error('AJAX error:', error);
+                error: function() {
+                    // Handle AJAX errors
                     showGeneralErrorModal('An error occurred while processing the request. Please try again.');
                 },
-                complete: function () {
+                complete: function() {
+                    // Re-enable the button after the request is complete
                     button.attr('disabled', false).text('Generate Metadata');
-                    console.log('Metadata generation request complete. Button re-enabled.');
                 },
             });
         });
@@ -199,7 +265,6 @@
          * @param {string} message - The error message to display in the modal.
          */
         function showImageRejectionModal(message) {
-            console.log('Displaying image rejection modal with message:', message);
 
             // Construct the modal HTML
             const modalHtml = `
@@ -223,12 +288,12 @@
             modal.fadeIn();
 
             // Attach close handlers
-            modal.find('.occ-modal-close, .occ-modal-overlay, .occ-close-modal').on('click', function () {
+            modal.find('.occ-modal-close, .occ-modal-overlay, .occ-close-modal').on('click', function() {
                 closeModal(modal);
             });
 
             // Close modal on Escape key press
-            $(document).on('keydown', function (e) {
+            $(document).on('keydown', function(e) {
                 if (e.key === 'Escape') {
                     closeModal(modal);
                 }
@@ -240,17 +305,13 @@
          * @param {object} modal - The modal element to close.
          */
         function closeModal(modal) {
-            console.log('Closing modal...');
-            modal.fadeOut(function () {
+            modal.fadeOut(function() {
                 modal.remove();
-                console.log('Modal removed from DOM.');
             });
         }
 
         // Function to show the general error modal (if needed)
         function showGeneralErrorModal(message) {
-            console.log('Displaying general error modal with message:', message);
-
             const modalHtml = `
                 <div id="occ-general-error-modal" class="occ-modal" role="dialog" aria-labelledby="general-error-modal-title">
                     <div class="occ-modal-overlay"></div>
@@ -277,11 +338,11 @@
             modal.fadeIn();
 
             // Attach close handlers
-            modal.find('.occ-modal-close, .occ-modal-overlay, .occ-close-modal').on('click', function () {
+            modal.find('.occ-modal-close, .occ-modal-overlay, .occ-close-modal').on('click', function() {
                 modal.fadeOut(() => modal.remove());
             });
 
-            $(document).on('keydown', function (e) {
+            $(document).on('keydown', function(e) {
                 if (e.key === 'Escape') {
                     modal.fadeOut(() => modal.remove());
                 }
@@ -293,54 +354,49 @@
         window.showGeneralErrorModal = showGeneralErrorModal;
         window.showSubscriptionPrompt = showSubscriptionPrompt;
 
+        /**
+         * Updates metadata fields in the media library.
+         *
+         * @param {Object} metadata The metadata to update (alt_text, title, caption, description).
+         */
         function updateMetadataFields(metadata) {
             try {
-                console.log('Inside updateMetadataFields. Metadata received:', metadata);
-                
                 // Safely get selected fields with fallback to enable all fields if undefined
                 const selectedFields = oneclick_images_admin_vars.selected_fields || {
                     alt_text: true,
                     title: true,
                     caption: true,
-                    description: true
+                    description: true,
                 };
-                
-                console.log('Selected fields configuration:', selectedFields);
 
-                // Update alt text if field exists
+                // Update alt text if field exists and is selected
                 const altInput = $('#attachment-details-two-column-alt-text');
-                if (altInput.length && metadata.alt_text) {
-                    console.log('Setting alt text to:', metadata.alt_text);
+                if (altInput.length && metadata.alt_text && selectedFields.alt_text) {
                     altInput.val(metadata.alt_text).trigger('change');
                 }
 
-                // Update title if field exists
+                // Update title if field exists and is selected
                 const titleInput = $('#attachment-details-two-column-title');
-                if (titleInput.length && metadata.title) {
-                    console.log('Setting title to:', metadata.title);
+                if (titleInput.length && metadata.title && selectedFields.title) {
                     titleInput.val(metadata.title).trigger('change');
                 }
 
-                // Update caption if field exists
+                // Update caption if field exists and is selected
                 const captionInput = $('#attachment-details-two-column-caption');
-                if (captionInput.length && metadata.caption) {
-                    console.log('Setting caption to:', metadata.caption);
+                if (captionInput.length && metadata.caption && selectedFields.caption) {
                     captionInput.val(metadata.caption).trigger('change');
                 }
 
-                // Update description if field exists
+                // Update description if field exists and is selected
                 const descriptionInput = $('#attachment-details-two-column-description');
-                if (descriptionInput.length && metadata.description) {
-                    console.log('Setting description to:', metadata.description);
+                if (descriptionInput.length && metadata.description && selectedFields.description) {
                     descriptionInput.val(metadata.description).trigger('change');
                 }
 
-                // Force WordPress to recognize the changes
+                // Trigger change/input events for WordPress to recognize the updates
                 $('input, textarea').trigger('change').trigger('input');
-                
             } catch (err) {
-                console.error('Error updating metadata fields:', err);
-                console.error('Metadata at time of error:', metadata);
+                // Handle errors gracefully without logging
             }
         }
 
@@ -427,11 +483,11 @@
             modal.fadeIn();
 
             // Close modal on clicking close button, overlay, or pressing Escape
-            modal.find('.occ-modal-close, .occ-modal-overlay, .occ-close-modal').on('click', function () {
+            modal.find('.occ-modal-close, .occ-modal-overlay, .occ-close-modal').on('click', function() {
                 closeModal(modal);
             });
 
-            $(document).on('keydown', function (e) {
+            $(document).on('keydown', function(e) {
                 if (e.key === 'Escape') {
                     closeModal(modal);
                 }
@@ -440,7 +496,7 @@
 
         // Function to close and remove the modal
         function closeModal(modal) {
-            modal.fadeOut(function () {
+            modal.fadeOut(function() {
                 $(this).remove();
             });
         }
@@ -566,10 +622,10 @@
             }
         }
 
-        // Fetch usage information via AJAX
+        /**
+         * Fetches usage information via AJAX and updates the UI.
+         */
         function fetchUsageStatus() {
-            console.log('Starting fetchUsageStatus()...');
-
             $.ajax({
                 url: ajaxurl, // Provided by WordPress
                 type: 'POST',
@@ -577,34 +633,21 @@
                     action: 'check_usage',
                     nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
                 },
-                beforeSend: function () {
-                    console.log(
-                        'Sending AJAX request to check_usage with nonce:',
-                        oneclick_images_admin_vars.oneclick_images_ajax_nonce
-                    );
-                },
-                success: function (response) {
-                    console.log('AJAX response received:', response);
-
+                success: function(response) {
                     if (response.success) {
                         const { used_count, usage_limit, addon_count, remaining_count } = response.data;
-                        const totalAllowed = parseInt(usage_limit) + parseInt(addon_count);
-                        console.log(`Usage data: Used ${used_count}, Allowed ${totalAllowed}, Remaining ${remaining_count}`);
+                        const totalAllowed = parseInt(usage_limit, 10) + parseInt(addon_count, 10);
+
+                        // Update the UI with the usage data
                         updateUsageStatusUI(used_count, totalAllowed, remaining_count);
                     } else {
-                        console.error('Error in AJAX response:', response.error || 'Unknown error');
                         $('#usage_count').html('<strong>Error:</strong> Unable to fetch usage information.');
                         $('#usage_progress').css('width', '0%').text('0%');
                     }
                 },
-                error: function (xhr, status, error) {
-                    console.error('AJAX request failed:', status, error);
-                    console.debug('XHR object:', xhr);
+                error: function() {
                     $('#usage_count').html('<strong>Error:</strong> An error occurred while fetching usage information.');
                     $('#usage_progress').css('width', '0%').text('0%');
-                },
-                complete: function () {
-                    console.log('fetchUsageStatus() completed.');
                 },
             });
         }

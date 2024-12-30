@@ -54,55 +54,75 @@
                 },
                 success: function(response) {
                     if (typeof response !== 'object') {
-                        console.error('Response is not a valid JSON object:', response);
+                        $('#bulk_generate_status').append('<p>Error: Invalid response format for ID ' + imageId + '.</p>');
                         processNextImage(ids, index + 1);
                         return;
                     }
 
-                    if (response.success === true && response.data.metadata && response.data.metadata.error) {
-                        showSubscriptionPrompt(
-                            response.data.metadata.error,
-                            response.data.metadata.message,
-                            response.data.metadata.ad_url
-                        );
-                        return; 
-                    } else if (response.success === false && response.error === 'Usage limit reached. Please upgrade your subscription.') {
-                        showSubscriberLimitPrompt(response.error, response.limit);
-                        $('#bulk_generate_metadata_button').attr('disabled', false).text('Generate Metadata for Media Library');
-                        return;
-                    } else if (response.success === true && response.data && response.data.metadata) {
-                        $('#bulk_generate_status').append(
-                            '<p>' + response.data.metadata.title + ' - <span style="color:green;">Done</span></p>'
-                        );
+                    if (response.success === true && response.data && response.data.metadata) {
+                        const metadata = response.data.metadata;
+
+                        if (metadata.error === 'Usage limit reached. Please upgrade your subscription or purchase more blocks.') {
+                            showSubscriptionPrompt(
+                                metadata.error,
+                                metadata.message,
+                                metadata.ad_url
+                            );
+
+                            $('#bulk_generate_metadata_button').attr('disabled', false).text('Generate Metadata for Media Library');
+                            return;
+                        }
+
+                        if (metadata.error && metadata.error.startsWith('Image validation failed')) {
+                            showImageRejectionModal(metadata.error);
+                            $('#bulk_generate_status').append(
+                                '<p>' + imageId + ' - <span style="color:orange;">Rejected: </span>' + metadata.error + '</p>'
+                            );
+                            processNextImage(ids, index + 1);
+                            return;
+                        }
+
+                        if (metadata.success) {
+                            $('#bulk_generate_status').append(
+                                '<p>' + imageId + ' - <span style="color:green;">Done</span></p>'
+                            );
+                        } else {
+                            $('#bulk_generate_status').append('<p>Skipped ' + imageId + ' (Already has metadata or error).</p>');
+                        }
                     } else {
-                        $('#bulk_generate_status').append('<p>Skipped ' + imageId + ' (Already has metadata or error).</p>');
+                        $('#bulk_generate_status').append('<p>Skipped ' + imageId + ' (Unexpected response).</p>');
                     }
 
                     processNextImage(ids, index + 1);
                 },
                 error: function(xhr, status, error) {
-                    console.error('AJAX Error:', status, error);
                     $('#bulk_generate_status').append('<p>Error processing ID ' + imageId + ': ' + error + '</p>');
                     processNextImage(ids, index + 1);
                 }
             });
         }
 
-        // Handle metadata generation for a single image
-        $(document).on('click', '#generate_metadata_button', function(e) {
+        // Handle metadata generation for a specific image
+        $(document).on('click', '#generate_metadata_button', function (e) {
             e.preventDefault();
 
-            const selectedFields = oneclick_images_admin_vars.selected_fields;
-            const button = $(this);
-            const imageId = button.data('image-id');
+            console.log('Generate Metadata button clicked.');
+
+            // Initialize button and image ID variables
+            var button = $(this);
+            var imageId = button.data('image-id');
+            console.log('Image ID retrieved from data attribute:', imageId);
 
             if (!imageId) {
                 console.error('No Image ID found. Aborting metadata generation.');
                 return;
             }
 
+            // Disable button and show loading state
             button.attr('disabled', true).text('Generating...');
+            console.log('Button disabled and loading state shown.');
 
+            // Send AJAX request to generate metadata
             $.ajax({
                 url: oneclick_images_admin_vars.ajax_url,
                 type: 'POST',
@@ -111,58 +131,216 @@
                     nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
                     image_id: imageId,
                 },
-                beforeSend: function() {
+                beforeSend: function () {
+                    console.log('AJAX request is about to be sent with data:', {
+                        action: 'oneclick_images_generate_metadata',
+                        nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
+                        image_id: imageId,
+                    });
                 },
-                success: function(response) {
-                    if (response.success) {
-                        const metadataWrapper = response.data.metadata;
+                success: function (response) {
+                    if (typeof response !== 'object') {
+                        console.error('Invalid response format:', response);
+                        showGeneralErrorModal('An unexpected error occurred. Please try again.');
+                        return;
+                    }
 
-                        if (metadataWrapper.success === true) {
-                            updateMetadataFields(metadataWrapper.metadata, selectedFields);
-                        } else {
+                    if (response.success === true && response.data && response.data.metadata) {
+                        const metadata = response.data.metadata;
+
+                        // Handle specific errors
+                        if (metadata.error === 'Usage limit reached. Please upgrade your subscription or purchase more blocks.') {
+                            console.log('Triggering subscription prompt...');
                             showSubscriptionPrompt(
-                                metadataWrapper.error,
-                                metadataWrapper.message,
-                                metadataWrapper.ad_url
+                                metadata.error,
+                                metadata.message,
+                                metadata.ad_url
                             );
+                            return;
+                        }
+
+                        if (metadata.error && metadata.error.startsWith('Image validation failed')) {
+                            console.log('Triggering image rejection modal...');
+                            showImageRejectionModal(metadata.error);
+                            return;
+                        }
+
+                        if (metadata.error && metadata.error.startsWith('No metadata fields require generation')) {
+                            console.log('Triggering general error modal for skipped metadata generation...');
+                            showGeneralErrorModal('The image already has all metadata fields filled, and "Override Metadata" is disabled.');
+                            return;
+                        }
+
+                        if (metadata.success) {
+                            console.log('Metadata successfully generated:', metadata.metadata);
+                            updateMetadataFields(metadata.metadata); // Update metadata fields
+                        } else {
+                            console.warn('Metadata generation skipped or unexpected issue occurred.');
+                            showGeneralErrorModal('Metadata generation was skipped or an unexpected issue occurred.');
                         }
                     } else {
-                        console.error('Response indicates failure:', response);
+                        console.error('Unexpected response structure or failure:', response);
+                        showGeneralErrorModal('An unexpected error occurred.');
                     }
                 },
-                error: function(xhr, status, error) {
-                    console.error('AJAX Error:', status, error);
-                    console.debug('XHR Object:', xhr);
+                error: function (xhr, status, error) {
+                    console.error('AJAX error:', error);
+                    showGeneralErrorModal('An error occurred while processing the request. Please try again.');
                 },
-                complete: function() {
+                complete: function () {
                     button.attr('disabled', false).text('Generate Metadata');
+                    console.log('Metadata generation request complete. Button re-enabled.');
                 },
             });
         });
 
-        function updateMetadataFields(metadata, selectedFields) {
+        /**
+         * Function to show the image rejection modal.
+         * @param {string} message - The error message to display in the modal.
+         */
+        function showImageRejectionModal(message) {
+            console.log('Displaying image rejection modal with message:', message);
+
+            // Construct the modal HTML
+            const modalHtml = `
+                <div id="occ-image-rejection-modal" class="occ-modal" role="dialog" aria-labelledby="image-rejection-modal-title">
+                    <div class="occ-modal-overlay"></div>
+                    <div class="occ-modal-content" tabindex="0">
+                        <span class="occ-modal-close dashicons dashicons-no" aria-label="Close"></span>
+                        <h2 id="image-rejection-modal-title">
+                            <span class="dashicons dashicons-warning"></span> Image Rejected
+                        </h2>
+                        <p>${message}</p>
+                        <button class="occ-modal-button occ-close-modal">OK</button>
+                    </div>
+                </div>
+            `;
+
+            // Append modal to body
+            $('body').append(modalHtml);
+
+            const modal = $('#occ-image-rejection-modal');
+            modal.fadeIn();
+
+            // Attach close handlers
+            modal.find('.occ-modal-close, .occ-modal-overlay, .occ-close-modal').on('click', function () {
+                closeModal(modal);
+            });
+
+            // Close modal on Escape key press
+            $(document).on('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    closeModal(modal);
+                }
+            });
+        }
+
+        /**
+         * Function to close the modal.
+         * @param {object} modal - The modal element to close.
+         */
+        function closeModal(modal) {
+            console.log('Closing modal...');
+            modal.fadeOut(function () {
+                modal.remove();
+                console.log('Modal removed from DOM.');
+            });
+        }
+
+        // Function to show the general error modal (if needed)
+        function showGeneralErrorModal(message) {
+            console.log('Displaying general error modal with message:', message);
+
+            const modalHtml = `
+                <div id="occ-general-error-modal" class="occ-modal" role="dialog" aria-labelledby="general-error-modal-title">
+                    <div class="occ-modal-overlay"></div>
+                    <div class="occ-modal-content" tabindex="0">
+                        <span class="occ-modal-close dashicons dashicons-no" aria-label="Close"></span>
+                        <h2 id="general-error-modal-title">
+                            <span class="dashicons dashicons-warning"></span> Action Skipped
+                        </h2>
+                        <p>${message}</p>
+                        <p>
+                            <a href="/wp-admin/options-general.php?page=oneclickcontent-images-settings" class="occ-modal-link">
+                                Click here to update your settings.
+                            </a>
+                        </p>
+                        <button class="occ-modal-button occ-close-modal">OK</button>
+                    </div>
+                </div>
+            `;
+
+            // Append modal to body
+            $('body').append(modalHtml);
+
+            const modal = $('#occ-general-error-modal');
+            modal.fadeIn();
+
+            // Attach close handlers
+            modal.find('.occ-modal-close, .occ-modal-overlay, .occ-close-modal').on('click', function () {
+                modal.fadeOut(() => modal.remove());
+            });
+
+            $(document).on('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    modal.fadeOut(() => modal.remove());
+                }
+            });
+        }
+
+        // Ensure these functions are globally accessible
+        window.showImageRejectionModal = showImageRejectionModal;
+        window.showGeneralErrorModal = showGeneralErrorModal;
+        window.showSubscriptionPrompt = showSubscriptionPrompt;
+
+        function updateMetadataFields(metadata) {
             try {
-                if (selectedFields.alt_text) {
-                    const altInput = $('#attachment-details-two-column-alt-text');
-                    altInput.val(metadata.alt_text || '').trigger('change');
+                console.log('Inside updateMetadataFields. Metadata received:', metadata);
+                
+                // Safely get selected fields with fallback to enable all fields if undefined
+                const selectedFields = oneclick_images_admin_vars.selected_fields || {
+                    alt_text: true,
+                    title: true,
+                    caption: true,
+                    description: true
+                };
+                
+                console.log('Selected fields configuration:', selectedFields);
+
+                // Update alt text if field exists
+                const altInput = $('#attachment-details-two-column-alt-text');
+                if (altInput.length && metadata.alt_text) {
+                    console.log('Setting alt text to:', metadata.alt_text);
+                    altInput.val(metadata.alt_text).trigger('change');
                 }
 
-                if (selectedFields.title) {
-                    const titleInput = $('#attachment-details-two-column-title');
-                    titleInput.val(metadata.title || '').trigger('change');
+                // Update title if field exists
+                const titleInput = $('#attachment-details-two-column-title');
+                if (titleInput.length && metadata.title) {
+                    console.log('Setting title to:', metadata.title);
+                    titleInput.val(metadata.title).trigger('change');
                 }
 
-                if (selectedFields.caption) {
-                    const captionInput = $('#attachment-details-two-column-caption');
-                    captionInput.val(metadata.caption || '').trigger('change');
+                // Update caption if field exists
+                const captionInput = $('#attachment-details-two-column-caption');
+                if (captionInput.length && metadata.caption) {
+                    console.log('Setting caption to:', metadata.caption);
+                    captionInput.val(metadata.caption).trigger('change');
                 }
 
-                if (selectedFields.description) {
-                    const descriptionInput = $('#attachment-details-two-column-description');
-                    descriptionInput.val(metadata.description || '').trigger('change');
+                // Update description if field exists
+                const descriptionInput = $('#attachment-details-two-column-description');
+                if (descriptionInput.length && metadata.description) {
+                    console.log('Setting description to:', metadata.description);
+                    descriptionInput.val(metadata.description).trigger('change');
                 }
+
+                // Force WordPress to recognize the changes
+                $('input, textarea').trigger('change').trigger('input');
+                
             } catch (err) {
                 console.error('Error updating metadata fields:', err);
+                console.error('Metadata at time of error:', metadata);
             }
         }
 
@@ -222,7 +400,50 @@
             });
         }
 
+        // Ensure these functions are globally accessible
+        window.showImageRejectionModal = showImageRejectionModal;
         window.showSubscriptionPrompt = showSubscriptionPrompt;
+
+
+        // Function to show the image rejection modal
+        function showImageRejectionModal(message) {
+            const modalHtml = `
+                <div id="occ-image-rejection-modal" class="occ-modal" role="dialog" aria-labelledby="image-rejection-modal-title">
+                    <div class="occ-modal-overlay"></div>
+                    <div class="occ-modal-content" tabindex="0">
+                        <span class="occ-modal-close dashicons dashicons-no" aria-label="Close"></span>
+                        <h2 id="image-rejection-modal-title"><span class="dashicons dashicons-warning"></span> Image Rejected</h2>
+                        <p>${message}</p>
+                        <button class="occ-modal-button occ-close-modal">OK</button>
+                    </div>
+                </div>
+            `;
+
+            $('body').append(modalHtml);
+
+            const modal = $('#occ-image-rejection-modal');
+            modal.removeAttr('aria-hidden');
+            modal.find('.occ-modal-content').focus();
+            modal.fadeIn();
+
+            // Close modal on clicking close button, overlay, or pressing Escape
+            modal.find('.occ-modal-close, .occ-modal-overlay, .occ-close-modal').on('click', function () {
+                closeModal(modal);
+            });
+
+            $(document).on('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    closeModal(modal);
+                }
+            });
+        }
+
+        // Function to close and remove the modal
+        function closeModal(modal) {
+            modal.fadeOut(function () {
+                $(this).remove();
+            });
+        }
 
         function showSubscriberLimitPrompt(error, limit) {
             const modalHtml = `

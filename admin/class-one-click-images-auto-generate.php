@@ -76,6 +76,18 @@ class One_Click_Images_Auto_Generate {
 	}
 
 	/**
+	 * AJAX handler to remove the transient when the modal is closed.
+	 */
+	public function oneclick_remove_image_error_transient() {
+		check_ajax_referer( 'oneclick_images_ajax_nonce', 'nonce' );
+
+		delete_transient( 'oneclick_image_error' );
+
+		wp_send_json_success( array( 'message' => 'Transient removed successfully.' ) );
+	}
+
+
+	/**
 	 * Get all media IDs in the Media Library.
 	 *
 	 * This function is typically used for AJAX requests to retrieve all image IDs in the media library.

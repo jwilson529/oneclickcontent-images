@@ -4,9 +4,9 @@
 
 /* Container Styling */
 #oneclick_images.wrap {
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 30px;
     background: #fff;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -16,85 +16,89 @@
 /***********************************************
  * Headings
  ***********************************************/
-#oneclick_images h1,
-#oneclick_images h2 {
+#oneclick_images h1 {
     color: #333;
     font-weight: bold;
-    font-size: 24px;
+    font-size: 28px;
     margin-bottom: 20px;
+    text-align: center;
+}
+
+#oneclick_images h2 {
+    color: #444;
+    font-weight: bold;
+    font-size: 20px;
+    margin-bottom: 15px;
+}
+
+/***********************************************
+ * Settings Divider
+ ***********************************************/
+#oneclick_images .settings-divider {
+    border: 1px solid #ddd;
+    margin: 30px 0;
 }
 
 /***********************************************
  * Form Styling
  ***********************************************/
-
-/* Form Table */
-#oneclick_images .form-table {
-    width: 100%;
-    border-collapse: collapse;
+#oneclick_images form {
     margin-bottom: 20px;
 }
 
-#oneclick_images .form-table th {
-    text-align: left;
-    padding: 15px 10px;
-    font-size: 16px;
-    font-weight: 600;
-    color: #333;
-    border-bottom: 1px solid #ddd;
+/***********************************************
+ * Usage Information Styling
+ ***********************************************/
+#oneclick_images .usage-info-section {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-#oneclick_images .form-table td {
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
-    font-size: 15px;
-}
-
-/* Input Fields */
-#oneclick_images input[type="text"],
-#oneclick_images input[type="password"],
-#oneclick_images input[type="checkbox"],
-#oneclick_images select {
-    width: 100%;
-    padding: 10px;
-    font-size: 15px;
+#oneclick_images .usage-summary strong {
+    display: block;
+    font-size: 18px;
     margin-bottom: 10px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    color: #333;
 }
 
-/* Checkbox Styling */
-#oneclick_images input[type="checkbox"] {
-    width: auto;
-    margin-right: 8px;
-    transform: scale(1.2);
-    vertical-align: middle;
+#oneclick_images .progress {
+    background-color: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+    height: 20px;
+}
+
+#oneclick_images .progress-bar {
+    text-align: center;
+    line-height: 20px;
+    font-size: 14px;
+    color: white;
+    transition: width 0.5s ease;
 }
 
 /***********************************************
- * Buttons
+ * Bulk Generate Section
  ***********************************************/
+#oneclick_images .bulk-generate-section {
+    background: #fdfdfd;
+    border: 1px solid #e1e1e1;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
 
-/* Submit Button */
-#oneclick_images .button-primary {
-    background-color: #007cba;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
+#oneclick_images .bulk-generate-section p {
+    margin-bottom: 15px;
     font-size: 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s;
+    color: #555;
 }
 
-#oneclick_images .button-primary:hover {
-    background-color: #005a8c;
-}
-
-/* Bulk Generation Button */
-#bulk_generate_metadata_button {
-    background-color: #28a745;
+#oneclick_images #bulk_generate_metadata_button {
+    display: inline-block;
+    background-color: #007cba;
     color: white;
     font-size: 16px;
     border-radius: 4px;
@@ -102,72 +106,50 @@
     border: none;
     cursor: pointer;
     transition: background-color 0.3s;
-    margin-bottom: 20px;
 }
 
-#bulk_generate_metadata_button:disabled {
+#oneclick_images #bulk_generate_metadata_button:disabled {
     background-color: #6c757d;
     cursor: not-allowed;
 }
 
-#bulk_generate_metadata_button:hover:not(:disabled) {
-    background-color: #218838;
+#oneclick_images #bulk_generate_metadata_button:hover:not(:disabled) {
+    background-color: #005a8c;
+}
+
+#oneclick_images .bulk-generate-status {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #333;
 }
 
 /***********************************************
  * Notifications
  ***********************************************/
 
-/* Success Message */
-.notice.notice-success {
+/* Success and Error States */
+.notice-success {
     background-color: #e8f6ec;
-    border-left: 4px solid #48b56f;
+    border-left: 4px solid #28a745;
     padding: 15px;
-    margin: 20px 0;
     border-radius: 4px;
-    display: none; /* Default state */
-}
-
-.notice.notice-success:first-of-type {
-    display: block; /* Show first success notice */
-}
-
-.notice .notice-dismiss {
-    background: none;
-    border: none;
-    color: #48b56f;
+    color: #155724;
     font-size: 14px;
-    cursor: pointer;
-    transition: color 0.2s;
 }
 
-.notice .notice-dismiss:hover {
-    color: #007cba;
-}
-
-/* Error Notice */
-.oneclick-error-notice {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+.notice-error {
+    background-color: #f8d7da;
+    border-left: 4px solid #dc3545;
     padding: 15px;
-    z-index: 1000;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    border-radius: 5px;
-}
-
-.oneclick-error-notice a {
+    border-radius: 4px;
     color: #721c24;
-    text-decoration: underline;
+    font-size: 14px;
 }
 
 /***********************************************
  * Bulk Generation Status
  ***********************************************/
-#bulk_generate_status {
+#oneclick_images #bulk_generate_status {
     background-color: #f8f9fa;
     padding: 20px;
     border-radius: 4px;
@@ -177,17 +159,17 @@
     font-size: 14px;
 }
 
-#bulk_generate_status p {
+#oneclick_images #bulk_generate_status p {
     margin: 0;
     padding: 5px 0;
 }
 
-#bulk_generate_status span {
+#oneclick_images #bulk_generate_status span {
     font-weight: bold;
     color: #28a745;
 }
 
-#bulk_generate_status p span.skipped {
+#oneclick_images #bulk_generate_status p span.skipped {
     color: #ffcc00;
 }
 
@@ -306,13 +288,13 @@
 }
 
 /* Progress Bar Styling */
-.progress {
+#oneclick_images .progress {
     background-color: #e9ecef;
     border-radius: 4px;
     overflow: hidden;
 }
 
-.progress-bar {
+#oneclick_images .progress-bar {
     text-align: center;
     line-height: 20px;
     font-size: 14px;
@@ -321,15 +303,220 @@
 }
 
 /* Usage States */
-.bg-success {
+#oneclick_images .bg-success {
     background-color: #28a745 !important;
 }
 
-.bg-warning {
+#oneclick_images .bg-warning {
     background-color: #ffc107 !important;
     color: #333 !important;
 }
 
-.bg-danger {
+#oneclick_images .bg-danger {
     background-color: #dc3545 !important;
+}
+
+/***********************************************
+ * Jumbotron Styling
+ ***********************************************/
+
+/* Jumbotron Wrapper */
+#oneclick_images .jumbotron-wrapper {
+    position: relative;
+    width: 100%;
+    max-height: 225px; /* Constrain the maximum height */
+    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Jumbotron Image */
+#oneclick_images .jumbotron-wrapper img {
+    width: 100%;
+    height: auto;
+    object-fit: none;
+    max-height: 100%; 
+    border-radius: inherit;
+}
+
+/* Jumbotron Title */
+#oneclick_images .jumbotron-title {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 36px;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+    font-weight: bold;
+    margin: 0;
+    padding: 10px 20px;
+    border-radius: 4px;
+    width: 90%;
+}
+
+#oneclick_images h1 {
+    color: #fff;
+    font-weight: bold;
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    text-align: center;
+    padding: 1rem;
+}
+
+
+#occ-image-rejection-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 160003;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+#occ-image-rejection-modal .occ-modal-content {
+    background: #fff;
+    padding: 20px;
+    max-width: 500px;
+    margin: 50px auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    position: relative;
+    text-align: center;
+}
+
+#occ-image-rejection-modal .occ-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+#occ-image-rejection-modal .occ-modal-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+}
+
+#occ-image-rejection-modal .occ-modal-button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    background-color: #007cba;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+
+/* Modal Styles */
+.occ-modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 160003;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+}
+
+.occ-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Background overlay */
+}
+
+.occ-modal-content {
+    position: relative;
+    margin: 15% auto;
+    padding: 20px;
+    width: 90%;
+    max-width: 500px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.occ-modal-content h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+    color: #333;
+    display: flex;
+    align-items: center;
+}
+
+.occ-modal-content h2 span {
+    margin-right: 10px;
+}
+
+.occ-modal-content p {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+.occ-modal-button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007cba; /* WordPress blue */
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    text-align: center;
+}
+
+.occ-modal-button:hover {
+    background-color: #005a8c;
+}
+
+.occ-modal-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    color: #888;
+}
+
+.occ-modal-close:hover {
+    color: #333;
+}
+
+.occ-modal-link {
+    display: inline-block;
+    margin-top: 10px;
+    color: #007cba; /* WordPress blue */
+    font-weight: bold;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.occ-modal-link:hover {
+    text-decoration: underline;
+    color: #005a8c;
+}
+
+/* Fade-in Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

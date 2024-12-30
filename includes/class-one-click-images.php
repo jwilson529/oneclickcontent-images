@@ -176,6 +176,7 @@ class One_Click_Images {
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 		$this->loader->add_action( 'wp_ajax_oneclick_images_get_all_media_ids', $plugin_auto_generate, 'oneclick_images_get_all_media_ids' );
 		$this->loader->add_action( 'wp_ajax_check_image_error', $plugin_auto_generate, 'check_image_error' );
+		$this->loader->add_action( 'wp_ajax_remove_image_error_transient', $plugin_auto_generate, 'oneclick_remove_image_error_transient' );
 
 		$this->loader->add_action( 'plugins_loaded', $plugin_admin, 'oneclick_register_custom_image_size' );
 

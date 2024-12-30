@@ -380,13 +380,10 @@ class One_Click_Images_License_Update {
 	/**
 	 * Handles the AJAX request to fetch usage details.
 	 */
-	function oneclick_images_ajax_check_usage() {
-		error_log( '[OneClickContent] AJAX check_usage request received.' );
-
+	public function oneclick_images_ajax_check_usage() {
 		// Verify nonce for security.
-		$nonce = $_POST['nonce'] ?? '';
+		$nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) : '';
 		if ( ! wp_verify_nonce( $nonce, 'oneclick_images_ajax_nonce' ) ) {
-			error_log( '[OneClickContent] Invalid nonce in check_usage.' );
 			wp_send_json_error( array( 'error' => 'Invalid nonce.' ) );
 		}
 
@@ -394,12 +391,9 @@ class One_Click_Images_License_Update {
 		$license_key = get_option( 'oneclick_images_license_key', '' );
 		$origin_url  = home_url();
 
-		if ( empty( $license_key ) ) {
-			error_log( '[OneClickContent] License key is missing.' );
+		if ( '' === $license_key ) {
 			wp_send_json_error( array( 'error' => 'License key is missing.' ) );
 		}
-
-		error_log( '[OneClickContent] Preparing API request with license_key: ' . $license_key . ', origin_url: ' . $origin_url . ' rest_url:  ' . 'https://oneclickcontent.com/wp-json/subscriber/v1/check-usage', );
 
 		// Prepare the API request.
 		$response = wp_remote_post(
@@ -418,32 +412,24 @@ class One_Click_Images_License_Update {
 
 		// Handle errors from the API request.
 		if ( is_wp_error( $response ) ) {
-			error_log( '[OneClickContent] API request failed: ' . $response->get_error_message() );
 			wp_send_json_error( array( 'error' => $response->get_error_message() ) );
 		}
 
 		$response_body = wp_remote_retrieve_body( $response );
 		$response_code = wp_remote_retrieve_response_code( $response );
 
-		error_log( '[OneClickContent] API response code: ' . $response_code );
-		error_log( '[OneClickContent] API response body: ' . $response_body );
-
 		// Decode the JSON response.
 		$decoded_response = json_decode( $response_body, true );
 
-		if ( json_last_error() !== JSON_ERROR_NONE ) {
-			error_log( '[OneClickContent] JSON decode error: ' . json_last_error_msg() );
+		if ( JSON_ERROR_NONE !== json_last_error() ) {
 			wp_send_json_error( array( 'error' => 'Invalid response from server.' ) );
 		}
 
 		// Check for errors in the response.
-		if ( $response_code !== 200 || isset( $decoded_response['error'] ) ) {
-			$error_message = $decoded_response['error'] ?? 'Unknown error occurred.';
-			error_log( '[OneClickContent] API returned an error: ' . $error_message );
+		if ( 200 !== $response_code || isset( $decoded_response['error'] ) ) {
+			$error_message = isset( $decoded_response['error'] ) ? $decoded_response['error'] : 'Unknown error occurred.';
 			wp_send_json_error( array( 'error' => $error_message ) );
 		}
-
-		error_log( '[OneClickContent] API request successful. Returning usage data.' );
 
 		// Send back the successful response.
 		wp_send_json_success( $decoded_response );

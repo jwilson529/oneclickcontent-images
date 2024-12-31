@@ -15,7 +15,7 @@
  * Plugin Name:       OneClickContent - Image Meta Generator
  * Plugin URI:        https://oneclickcontent.com
  * Description:       Uploads images to OpenAI in order to auto generate titles, descriptions, captions and alt automatically.
- * Version:           1.0.0
+ * Version:           1.1.2
  * Author:            James Wilson
  * Author URI:        https://oneclickcontent.com/
  * License:           GPL-2.0+
@@ -34,7 +34,7 @@ if ( ! defined( 'WPINC' ) ) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define( 'OCC_IMAGES_VERSION', '1.0.0' );
+define( 'OCC_IMAGES_VERSION', '1.1.2' );
 
 /**
  * The code that runs during plugin activation.

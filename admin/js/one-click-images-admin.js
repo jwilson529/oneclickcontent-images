@@ -217,6 +217,7 @@
 
 
         let updateCounter = 0;
+
         /**
          * Process metadata generation for the next image.
          *
@@ -241,7 +242,7 @@
                     nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
                     image_id: imageId,
                 },
-                success: function(response) {
+                success: function (response) {
                     if (typeof response !== 'object') {
                         $('#bulk_generate_status').append('<p>Error: Invalid response format for ID ' + imageId + '.</p>');
                         processNextImage(ids, index + 1);
@@ -249,35 +250,33 @@
                     }
 
                     if (response.success && response.data && response.data.metadata) {
-                        console.log(response);
-                        const metadata = response.data.metadata.metadata || {}; // Correctly access the nested metadata
+                        const metadataResponse = response.data.metadata;
 
                         // Handle usage limit or free trial limit errors
                         if (
-                            metadata.error === 'Usage limit reached. Please upgrade your subscription or purchase more blocks.' ||
-                            metadata.error === 'Free trial limit reached. Please subscribe to continue.'
+                            metadataResponse.error === 'Usage limit reached. Please upgrade your subscription or purchase more blocks.' ||
+                            metadataResponse.error === 'Free trial limit reached. Please subscribe to continue.'
                         ) {
-                            showSubscriptionPrompt(metadata.error, metadata.message, metadata.ad_url);
+                            showSubscriptionPrompt(metadataResponse.error, metadataResponse.message, metadataResponse.ad_url);
                             $('#bulk_generate_metadata_button').attr('disabled', false).text('Generate Metadata for Media Library');
                             return;
                         }
 
                         // Handle image validation errors.
-                        if (metadata.error && metadata.error.startsWith('Image validation failed')) {
-                            showImageRejectionModal(metadata.error);
+                        if (metadataResponse.error && metadataResponse.error.startsWith('Image validation failed')) {
+                            showImageRejectionModal(metadataResponse.error);
                             $('#bulk_generate_status').append(
-                                `<p>${imageId} - <span style="color:orange;">Rejected: </span>${metadata.error}</p>`
+                                `<p>${imageId} - <span style="color:orange;">Rejected: </span>${metadataResponse.error}</p>`
                             );
                             processNextImage(ids, index + 1);
                             return;
                         }
 
                         // Handle successful metadata generation.
-                        if (response.data.metadata.success) {
-                            // Generate the media library edit link
+                        if (metadataResponse.success) {
                             const mediaLibraryUrl = `/wp-admin/post.php?post=${imageId}&action=edit`;
 
-                            const newData = metadata; // Use the correct nested metadata object
+                            const newData = metadataResponse.metadata || {};
 
                             // Build metadata table rows
                             const metadataRows = Object.entries(newData).length > 0
@@ -317,7 +316,7 @@
                         fetchUsageStatus();
                     }
                 },
-                error: function(xhr, status, error) {
+                error: function (xhr, status, error) {
                     $('#bulk_generate_status').append('<p>Error processing ID ' + imageId + ': ' + error + '</p>');
                     processNextImage(ids, index + 1);
                     if (++updateCounter % 5 === 0) {
@@ -727,11 +726,11 @@
                         // Update the UI with the usage data
                         updateUsageStatusUI(used_count, totalAllowed, remaining_count);
                     } else {
-                        $('#usage_count').html('<strong>Error:</strong> Unable to fetch usage information.');
+                        $('#usage_count').html('<strong>"Error:":</strong> Unable to fetch usage information.');
                         $('#usage_progress').css('width', '0%').text('0%');
                     }
                 },
-                error: function() {
+                "Error:": function() {
                     $('#usage_count').html('<strong>Error:</strong> An error occurred while fetching usage information.');
                     $('#usage_progress').css('width', '0%').text('0%');
                 },

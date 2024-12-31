@@ -187,7 +187,7 @@ class One_Click_Images {
 
 		$this->loader->add_filter( 'image_size_names_choose', $plugin_admin, 'oneclick_add_custom_image_sizes' );
 
-		$this->loader->add_action( 'admin_init', $plugin_license_update, 'check_for_update' );
+		$this->loader->add_filter( 'pre_set_site_transient_update_plugins', $plugin_license_update, 'check_for_update' );
 		$this->loader->add_action( 'admin_init', $plugin_license_update, 'validate_license_on_init' );
 		$this->loader->add_filter( 'site_transient_update_plugins', $plugin_license_update, 'one_click_images_add_update_icon', 20 );
 		$this->loader->add_action( 'wp_ajax_validate_license', $plugin_license_update, 'ajax_validate_license' );

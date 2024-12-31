@@ -129,6 +129,7 @@ class One_Click_Images_License_Update {
 		// Check if the transient exists and has not expired.
 		$cached_response = get_transient( 'oneclick_images_update_check' );
 		if ( false !== $cached_response ) {
+			$this->apply_update_to_transient( $cached_response );
 			return; // Skip the API call if the transient is still valid.
 		}
 
@@ -146,7 +147,7 @@ class One_Click_Images_License_Update {
 		);
 
 		$response = wp_remote_post(
-			"{$this->api_url}/check-update",
+			"{$this->api_url}check-update",
 			array(
 				'body'    => wp_json_encode( $request_data ),
 				'headers' => array( 'Content-Type' => 'application/json' ),
@@ -164,34 +165,50 @@ class One_Click_Images_License_Update {
 		if ( json_last_error() === JSON_ERROR_NONE ) {
 			// Cache the result for 24 hours.
 			set_transient( 'oneclick_images_update_check', $data, DAY_IN_SECONDS );
-
-			// If an update is available, hook into the update plugins transient.
-			if ( isset( $data['update_available'] ) && $data['update_available'] ) {
-				add_filter(
-					'site_transient_update_plugins',
-					function ( $transient ) use ( $data ) {
-						if ( ! is_object( $transient ) ) {
-							$transient = new stdClass();
-						}
-
-						if ( ! isset( $transient->response ) ) {
-							$transient->response = array();
-						}
-
-						$transient->response['one-click-images/one-click-images.php'] = (object) array(
-							'slug'        => 'one-click-images',
-							'plugin'      => 'one-click-images/one-click-images.php',
-							'new_version' => sanitize_text_field( $data['latest_version'] ),
-							'package'     => esc_url_raw( $data['download_url'] ),
-						);
-
-						return $transient;
-					}
-				);
-			}
+			$this->apply_update_to_transient( $data );
 		}
 	}
 
+	/**
+	 * Apply update data to the `site_transient_update_plugins`.
+	 *
+	 * @param array $data The update data.
+	 */
+	private function apply_update_to_transient( $data ) {
+		if ( isset( $data['update_available'] ) && $data['update_available'] ) {
+			add_filter(
+				'site_transient_update_plugins',
+				function ( $transient ) use ( $data ) {
+					if ( ! is_object( $transient ) ) {
+						$transient = new stdClass();
+					}
+
+					if ( ! isset( $transient->response ) ) {
+						$transient->response = array();
+					}
+
+					$plugin_details = $data['plugin_details'] ?? array();
+
+					$transient->response['one-click-images/one-click-images.php'] = (object) array(
+						'slug'         => 'one-click-images',
+						'plugin'       => 'one-click-images/one-click-images.php',
+						'new_version'  => sanitize_text_field( $data['latest_version'] ?? '1.0.0' ),
+						'package'      => esc_url_raw( $data['download_url'] ?? '' ),
+						'name'         => sanitize_text_field( $plugin_details['name'] ?? 'Unknown Plugin' ),
+						'author'       => $plugin_details['author'] ?? '',
+						'homepage'     => esc_url_raw( $plugin_details['homepage'] ?? '' ),
+						'requires'     => $plugin_details['requires'] ?? '',
+						'tested'       => $plugin_details['tested'] ?? '',
+						'requires_php' => $plugin_details['requires_php'] ?? '',
+						'sections'     => $plugin_details['sections'] ?? array(),
+						'banners'      => $plugin_details['banners'] ?? array(),
+					);
+
+					return $transient;
+				}
+			);
+		}
+	}
 
 	/**
 	 * Adds a custom icon to the plugin update notification.

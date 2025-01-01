@@ -12,12 +12,15 @@ FOUND 2 ERRORS AND 2 WARNINGS AFFECTING 4 LINES
 
 
 FILE: /Users/jameswilson/Local Sites/wp-clean-install/app/public/wp-content/plugins/one-click-images/admin/class-one-click-images-admin.php
--------------------------------------------------------------------------------------------------------------------------------------------
-FOUND 0 ERRORS AND 2 WARNINGS AFFECTING 2 LINES
--------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+FOUND 1 ERROR AND 3 WARNINGS AFFECTING 3 LINES
+---------------------------------------------------------------------------------------------------------------------------------------------------------
  220 | WARNING | Processing form data without nonce verification.
  222 | WARNING | Processing form data without nonce verification.
--------------------------------------------------------------------------------------------------------------------------------------------
+ 273 | WARNING | Processing form data without nonce verification.
+ 273 | ERROR   | Detected usage of a possibly undefined superglobal array index: $_GET['image_id']. Use isset() or empty() to check the index exists
+     |         | before using it
+---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Time: 562ms; Memory: 18MB
+Time: 563ms; Memory: 18MB
 

@@ -218,113 +218,157 @@
 
         let updateCounter = 0;
 
-        /**
-         * Process metadata generation for the next image.
-         *
-         * @param {Array} ids - Array of media attachment IDs.
-         * @param {number} index - Current index of the image being processed.
-         */
-        function processNextImage(ids, index) {
-            if (index >= ids.length) {
-                $('#bulk_generate_status').append('<p>All media items processed.</p>');
-                $('#bulk_generate_metadata_button').attr('disabled', false).text('Generate Metadata for Media Library');
-                return;
-            }
+       /**
+        * Process metadata generation for the next image.
+        *
+        * @param {Array} ids - Array of media attachment IDs.
+        * @param {number} index - Current index of the image being processed.
+        */
+       function processNextImage(ids, index) {
+           if (index >= ids.length) {
+               $('#bulk_generate_status').append('<p>All media items processed.</p>');
+               $('#bulk_generate_metadata_button').attr('disabled', false).text('Generate Metadata for Media Library');
+               return;
+           }
 
-            const imageId = ids[index];
+           const imageId = ids[index];
 
-            // Generate metadata for the current image via AJAX.
-            $.ajax({
-                url: oneclick_images_admin_vars.ajax_url,
-                type: 'POST',
-                data: {
-                    action: 'oneclick_images_generate_metadata',
-                    nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
-                    image_id: imageId,
-                },
-                success: function (response) {
-                    if (typeof response !== 'object') {
-                        $('#bulk_generate_status').append('<p>Error: Invalid response format for ID ' + imageId + '.</p>');
-                        processNextImage(ids, index + 1);
-                        return;
-                    }
+           // Generate metadata for the current image via AJAX.
+           $.ajax({
+               url: oneclick_images_admin_vars.ajax_url,
+               type: 'POST',
+               data: {
+                   action: 'oneclick_images_generate_metadata',
+                   nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
+                   image_id: imageId,
+               },
+               success: function (response) {
+                   if (typeof response !== 'object') {
+                       $('#bulk_generate_status').append('<p>Error: Invalid response format for ID ' + imageId + '.</p>');
+                       processNextImage(ids, index + 1);
+                       return;
+                   }
 
-                    if (response.success && response.data && response.data.metadata) {
-                        const metadataResponse = response.data.metadata;
+                   if (response.success && response.data && response.data.metadata) {
+                       const metadataResponse = response.data.metadata;
 
-                        // Handle usage limit or free trial limit errors
-                        if (
-                            metadataResponse.error === 'Usage limit reached. Please upgrade your subscription or purchase more blocks.' ||
-                            metadataResponse.error === 'Free trial limit reached. Please subscribe to continue.'
-                        ) {
-                            showSubscriptionPrompt(metadataResponse.error, metadataResponse.message, metadataResponse.ad_url);
-                            $('#bulk_generate_metadata_button').attr('disabled', false).text('Generate Metadata for Media Library');
-                            return;
-                        }
+                       // Handle usage limit or free trial limit errors
+                       if (
+                           metadataResponse.error === 'Usage limit reached. Please upgrade your subscription or purchase more blocks.' ||
+                           metadataResponse.error === 'Free trial limit reached. Please subscribe to continue.'
+                       ) {
+                           showSubscriptionPrompt(metadataResponse.error, metadataResponse.message, metadataResponse.ad_url);
+                           $('#bulk_generate_metadata_button').attr('disabled', false).text('Generate Metadata for Media Library');
+                           return;
+                       }
 
-                        // Handle image validation errors.
-                        if (metadataResponse.error && metadataResponse.error.startsWith('Image validation failed')) {
-                            showImageRejectionModal(metadataResponse.error);
-                            $('#bulk_generate_status').append(
-                                `<p>${imageId} - <span style="color:orange;">Rejected: </span>${metadataResponse.error}</p>`
-                            );
-                            processNextImage(ids, index + 1);
-                            return;
-                        }
+                       // Handle image validation errors
+                       if (metadataResponse.error && metadataResponse.error.startsWith('Image validation failed')) {
+                           showImageRejectionModal(metadataResponse.error);
+                           $('#bulk_generate_status').append(
+                               `<p>${imageId} - <span style="color:orange;">Rejected: </span>${metadataResponse.error}</p>`
+                           );
+                           processNextImage(ids, index + 1);
+                           return;
+                       }
 
-                        // Handle successful metadata generation.
-                        if (metadataResponse.success) {
-                            const mediaLibraryUrl = `/wp-admin/post.php?post=${imageId}&action=edit`;
+                       // Handle successful metadata generation
+                       if (metadataResponse.success) {
+                           const mediaLibraryUrl = `/wp-admin/post.php?post=${imageId}&action=edit`;
+                           const newData = metadataResponse.metadata || {};
 
-                            const newData = metadataResponse.metadata || {};
+                           // Fetch the thumbnail URL
+                           $.ajax({
+                               url: `/wp-admin/admin-ajax.php?action=get_thumbnail&image_id=${imageId}`,
+                               type: 'GET',
+                               success: function (thumbnailResponse) {
+                                   const thumbnailUrl = thumbnailResponse.success && thumbnailResponse.data?.thumbnail 
+                                       ? thumbnailResponse.data.thumbnail 
+                                       : '/path/to/placeholder-image.jpg';
 
-                            // Build metadata table rows
-                            const metadataRows = Object.entries(newData).length > 0
-                                ? Object.entries(newData)
-                                    .map(([key, value]) => `<tr><td>${key}</td><td>${value}</td></tr>`)
-                                    .join('')
-                                : '<tr><td colspan="2">No metadata available</td></tr>'; // Fallback if no data
+                                   renderMetadataUI(mediaLibraryUrl, thumbnailUrl, newData, imageId);
+                                   processNextImage(ids, index + 1);
+                               },
+                               error: function () {
+                                   // Fallback to placeholder if thumbnail fetch fails
+                                   const thumbnailUrl = '/path/to/placeholder-image.jpg';
+                                   renderMetadataUI(mediaLibraryUrl, thumbnailUrl, newData, imageId);
+                                   processNextImage(ids, index + 1);
+                               }
+                           });
+                           return;
+                       }
 
-                            const metadataTable = `
-                                <table class="metadata-table">
-                                    <tr><th>Key</th><th>Value</th></tr>
-                                    ${metadataRows}
-                                </table>
-                            `;
+                       $('#bulk_generate_status').append(
+                           `<p>${imageId} - <span style="color:gray;">Skipped (Already has details).</span></p>`
+                       );
+                   } else {
+                       $('#bulk_generate_status').append(
+                           `<p>${imageId} - <span style="color:gray;">Skipped (Unexpected response).</span></p>`
+                       );
+                   }
 
-                            $('#bulk_generate_status').append(
-                                `<div class="status-item">
-                                    <p>
-                                        <a href="${mediaLibraryUrl}" target="_blank" style="text-decoration: none; color: green;">${imageId} - Done</a>
-                                    </p>
-                                    ${metadataTable}
-                                </div>`
-                            );
-                        } else {
-                            $('#bulk_generate_status').append(
-                                `<p>${imageId} - <span style="color:gray;">Skipped (Already has details).</span></p>`
-                            );
-                        }
-                    } else {
-                        $('#bulk_generate_status').append(
-                            `<p>${imageId} - <span style="color:gray;">Skipped (Unexpected response).</span></p>`
-                        );
-                    }
+                   processNextImage(ids, index + 1);
+               },
+               error: function (xhr, status, error) {
+                   $('#bulk_generate_status').append('<p>Error processing ID ' + imageId + ': ' + error + '</p>');
+                   processNextImage(ids, index + 1);
+               },
+           });
 
-                    processNextImage(ids, index + 1);
-                    if (++updateCounter % 5 === 0) {
-                        fetchUsageStatus();
-                    }
-                },
-                error: function (xhr, status, error) {
-                    $('#bulk_generate_status').append('<p>Error processing ID ' + imageId + ': ' + error + '</p>');
-                    processNextImage(ids, index + 1);
-                    if (++updateCounter % 5 === 0) {
-                        fetchUsageStatus();
-                    }
-                },
-            });
-        }
+           if (++updateCounter % 5 === 0) {
+               fetchUsageStatus();
+           }
+       }
+
+       /**
+        * Render metadata UI for an image.
+        *
+        * @param {string} mediaLibraryUrl - URL to the media library edit page.
+        * @param {string} thumbnailUrl - URL to the image thumbnail.
+        * @param {Object} metadata - Metadata object.
+        * @param {number} imageId - The ID of the image.
+        */
+       function renderMetadataUI(mediaLibraryUrl, thumbnailUrl, metadata, imageId) {
+           const metadataRows = Object.entries(metadata).length > 0
+               ? Object.entries(metadata)
+                   .map(([key, value]) => `<tr><td>${key}</td><td>${value}</td></tr>`)
+                   .join('')
+               : '<tr><td colspan="2">No metadata available</td></tr>';
+
+           const metadataTable = `
+               <table class="metadata-table">
+                   <tr><th>Key</th><th>Value</th></tr>
+                   ${metadataRows}
+               </table>
+           `;
+
+           const content = `
+               <div class="status-item" style="display: flex; align-items: flex-start; margin-bottom: 20px; border: 1px solid #ddd; padding: 10px; border-radius: 5px;">
+                   <div class="thumbnail-container" style="flex: 0 0 150px; margin-right: 20px;">
+                       <img 
+                           src="${thumbnailUrl}" 
+                           alt="Thumbnail for ${imageId}" 
+                           class="thumbnail-preview" 
+                           style="width: 150px; height: auto; border: 1px solid #ccc; border-radius: 3px;" 
+                           onerror="this.src='/path/to/placeholder-image.jpg';" 
+                       />
+                   </div>
+                   <div class="metadata-container" style="flex: 1;">
+                       <p>
+                           <a href="${mediaLibraryUrl}" target="_blank" style="text-decoration: none; color: #0073aa; font-weight: normal; font-size: 14px;">
+                               ${imageId} - Done
+                               <span class="dashicons dashicons-external" style="margin-left: 5px;"></span>
+                           </a>
+                       </p>
+                       ${metadataTable}
+                   </div>
+
+               </div>
+           `;
+
+           $('#bulk_generate_status').append(content);
+       }
 
         /**
          * Handles metadata generation for a specific image when the button is clicked.
@@ -708,9 +752,11 @@
         }
 
         /**
-         * Fetches usage information via AJAX and updates the UI.
+         * Fetches usage information via AJAX and updates the UI, with retry logic.
+         *
+         * @param {number} retryCount Number of remaining retry attempts.
          */
-        function fetchUsageStatus() {
+        function fetchUsageStatus(retryCount = 3) {
             $.ajax({
                 url: ajaxurl, // Provided by WordPress
                 type: 'POST',
@@ -726,16 +772,25 @@
                         // Update the UI with the usage data
                         updateUsageStatusUI(used_count, totalAllowed, remaining_count);
                     } else {
-                        $('#usage_count').html('<strong>"Error:":</strong> Unable to fetch usage information.');
+                        if (retryCount > 0) {
+                            setTimeout(() => fetchUsageStatus(retryCount - 1), 1000); // Retry after 1 second
+                        } else {
+                            $('#usage_count').html('<strong>Error:</strong> Unable to fetch usage information.');
+                            $('#usage_progress').css('width', '0%').text('0%');
+                        }
+                    }
+                },
+                error: function(xhr, status, error) {
+                    if (retryCount > 0) {
+                        setTimeout(() => fetchUsageStatus(retryCount - 1), 1000); // Retry after 1 second
+                    } else {
+                        $('#usage_count').html('<strong>Error:</strong> An error occurred while fetching usage information.');
                         $('#usage_progress').css('width', '0%').text('0%');
                     }
                 },
-                "Error:": function() {
-                    $('#usage_count').html('<strong>Error:</strong> An error occurred while fetching usage information.');
-                    $('#usage_progress').css('width', '0%').text('0%');
-                },
             });
         }
+
 
     });
 })(jQuery);

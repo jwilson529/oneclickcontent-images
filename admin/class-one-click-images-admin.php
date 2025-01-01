@@ -263,4 +263,20 @@ class One_Click_Images_Admin {
 			)
 		);
 	}
+
+	/**
+	 * Handles fetching the thumbnail URL for a given image ID via AJAX.
+	 *
+	 * @return void Outputs JSON response with the thumbnail URL or an error message.
+	 */
+	public function get_thumbnail() {
+		$image_id      = intval( $_GET['image_id'] );
+		$thumbnail_url = wp_get_attachment_thumb_url( $image_id );
+
+		if ( $thumbnail_url ) {
+			wp_send_json_success( array( 'thumbnail' => $thumbnail_url ) );
+		} else {
+			wp_send_json_error( array( 'message' => 'Thumbnail not found.' ) );
+		}
+	}
 }

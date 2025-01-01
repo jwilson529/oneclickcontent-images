@@ -186,6 +186,7 @@ class One_Click_Images {
 		$this->loader->add_action( 'plugins_loaded', $plugin_admin, 'oneclick_register_custom_image_size' );
 
 		$this->loader->add_filter( 'image_size_names_choose', $plugin_admin, 'oneclick_add_custom_image_sizes' );
+		$this->loader->add_action( 'wp_ajax_get_thumbnail', $plugin_admin, 'get_thumbnail' );
 
 		$this->loader->add_filter( 'pre_set_site_transient_update_plugins', $plugin_license_update, 'check_for_update' );
 		$this->loader->add_action( 'admin_init', $plugin_license_update, 'validate_license_on_init' );
@@ -193,6 +194,7 @@ class One_Click_Images {
 		$this->loader->add_action( 'wp_ajax_validate_license', $plugin_license_update, 'ajax_validate_license' );
 		$this->loader->add_action( 'wp_ajax_get_license_status', $plugin_license_update, 'ajax_get_license_status' );
 		$this->loader->add_action( 'wp_ajax_check_usage', $plugin_license_update, 'oneclick_images_ajax_check_usage' );
+		$this->loader->add_action( 'plugins_api', $plugin_license_update, 'oneclickcontent_plugin_popup_info', 10, 3 );
 	}
 
 

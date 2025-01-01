@@ -451,4 +451,51 @@ class One_Click_Images_License_Update {
 		// Send back the successful response.
 		wp_send_json_success( $decoded_response );
 	}
+
+	/**
+	 * Add custom plugin data to the plugin information popup.
+	 *
+	 * @param object $res Existing plugin information object.
+	 * @param string $action Current action (e.g., 'plugin_information').
+	 * @param array  $args Arguments passed to the API call.
+	 * @return object Modified plugin information object.
+	 */
+	public function oneclickcontent_plugin_popup_info( $res, $action, $args ) {
+		// Check if the plugin slug matches.
+		if ( 'plugin_information' !== $action || 'one-click-images' !== $args->slug ) {
+			return $res;
+		}
+
+		// Fetch transient data.
+		$transient = get_site_transient( 'update_plugins' );
+
+		if ( isset( $transient->response['one-click-images/one-click-images.php'] ) ) {
+			$plugin_data = $transient->response['one-click-images/one-click-images.php'];
+
+			// Populate the plugin details from the transient.
+			$res = (object) array(
+				'name'          => $plugin_data->name ?? 'One Click Images',
+				'slug'          => $plugin_data->slug ?? 'one-click-images',
+				'version'       => $plugin_data->new_version ?? '1.0.0',
+				'author'        => $plugin_data->author ?? '<a href="https://oneclickcontent.com">OneClickContent</a>',
+				'homepage'      => $plugin_data->homepage ?? 'https://oneclickcontent.com',
+				'requires'      => $plugin_data->requires ?? '7.4',
+				'tested'        => $plugin_data->tested ?? '7.4',
+				'requires_php'  => $plugin_data->requires_php ?? '7.4',
+				'sections'      => $plugin_data->sections ?? array(),
+				'banners'       => $plugin_data->banners ?? array(),
+				'download_link' => $plugin_data->package ?? '',
+				'last_updated'  => '2024-12-31', // Optional, add last updated manually or dynamically.
+			);
+		} else {
+			// Handle case where no transient data is available.
+			$res = (object) array(
+				'name'        => 'One Click Images',
+				'slug'        => 'one-click-images',
+				'description' => '<p>Plugin information is currently unavailable.</p>',
+			);
+		}
+
+		return $res;
+	}
 }

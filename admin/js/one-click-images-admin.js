@@ -407,8 +407,6 @@
                     if (response.success && response.data && response.data.metadata) {
                         const metadata = response.data.metadata;
 
-                        console.log(response);
-
                         // Handle specific errors.
                         if (metadata.error) {
                             // Handle usage limit or free trial limit errors
@@ -606,23 +604,39 @@
                         <p>${message}</p>
                         <div class="occ-subscription-options">
                             <div class="occ-subscription-tier">
-                                <h3>Small Plan</h3>
-                                <p>Perfect for personal use and small projects.</p>
-                                <strong>$9/month</strong>
-                                <a href="${url}?plan=small" target="_blank" class="occ-subscription-button">Get Started</a>
+                                <h3>Growth Plan</h3>
+                                <p>100 Images</p>
+                                <strong>$4.99/month</strong>
+                                <a href="${url}?plan=growth" target="_blank" class="occ-subscription-button">Choose Growth</a>
                             </div>
                             <div class="occ-subscription-tier">
-                                <h3>Medium Plan</h3>
-                                <p>Ideal for growing businesses and teams.</p>
-                                <strong>$19/month</strong>
-                                <a href="${url}?plan=medium" target="_blank" class="occ-subscription-button">Choose Medium</a>
+                                <h3>Business Plan</h3>
+                                <p>500 Images</p>
+                                <strong>$19.99/month</strong>
+                                <a href="${url}?plan=business" target="_blank" class="occ-subscription-button">Choose Business</a>
+                            </div>
+                            <div class="occ-subscription-tier most-popular">
+                                <h3>Pro Plan <span class="badge">Most Popular</span></h3>
+                                <p>1,000 Images</p>
+                                <strong>$29.99/month</strong>
+                                <a href="${url}?plan=pro" target="_blank" class="occ-subscription-button primary">Choose Pro</a>
                             </div>
                             <div class="occ-subscription-tier">
-                                <h3>Large Plan</h3>
-                                <p>Best for agencies and high-volume users.</p>
-                                <strong>$49/month</strong>
-                                <a href="${url}?plan=large" target="_blank" class="occ-subscription-button">Go Large</a>
+                                <h3>Premium Plan</h3>
+                                <p>3,000 Images</p>
+                                <strong>$89.99/month</strong>
+                                <a href="${url}?plan=premium" target="_blank" class="occ-subscription-button">Choose Premium</a>
                             </div>
+                            <div class="occ-subscription-tier">
+                                <h3>Elite Plan</h3>
+                                <p>5,000 Images</p>
+                                <strong>$129.00/month</strong>
+                                <a href="${url}?plan=elite" target="_blank" class="occ-subscription-button">Choose Elite</a>
+                            </div>
+                        </div>
+                        <div class="occ-subscription-extra">
+                            <p>Need more images? Buy additional credits:</p>
+                            <a href="https://oneclickcontent.com/buy-more-image-credits/" target="_blank" class="occ-subscription-button">Buy Image Credits</a>
                         </div>
                         <a href="${url}" target="_blank" class="occ-subscription-modal-link">View All Plans</a>
                     </div>
@@ -653,7 +667,6 @@
         }
 
 
-
         function showSubscriberLimitPrompt(error, limit) {
             const modalHtml = `
                 <div id="occ-subscriber-limit-modal" class="occ-subscriber-limit-modal">
@@ -662,9 +675,9 @@
                         <h2><span class="dashicons dashicons-warning"></span> ${error}</h2>
                         <p>You have reached your usage limit of ${limit} images this month. Upgrade your subscription to continue generating metadata.</p>
                         <div class="occ-subscriber-upgrade">
-                            <a href="https://oneclickcontent.com/subscriber-upgrade" target="_blank" class="occ-upgrade-button">Upgrade Now</a>
+                            <a href="https://oneclickcontent.com/image-detail-generator/" target="_blank" class="occ-upgrade-button">Upgrade Now</a>
                         </div>
-                        <p>Contact <a href="mailto:support@oneclickcontent.com">support@oneclickcontent.com</a> for assistance.</p>
+                        <p>Contact <a href="https://oneclickcontent.com/contact/"</a> for assistance.</p>
                     </div>
                 </div>
             `;

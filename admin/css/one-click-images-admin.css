@@ -270,6 +270,10 @@
     background: #005f8d;
 }
 
+.occ-subscription-button a:active, a:hover {
+    color: #fff;
+}
+
 /* Modal Link */
 .occ-subscription-modal-link {
     display: block;

@@ -75,7 +75,7 @@ class One_Click_Images_Admin_Settings {
 					<p class="free-trial-message">
 						<?php esc_html_e( 'You are currently using the free trial version of OneClickContent Images. To unlock full features, please subscribe.', 'oneclickcontent-images' ); ?>
 					</p>
-					<a href="https://yourwebsite.com/subscribe" target="_blank" class="button button-primary">
+					<a href="https://oneclickcontent.com/image-detail-generator/" target="_blank" class="button button-primary">
 						<?php esc_html_e( 'Subscribe Now', 'oneclickcontent-images' ); ?>
 					</a>
 				<?php else : ?>

@@ -96,10 +96,16 @@ If enabled, the plugin will automatically generate metadata for any images you u
 ## Screenshots
 
 1. **Settings Page**: Configure your OneClickContent license key, select a language, and enable auto metadata generation on upload.
-2. **Media Library Integration**: Generate metadata directly from the Media Library.
-3. **Generated Metadata**: View and edit the generated metadata for your images.
-4. **Language Selection**: Choose your preferred language for metadata generation.
+   ![Settings Page](assets/settings.png)
 
+2. **Media Library Integration**: Generate metadata directly from the Media Library.
+   ![Media Library Integration](assets/media-library.png)
+
+3. **Generated Metadata**: View and edit the generated metadata for your images.
+   ![Generated Metadata](assets/generated.png)
+
+4. **Language Selection**: Choose your preferred language for metadata generation.
+   ![Language Selection](assets/language.png)
 ---
 
 ## Changelog

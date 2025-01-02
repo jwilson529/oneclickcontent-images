@@ -126,47 +126,58 @@ class One_Click_Images_License_Update {
 	 * Check for plugin updates using transients.
 	 */
 	public function check_for_update() {
-		// Check if the transient exists and has not expired.
-		$cached_response = get_transient( 'oneclick_images_update_check' );
-		if ( false !== $cached_response ) {
-			$this->apply_update_to_transient( $cached_response );
-			return; // Skip the API call if the transient is still valid.
-		}
+	    // Check if the transient exists and has not expired.
+	    $cached_response = get_transient( 'oneclick_images_update_check' );
+	    if ( false !== $cached_response ) {
+	        $this->apply_update_to_transient( $cached_response );
 
-		$license_key = get_option( 'oneclick_images_license_key' );
+	        // Check if the cached response indicates no update is needed.
+	        if ( isset( $cached_response['is_updated'] ) && $cached_response['is_updated'] ) {
+	            delete_transient( 'oneclick_images_update_check' ); // Clear transient if up-to-date.
+	        }
+	        return; // Skip the API call if the transient is still valid.
+	    }
 
-		if ( empty( $license_key ) ) {
-			return;
-		}
+	    $license_key = get_option( 'oneclick_images_license_key' );
 
-		$request_data = array(
-			'product_key'     => 'product_6758e21c683bc',
-			'license_key'     => sanitize_text_field( $license_key ),
-			'website_url'     => home_url(),
-			'current_version' => sanitize_text_field( $this->version ),
-		);
+	    if ( empty( $license_key ) ) {
+	        return;
+	    }
 
-		$response = wp_remote_post(
-			"{$this->api_url}check-update",
-			array(
-				'body'    => wp_json_encode( $request_data ),
-				'headers' => array( 'Content-Type' => 'application/json' ),
-				'timeout' => 30,
-			)
-		);
+	    $request_data = array(
+	        'product_key'     => 'product_6758e21c683bc',
+	        'license_key'     => sanitize_text_field( $license_key ),
+	        'website_url'     => home_url(),
+	        'current_version' => sanitize_text_field( $this->version ),
+	    );
 
-		if ( is_wp_error( $response ) ) {
-			return;
-		}
+	    $response = wp_remote_post(
+	        "{$this->api_url}check-update",
+	        array(
+	            'body'    => wp_json_encode( $request_data ),
+	            'headers' => array( 'Content-Type' => 'application/json' ),
+	            'timeout' => 30,
+	        )
+	    );
 
-		$response_body = wp_remote_retrieve_body( $response );
-		$data          = json_decode( $response_body, true );
+	    if ( is_wp_error( $response ) ) {
+	        return;
+	    }
 
-		if ( json_last_error() === JSON_ERROR_NONE ) {
-			// Cache the result for 24 hours.
-			set_transient( 'oneclick_images_update_check', $data, DAY_IN_SECONDS );
-			$this->apply_update_to_transient( $data );
-		}
+	    $response_body = wp_remote_retrieve_body( $response );
+	    $data          = json_decode( $response_body, true );
+
+	    if ( json_last_error() === JSON_ERROR_NONE ) {
+	        // Cache the result for 24 hours.
+	        set_transient( 'oneclick_images_update_check', $data, DAY_IN_SECONDS );
+
+	        $this->apply_update_to_transient( $data );
+
+	        // Clear transient if the plugin is up-to-date.
+	        if ( isset( $data['is_updated'] ) && $data['is_updated'] ) {
+	            delete_transient( 'oneclick_images_update_check' );
+	        }
+	    }
 	}
 
 	/**
@@ -175,39 +186,46 @@ class One_Click_Images_License_Update {
 	 * @param array $data The update data.
 	 */
 	private function apply_update_to_transient( $data ) {
-		if ( isset( $data['update_available'] ) && $data['update_available'] ) {
-			add_filter(
-				'site_transient_update_plugins',
-				function ( $transient ) use ( $data ) {
-					if ( ! is_object( $transient ) ) {
-						$transient = new stdClass();
-					}
+	    if ( isset( $data['update_available'] ) && true === $data['update_available'] ) {
+	        add_filter(
+	            'site_transient_update_plugins',
+	            function ( $transient ) use ( $data ) {
+	                if ( ! is_object( $transient ) ) {
+	                    $transient = new stdClass();
+	                }
 
-					if ( ! isset( $transient->response ) ) {
-						$transient->response = array();
-					}
+	                if ( ! isset( $transient->response ) ) {
+	                    $transient->response = array();
+	                }
 
-					$plugin_details = $data['plugin_details'] ?? array();
+	                $plugin_details = $data['plugin_details'] ?? array();
 
-					$transient->response['one-click-images/one-click-images.php'] = (object) array(
-						'slug'         => 'one-click-images',
-						'plugin'       => 'one-click-images/one-click-images.php',
-						'new_version'  => sanitize_text_field( $data['latest_version'] ?? '1.0.0' ),
-						'package'      => esc_url_raw( $data['download_url'] ?? '' ),
-						'name'         => sanitize_text_field( $plugin_details['name'] ?? 'Unknown Plugin' ),
-						'author'       => $plugin_details['author'] ?? '',
-						'homepage'     => esc_url_raw( $plugin_details['homepage'] ?? '' ),
-						'requires'     => $plugin_details['requires'] ?? '',
-						'tested'       => $plugin_details['tested'] ?? '',
-						'requires_php' => $plugin_details['requires_php'] ?? '',
-						'sections'     => $plugin_details['sections'] ?? array(),
-						'banners'      => $plugin_details['banners'] ?? array(),
-					);
+	                $transient->response['one-click-images/one-click-images.php'] = (object) array(
+	                    'slug'         => 'one-click-images',
+	                    'plugin'       => 'one-click-images/one-click-images.php',
+	                    'new_version'  => sanitize_text_field( $data['latest_version'] ?? '1.0.0' ),
+	                    'package'      => esc_url_raw( $data['download_url'] ?? '' ),
+	                    'name'         => sanitize_text_field( $plugin_details['name'] ?? 'Unknown Plugin' ),
+	                    'author'       => sanitize_text_field( $plugin_details['author'] ?? '' ),
+	                    'homepage'     => esc_url_raw( $plugin_details['homepage'] ?? '' ),
+	                    'requires'     => sanitize_text_field( $plugin_details['requires'] ?? '' ),
+	                    'tested'       => sanitize_text_field( $plugin_details['tested'] ?? '' ),
+	                    'requires_php' => sanitize_text_field( $plugin_details['requires_php'] ?? '' ),
+	                    'sections'     => $plugin_details['sections'] ?? array(),
+	                    'banners'      => $plugin_details['banners'] ?? array(),
+	                );
 
-					return $transient;
-				}
-			);
-		}
+	                return $transient;
+	            }
+	        );
+
+	        // Optional: Clear the custom transient to avoid stale data.
+	        delete_transient( 'oneclick_images_update_check' );
+	    } else {
+	        // Log or handle the case where no update is available.
+	        // Optional: Use `error_log` or another logging method for debugging.
+	        error_log( 'No update available or invalid update data provided.' );
+	    }
 	}
 
 	/**

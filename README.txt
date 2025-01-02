@@ -5,7 +5,8 @@ Tags: images, metadata, OpenAI, AI, accessibility, multilingual
 Requires at least: 5.0  
 Tested up to: 6.3  
 Requires PHP: 7.2  
-Stable tag: 1.1.5  
+Stable tag: 1.1.5
+1.1.6  
 License: GPLv2 or later  
 License URI: https://www.gnu.org/licenses/gpl-2.0.html  
 
@@ -91,7 +92,8 @@ If enabled, the plugin will automatically generate metadata for any images you u
 
 == Changelog ==
 
-= 1.1.5 =
+= 1.1.5
+1.1.6 =
 * General fixes and improvements to the update system.
 * Resolved issues with stale transients causing incorrect update indicators.
 * Improved transient management to ensure updates are accurately reflected.
@@ -110,7 +112,8 @@ If enabled, the plugin will automatically generate metadata for any images you u
 
 == Upgrade Notice ==
 
-= 1.1.5 =
+= 1.1.5
+1.1.6 =
 * Fixes and enhancements to the update system. Resolves issues with stale update indicators and transient handling.
 
 = 1.1.1 =

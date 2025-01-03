@@ -35,8 +35,11 @@ if ( ! defined( 'WPINC' ) ) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define( 'OCC_IMAGES_VERSION', '1.1.5
-1.1.6' );
+define(
+	'OCC_IMAGES_VERSION',
+	'1.1.5
+1.1.6'
+);
 
 /**
  * The code that runs during plugin activation.

@@ -1,4 +1,12 @@
 
+FILE: /Users/jameswilson/Local Sites/wp-clean-install/app/public/wp-content/plugins/one-click-images/includes/class-one-click-images-activator.php
+--------------------------------------------------------------------------------------------------------------------------------------------------
+FOUND 1 ERROR AFFECTING 1 LINE
+--------------------------------------------------------------------------------------------------------------------------------------------------
+ 30 | ERROR | Inline comments must end in full-stops, exclamation marks, or question marks
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 FILE: /Users/jameswilson/Local Sites/wp-clean-install/app/public/wp-content/plugins/one-click-images/admin/class-one-click-images-admin-settings.php
 ---------------------------------------------------------------------------------------------------------------------------------------------------------
 FOUND 2 ERRORS AND 2 WARNINGS AFFECTING 4 LINES
@@ -22,5 +30,5 @@ FOUND 0 ERRORS AND 5 WARNINGS AFFECTING 4 LINES
  275 | WARNING | Processing form data without nonce verification.
 -------------------------------------------------------------------------------------------------------------------------------------------
 
-Time: 828ms; Memory: 18MB
+Time: 840ms; Memory: 18MB
 

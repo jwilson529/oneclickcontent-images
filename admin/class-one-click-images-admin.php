@@ -285,4 +285,23 @@ class One_Click_Images_Admin {
 			wp_send_json_error( array( 'message' => 'Invalid image ID.' ) );
 		}
 	}
+
+	/**
+	 * Redirect to settings page after plugin activation.
+	 * 
+	 * @since 1.0.0
+	 */
+	public function activation_redirect() {
+	    // Check if the redirect option exists
+	    if (get_option('oneclick_images_activation_redirect', false)) {
+	        // Remove the option to avoid redirecting more than once
+	        delete_option('oneclick_images_activation_redirect');
+	        
+	        // Avoid redirecting during AJAX, REST, or CLI requests
+	        if (!is_network_admin() && !wp_doing_ajax() && !wp_doing_cron() && !defined('REST_REQUEST')) {
+	            wp_safe_redirect(admin_url('options-general.php?page=oneclickcontent-images-settings'));
+	            exit;
+	        }
+	    }
+	}
 }

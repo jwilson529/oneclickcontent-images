@@ -22,12 +22,11 @@
 class One_Click_Images_Activator {
 
 	/**
-	 * Short Description. (use period)
-	 *
-	 * Long Description.
-	 *
-	 * @since    1.0.0
+	 * Fired during plugin activation.
+	 * @since 1.0.0
 	 */
 	public static function activate() {
+		// Set a transient flag for redirection
+		add_option('oneclick_images_activation_redirect', true);
 	}
 }

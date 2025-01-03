@@ -175,6 +175,7 @@ class One_Click_Images {
 		$this->loader->add_filter( 'bulk_actions-upload', $plugin_admin, 'add_generate_details_bulk_action', 10, 2 );
 		$this->loader->add_filter( 'handle_bulk_actions-upload', $plugin_admin, 'handle_generate_details_bulk_action', 10, 3 );
 		$this->loader->add_filter( 'admin_notices', $plugin_admin, 'generate_details_bulk_action_admin_notice' );
+		$this->loader->add_filter( 'admin_init', $plugin_admin, 'activation_redirect' );
 
 		// Enqueue admin styles and scripts.
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );

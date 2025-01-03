@@ -549,7 +549,7 @@
         window.showSubscriptionPrompt = showSubscriptionPrompt;
 
         /**
-         * Updates metadata fields in the media library.
+         * Updates metadata fields in the media library and single post edit screen.
          *
          * @param {Object} metadata The metadata to update (alt_text, title, caption, description).
          */
@@ -564,27 +564,51 @@
                 };
 
                 // Update alt text if field exists and is selected
-                const altInput = $('#attachment-details-two-column-alt-text');
-                if (altInput.length && metadata.alt_text && selectedFields.alt_text) {
-                    altInput.val(metadata.alt_text).trigger('change');
+                const altInputLibrary = $('#attachment-details-two-column-alt-text');
+                const altInputSingle = $('#attachment_alt');
+                if (metadata.alt_text && selectedFields.alt_text) {
+                    if (altInputLibrary.length) {
+                        altInputLibrary.val(metadata.alt_text).trigger('change');
+                    }
+                    if (altInputSingle.length) {
+                        altInputSingle.val(metadata.alt_text).trigger('change');
+                    }
                 }
 
                 // Update title if field exists and is selected
-                const titleInput = $('#attachment-details-two-column-title');
-                if (titleInput.length && metadata.title && selectedFields.title) {
-                    titleInput.val(metadata.title).trigger('change');
+                const titleInputLibrary = $('#attachment-details-two-column-title');
+                const titleInputSingle = $('#title');
+                if (metadata.title && selectedFields.title) {
+                    if (titleInputLibrary.length) {
+                        titleInputLibrary.val(metadata.title).trigger('change');
+                    }
+                    if (titleInputSingle.length) {
+                        titleInputSingle.val(metadata.title).trigger('change');
+                    }
                 }
 
                 // Update caption if field exists and is selected
-                const captionInput = $('#attachment-details-two-column-caption');
-                if (captionInput.length && metadata.caption && selectedFields.caption) {
-                    captionInput.val(metadata.caption).trigger('change');
+                const captionInputLibrary = $('#attachment-details-two-column-caption');
+                const captionInputSingle = $('#attachment_caption');
+                if (metadata.caption && selectedFields.caption) {
+                    if (captionInputLibrary.length) {
+                        captionInputLibrary.val(metadata.caption).trigger('change');
+                    }
+                    if (captionInputSingle.length) {
+                        captionInputSingle.val(metadata.caption).trigger('change');
+                    }
                 }
 
                 // Update description if field exists and is selected
-                const descriptionInput = $('#attachment-details-two-column-description');
-                if (descriptionInput.length && metadata.description && selectedFields.description) {
-                    descriptionInput.val(metadata.description).trigger('change');
+                const descriptionInputLibrary = $('#attachment-details-two-column-description');
+                const descriptionInputSingle = $('#attachment_content');
+                if (metadata.description && selectedFields.description) {
+                    if (descriptionInputLibrary.length) {
+                        descriptionInputLibrary.val(metadata.description).trigger('change');
+                    }
+                    if (descriptionInputSingle.length) {
+                        descriptionInputSingle.val(metadata.description).trigger('change');
+                    }
                 }
 
                 // Trigger change/input events for WordPress to recognize the updates

@@ -113,8 +113,7 @@ If enabled, the plugin will automatically generate metadata for any images you u
 
 == Upgrade Notice ==
 
-= 1.1.5
-1.1.6 =
+= 1.1.5 =
 * Fixes and enhancements to the update system. Resolves issues with stale update indicators and transient handling.
 
 = 1.1.1 =

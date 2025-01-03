@@ -254,7 +254,7 @@
 
                        // Handle usage limit or free trial limit errors
                        if (
-                           metadataResponse.error === 'Usage limit reached. Please upgrade your subscription or purchase more blocks.' ||
+                           metadataResponse.error === 'Usage limit reached. Please purchase more blocks to continue.' ||
                            metadataResponse.error === 'Free trial limit reached. Please subscribe to continue.'
                        ) {
                            showSubscriptionPrompt(metadataResponse.error, metadataResponse.message, metadataResponse.ad_url);
@@ -411,7 +411,7 @@
                         if (metadata.error) {
                             // Handle usage limit or free trial limit errors
                             if (
-                                metadata.error === 'Usage limit reached. Please upgrade your subscription or purchase more blocks.' ||
+                                metadata.error === 'Usage limit reached. Please purchase more blocks to continue generating details.' ||
                                 metadata.error === 'Free trial limit reached. Please subscribe to continue.'
                             ) {
                                 showSubscriptionPrompt(metadata.error, metadata.message, metadata.ad_url);
@@ -619,6 +619,58 @@
         }
 
         function showSubscriptionPrompt(error, message, url) {
+            const licenseStatus = oneclick_images_admin_vars.license_status; // Get the license status
+
+            let subscriptionOptionsHtml = '';
+
+            if (licenseStatus === 'active') {
+                subscriptionOptionsHtml = `
+                    <div class="occ-subscription-extra">
+                        <p>You have an active subscription. Buy additional credits if needed:</p>
+                        <a href="https://oneclickcontent.com/buy-more-image-credits/" target="_blank" class="occ-subscription-button">Buy Image Credits</a>
+                    </div>
+                `;
+            } else {
+                subscriptionOptionsHtml = `
+                    <div class="occ-subscription-options">
+                        <div class="occ-subscription-tier">
+                            <h3>Growth Plan</h3>
+                            <p>100 Images</p>
+                            <strong>$4.99/month</strong>
+                            <a href="${url}?plan=growth" target="_blank" class="occ-subscription-button">Choose Growth</a>
+                        </div>
+                        <div class="occ-subscription-tier">
+                            <h3>Business Plan</h3>
+                            <p>500 Images</p>
+                            <strong>$19.99/month</strong>
+                            <a href="${url}?plan=business" target="_blank" class="occ-subscription-button">Choose Business</a>
+                        </div>
+                        <div class="occ-subscription-tier most-popular">
+                            <h3>Pro Plan <span class="badge">Most Popular</span></h3>
+                            <p>1,000 Images</p>
+                            <strong>$29.99/month</strong>
+                            <a href="${url}?plan=pro" target="_blank" class="occ-subscription-button primary">Choose Pro</a>
+                        </div>
+                        <div class="occ-subscription-tier">
+                            <h3>Premium Plan</h3>
+                            <p>3,000 Images</p>
+                            <strong>$89.99/month</strong>
+                            <a href="${url}?plan=premium" target="_blank" class="occ-subscription-button">Choose Premium</a>
+                        </div>
+                        <div class="occ-subscription-tier">
+                            <h3>Elite Plan</h3>
+                            <p>5,000 Images</p>
+                            <strong>$129.00/month</strong>
+                            <a href="${url}?plan=elite" target="_blank" class="occ-subscription-button">Choose Elite</a>
+                        </div>
+                    </div>
+                    <div class="occ-subscription-extra">
+                        <p>Need more images? Buy additional credits:</p>
+                        <a href="https://oneclickcontent.com/buy-more-image-credits/" target="_blank" class="occ-subscription-button">Buy Image Credits</a>
+                    </div>
+                `;
+            }
+
             const modalHtml = `
                 <div id="occ-subscription-modal" class="occ-subscription-modal" role="dialog" aria-labelledby="subscription-modal-title">
                     <div class="occ-subscription-modal-overlay"></div>
@@ -626,43 +678,7 @@
                         <span class="occ-subscription-modal-close dashicons dashicons-no" aria-label="Close"></span>
                         <h2 id="subscription-modal-title"><span class="dashicons dashicons-lock"></span> ${error}</h2>
                         <p>${message}</p>
-                        <div class="occ-subscription-options">
-                            <div class="occ-subscription-tier">
-                                <h3>Growth Plan</h3>
-                                <p>100 Images</p>
-                                <strong>$4.99/month</strong>
-                                <a href="${url}?plan=growth" target="_blank" class="occ-subscription-button">Choose Growth</a>
-                            </div>
-                            <div class="occ-subscription-tier">
-                                <h3>Business Plan</h3>
-                                <p>500 Images</p>
-                                <strong>$19.99/month</strong>
-                                <a href="${url}?plan=business" target="_blank" class="occ-subscription-button">Choose Business</a>
-                            </div>
-                            <div class="occ-subscription-tier most-popular">
-                                <h3>Pro Plan <span class="badge">Most Popular</span></h3>
-                                <p>1,000 Images</p>
-                                <strong>$29.99/month</strong>
-                                <a href="${url}?plan=pro" target="_blank" class="occ-subscription-button primary">Choose Pro</a>
-                            </div>
-                            <div class="occ-subscription-tier">
-                                <h3>Premium Plan</h3>
-                                <p>3,000 Images</p>
-                                <strong>$89.99/month</strong>
-                                <a href="${url}?plan=premium" target="_blank" class="occ-subscription-button">Choose Premium</a>
-                            </div>
-                            <div class="occ-subscription-tier">
-                                <h3>Elite Plan</h3>
-                                <p>5,000 Images</p>
-                                <strong>$129.00/month</strong>
-                                <a href="${url}?plan=elite" target="_blank" class="occ-subscription-button">Choose Elite</a>
-                            </div>
-                        </div>
-                        <div class="occ-subscription-extra">
-                            <p>Need more images? Buy additional credits:</p>
-                            <a href="https://oneclickcontent.com/buy-more-image-credits/" target="_blank" class="occ-subscription-button">Buy Image Credits</a>
-                        </div>
-                        <a href="${url}" target="_blank" class="occ-subscription-modal-link">View All Plans</a>
+                        ${subscriptionOptionsHtml}
                     </div>
                 </div>
             `;
@@ -675,15 +691,15 @@
             modalContent.focus();
             modal.fadeIn();
 
-            $('.occ-subscription-modal-close, .occ-subscription-modal-overlay').on('click', function() {
-                modal.fadeOut(function() {
+            $('.occ-subscription-modal-close, .occ-subscription-modal-overlay').on('click', function () {
+                modal.fadeOut(function () {
                     $(this).remove();
                 });
             });
 
-            $(document).on('keydown', function(e) {
+            $(document).on('keydown', function (e) {
                 if (e.key === 'Escape') {
-                    modal.fadeOut(function() {
+                    modal.fadeOut(function () {
                         $(this).remove();
                     });
                 }
@@ -697,7 +713,7 @@
                     <div class="occ-subscriber-limit-modal-content">
                         <span class="occ-subscriber-limit-modal-close dashicons dashicons-no"></span>
                         <h2><span class="dashicons dashicons-warning"></span> ${error}</h2>
-                        <p>You have reached your usage limit of ${limit} images this month. Upgrade your subscription to continue generating metadata.</p>
+                        <p>You have reached your usage limit of ${limit} images this month. Buy additional blocks to continue generating metadata.</p>
                         <div class="occ-subscriber-upgrade">
                             <a href="https://oneclickcontent.com/image-detail-generator/" target="_blank" class="occ-upgrade-button">Upgrade Now</a>
                         </div>

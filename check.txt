@@ -1,12 +1,4 @@
 
-FILE: /Users/jameswilson/Local Sites/wp-clean-install/app/public/wp-content/plugins/one-click-images/includes/class-one-click-images-activator.php
---------------------------------------------------------------------------------------------------------------------------------------------------
-FOUND 1 ERROR AFFECTING 1 LINE
---------------------------------------------------------------------------------------------------------------------------------------------------
- 30 | ERROR | Inline comments must end in full-stops, exclamation marks, or question marks
---------------------------------------------------------------------------------------------------------------------------------------------------
-
-
 FILE: /Users/jameswilson/Local Sites/wp-clean-install/app/public/wp-content/plugins/one-click-images/admin/class-one-click-images-admin-settings.php
 ---------------------------------------------------------------------------------------------------------------------------------------------------------
 FOUND 2 ERRORS AND 2 WARNINGS AFFECTING 4 LINES
@@ -23,12 +15,12 @@ FILE: /Users/jameswilson/Local Sites/wp-clean-install/app/public/wp-content/plug
 -------------------------------------------------------------------------------------------------------------------------------------------
 FOUND 0 ERRORS AND 5 WARNINGS AFFECTING 4 LINES
 -------------------------------------------------------------------------------------------------------------------------------------------
- 220 | WARNING | Processing form data without nonce verification.
- 222 | WARNING | Processing form data without nonce verification.
- 274 | WARNING | Processing form data without nonce verification.
- 274 | WARNING | Processing form data without nonce verification.
- 275 | WARNING | Processing form data without nonce verification.
+ 223 | WARNING | Processing form data without nonce verification.
+ 225 | WARNING | Processing form data without nonce verification.
+ 277 | WARNING | Processing form data without nonce verification.
+ 277 | WARNING | Processing form data without nonce verification.
+ 278 | WARNING | Processing form data without nonce verification.
 -------------------------------------------------------------------------------------------------------------------------------------------
 
-Time: 817ms; Memory: 18MB
+Time: 829ms; Memory: 18MB
 

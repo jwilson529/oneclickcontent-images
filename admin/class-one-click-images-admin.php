@@ -119,18 +119,18 @@ class One_Click_Images_Admin {
 				)
 			);
 
-			$license_status = get_option('oneclick_images_license_status', 'unknown');
+			$license_status = get_option( 'oneclick_images_license_status', 'unknown' );
 
 			// Localize scripts with necessary data.
 			wp_localize_script(
-			    $this->plugin_name,
-			    'oneclick_images_admin_vars',
-			    array(
-			        'ajax_url'                   => admin_url('admin-ajax.php'),
-			        'oneclick_images_ajax_nonce' => wp_create_nonce('oneclick_images_ajax_nonce'),
-			        'selected_fields'            => $selected_fields,
-			        'license_status'             => $license_status,  // Add license status
-			    )
+				$this->plugin_name,
+				'oneclick_images_admin_vars',
+				array(
+					'ajax_url'                   => admin_url( 'admin-ajax.php' ),
+					'oneclick_images_ajax_nonce' => wp_create_nonce( 'oneclick_images_ajax_nonce' ),
+					'selected_fields'            => $selected_fields,
+					'license_status'             => $license_status,
+				)
 			);
 
 			wp_localize_script(

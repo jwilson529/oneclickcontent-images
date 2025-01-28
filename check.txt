@@ -1,26 +1,118 @@
 
-FILE: /Users/jameswilson/Local Sites/wp-clean-install/app/public/wp-content/plugins/oneclickcontent-images/admin/class-oneclickcontent-images-admin-settings.php
----------------------------------------------------------------------------------------------------------------------------------------------------------
-FOUND 2 ERRORS AND 2 WARNINGS AFFECTING 4 LINES
----------------------------------------------------------------------------------------------------------------------------------------------------------
- 427 | ERROR   | Detected usage of a non-sanitized input variable: $_POST['_ajax_nonce']
- 436 | ERROR   | Detected usage of a non-sanitized input variable: $_POST['settings']
- 511 | WARNING | file_get_contents() is discouraged. Use wp_remote_get() for remote URLs instead.
- 516 | WARNING | base64_encode() can be used to obfuscate code which is strongly discouraged. Please verify that the function is used for benign
-     |         | reasons.
----------------------------------------------------------------------------------------------------------------------------------------------------------
+FILE: ...on/Local Sites/wp-clean-install/app/public/wp-content/plugins/oneclickcontent-images/includes/class-oneclickcontent-images-i18n.php
+-----------------------------------------------------------------------------------------------------------------------------------------
+FOUND 1 ERROR AFFECTING 1 LINE
+-----------------------------------------------------------------------------------------------------------------------------------------
+ 1 | ERROR | Class file names should be based on the class name with "class-" prepended. Expected class-one-click-images-i18n.php, but
+   |       | found class-oneclickcontent-images-i18n.php.
+-----------------------------------------------------------------------------------------------------------------------------------------
 
 
-FILE: /Users/jameswilson/Local Sites/wp-clean-install/app/public/wp-content/plugins/oneclickcontent-images/admin/class-oneclickcontent-images-admin.php
--------------------------------------------------------------------------------------------------------------------------------------------
-FOUND 0 ERRORS AND 5 WARNINGS AFFECTING 4 LINES
--------------------------------------------------------------------------------------------------------------------------------------------
+FILE: .../Local Sites/wp-clean-install/app/public/wp-content/plugins/oneclickcontent-images/includes/class-oneclickcontent-images-loader.php
+-----------------------------------------------------------------------------------------------------------------------------------------
+FOUND 1 ERROR AFFECTING 1 LINE
+-----------------------------------------------------------------------------------------------------------------------------------------
+ 1 | ERROR | Class file names should be based on the class name with "class-" prepended. Expected class-one-click-images-loader.php, but
+   |       | found class-oneclickcontent-images-loader.php.
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+
+FILE: ...l Sites/wp-clean-install/app/public/wp-content/plugins/oneclickcontent-images/includes/class-oneclickcontent-images-deactivator.php
+-----------------------------------------------------------------------------------------------------------------------------------------
+FOUND 1 ERROR AFFECTING 1 LINE
+-----------------------------------------------------------------------------------------------------------------------------------------
+ 1 | ERROR | Class file names should be based on the class name with "class-" prepended. Expected
+   |       | class-one-click-images-deactivator.php, but found class-oneclickcontent-images-deactivator.php.
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+
+FILE: ...cal Sites/wp-clean-install/app/public/wp-content/plugins/oneclickcontent-images/includes/class-oneclickcontent-images-activator.php
+-----------------------------------------------------------------------------------------------------------------------------------------
+FOUND 1 ERROR AFFECTING 1 LINE
+-----------------------------------------------------------------------------------------------------------------------------------------
+ 1 | ERROR | Class file names should be based on the class name with "class-" prepended. Expected class-one-click-images-activator.php,
+   |       | but found class-oneclickcontent-images-activator.php.
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+
+FILE: ...swilson/Local Sites/wp-clean-install/app/public/wp-content/plugins/oneclickcontent-images/includes/class-oneclickcontent-images.php
+-----------------------------------------------------------------------------------------------------------------------------------------
+FOUND 2 ERRORS AFFECTING 2 LINES
+-----------------------------------------------------------------------------------------------------------------------------------------
+   1 | ERROR | Class file names should be based on the class name with "class-" prepended. Expected class-one-click-images.php, but
+     |       | found class-oneclickcontent-images.php.
+ 196 | ERROR | Inline comments must end in full-stops, exclamation marks, or question marks
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+
+FILE: ...al Sites/wp-clean-install/app/public/wp-content/plugins/oneclickcontent-images/admin/class-oneclickcontent-images-auto-generate.php
+-----------------------------------------------------------------------------------------------------------------------------------------
+FOUND 1 ERROR AFFECTING 1 LINE
+-----------------------------------------------------------------------------------------------------------------------------------------
+ 1 | ERROR | Class file names should be based on the class name with "class-" prepended. Expected
+   |       | class-one-click-images-auto-generate.php, but found class-oneclickcontent-images-auto-generate.php.
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+
+FILE: ...lson/Local Sites/wp-clean-install/app/public/wp-content/plugins/oneclickcontent-images/admin/class-oneclickcontent-images-admin.php
+-----------------------------------------------------------------------------------------------------------------------------------------
+FOUND 1 ERROR AND 5 WARNINGS AFFECTING 5 LINES
+-----------------------------------------------------------------------------------------------------------------------------------------
+   1 | ERROR   | Class file names should be based on the class name with "class-" prepended. Expected class-one-click-images-admin.php,
+     |         | but found class-oneclickcontent-images-admin.php.
  223 | WARNING | Processing form data without nonce verification.
  225 | WARNING | Processing form data without nonce verification.
  277 | WARNING | Processing form data without nonce verification.
  277 | WARNING | Processing form data without nonce verification.
  278 | WARNING | Processing form data without nonce verification.
--------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------
 
-Time: 829ms; Memory: 18MB
+
+FILE: ...l Sites/wp-clean-install/app/public/wp-content/plugins/oneclickcontent-images/admin/class-oneclickcontent-images-admin-settings.php
+-----------------------------------------------------------------------------------------------------------------------------------------
+FOUND 3 ERRORS AND 2 WARNINGS AFFECTING 5 LINES
+-----------------------------------------------------------------------------------------------------------------------------------------
+   1 | ERROR   | Class file names should be based on the class name with "class-" prepended. Expected
+     |         | class-one-click-images-admin-settings.php, but found class-oneclickcontent-images-admin-settings.php.
+ 427 | ERROR   | Detected usage of a non-sanitized input variable: $_POST['_ajax_nonce']
+ 436 | ERROR   | Detected usage of a non-sanitized input variable: $_POST['settings']
+ 511 | WARNING | file_get_contents() is discouraged. Use wp_remote_get() for remote URLs instead.
+ 516 | WARNING | base64_encode() can be used to obfuscate code which is strongly discouraged. Please verify that the function is used
+     |         | for benign reasons.
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+
+FILE: ...l Sites/wp-clean-install/app/public/wp-content/plugins/oneclickcontent-images/admin/class-oneclickcontent-images-license-update.php
+-----------------------------------------------------------------------------------------------------------------------------------------
+FOUND 5 ERRORS AND 19 WARNINGS AFFECTING 20 LINES
+-----------------------------------------------------------------------------------------------------------------------------------------
+   1 | ERROR   | Class file names should be based on the class name with "class-" prepended. Expected
+     |         | class-one-click-images-license-update.php, but found class-oneclickcontent-images-license-update.php.
+ 130 | WARNING | error_log() found. Debug code should not normally be used in production.
+ 135 | WARNING | error_log() found. Debug code should not normally be used in production.
+ 139 | WARNING | error_log() found. Debug code should not normally be used in production.
+ 148 | WARNING | error_log() found. Debug code should not normally be used in production.
+ 159 | WARNING | error_log() found. Debug code should not normally be used in production.
+ 171 | WARNING | error_log() found. Debug code should not normally be used in production.
+ 176 | WARNING | This comment is 46% valid code; is this commented out code?
+ 176 | ERROR   | Inline comments must end in full-stops, exclamation marks, or question marks
+ 181 | WARNING | error_log() found. Debug code should not normally be used in production.
+ 189 | WARNING | error_log() found. Debug code should not normally be used in production.
+ 193 | WARNING | error_log() found. Debug code should not normally be used in production.
+ 204 | WARNING | error_log() found. Debug code should not normally be used in production.
+ 204 | WARNING | print_r() found. Debug code should not normally be used in production.
+ 210 | WARNING | error_log() found. Debug code should not normally be used in production.
+ 222 | ERROR   | Inline comments must end in full-stops, exclamation marks, or question marks
+ 230 | ERROR   | Inline comments must end in full-stops, exclamation marks, or question marks
+ 238 | WARNING | error_log() found. Debug code should not normally be used in production.
+ 238 | WARNING | print_r() found. Debug code should not normally be used in production.
+ 253 | WARNING | error_log() found. Debug code should not normally be used in production.
+ 253 | WARNING | print_r() found. Debug code should not normally be used in production.
+ 255 | WARNING | error_log() found. Debug code should not normally be used in production.
+ 264 | WARNING | error_log() found. Debug code should not normally be used in production.
+ 542 | ERROR   | date() is affected by runtime timezone changes which can cause date/time to be incorrectly displayed. Use gmdate()
+     |         | instead.
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+Time: 828ms; Memory: 22MB
 

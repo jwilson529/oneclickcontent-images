@@ -157,10 +157,10 @@ class One_Click_Images {
 
 		$plugin_auto_generate = new One_Click_Images_Auto_Generate();
 
-		$plugin_license_update = new One_Click_Images_License_Update( 
-		    'https://oneclickcontent.local/wp-json/oneclick/v1/updates/', 
-		    'oneclickcontent-images', 
-		    $this->get_version() 
+		$plugin_license_update = new One_Click_Images_License_Update(
+			'https://oneclickcontent.local/wp-json/oneclick/v1/updates/',
+			'oneclickcontent-images',
+			$this->get_version()
 		);
 
 		// Register the settings page and settings.
@@ -201,7 +201,6 @@ class One_Click_Images {
 		$this->loader->add_action( 'wp_ajax_get_license_status', $plugin_license_update, 'ajax_get_license_status' );
 		$this->loader->add_action( 'wp_ajax_check_usage', $plugin_license_update, 'oneclick_images_ajax_check_usage' );
 		$this->loader->add_action( 'plugins_api', $plugin_license_update, 'oneclickcontent_plugin_popup_info', 10, 3 );
-
 	}
 
 

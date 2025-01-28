@@ -38,19 +38,19 @@ define( 'OCC_IMAGES_VERSION', '1.1.5' );
 
 /**
  * The code that runs during plugin activation.
- * This action is documented in includes/class-one-click-images-activator.php
+ * This action is documented in includes/class-oneclickcontent-images-activator.php
  */
 function oneclick_images_activate() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-one-click-images-activator.php';
+	require_once plugin_dir_path( __FILE__ ) . 'includes/class-oneclickcontent-images-activator.php';
 	One_Click_Images_Activator::activate();
 }
 
 /**
  * The code that runs during plugin deactivation.
- * This action is documented in includes/class-one-click-images-deactivator.php
+ * This action is documented in includes/class-oneclickcontent-images-deactivator.php
  */
 function oneclick_images_deactivate() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-one-click-images-deactivator.php';
+	require_once plugin_dir_path( __FILE__ ) . 'includes/class-oneclickcontent-images-deactivator.php';
 	One_Click_Images_Deactivator::deactivate();
 }
 
@@ -61,7 +61,7 @@ register_deactivation_hook( __FILE__, 'oneclick_images_deactivate' );
  * The core plugin class that is used to define internationalization,
  * admin-specific hooks, and public-facing site hooks.
  */
-require plugin_dir_path( __FILE__ ) . 'includes/class-one-click-images.php';
+require plugin_dir_path( __FILE__ ) . 'includes/class-oneclickcontent-images.php';
 
 /**
  * Begins execution of the plugin.

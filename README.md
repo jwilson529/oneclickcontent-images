@@ -44,7 +44,7 @@ From there, this data is processed by **OpenAI's GPT-4o-mini model** (or other m
 ## Installation
 
 1. **Upload the Plugin**:
-   - Upload the `one-click-images` folder to the `/wp-content/plugins/` directory.
+   - Upload the `oneclickcontent-images` folder to the `/wp-content/plugins/` directory.
 
 2. **Activate the Plugin**:
    - Activate through the Plugins menu in WordPress.

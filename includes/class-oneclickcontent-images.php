@@ -100,29 +100,29 @@ class One_Click_Images {
 		 * The class responsible for orchestrating the actions and filters of the
 		 * core plugin.
 		 */
-		require_once plugin_dir_path( __DIR__ ) . 'includes/class-one-click-images-loader.php';
+		require_once plugin_dir_path( __DIR__ ) . 'includes/class-oneclickcontent-images-loader.php';
 
 		/**
 		 * The class responsible for defining internationalization functionality
 		 * of the plugin.
 		 */
-		require_once plugin_dir_path( __DIR__ ) . 'includes/class-one-click-images-i18n.php';
+		require_once plugin_dir_path( __DIR__ ) . 'includes/class-oneclickcontent-images-i18n.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
-		require_once plugin_dir_path( __DIR__ ) . 'admin/class-one-click-images-admin.php';
+		require_once plugin_dir_path( __DIR__ ) . 'admin/class-oneclickcontent-images-admin.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
-		require_once plugin_dir_path( __DIR__ ) . 'admin/class-one-click-images-admin-settings.php';
+		require_once plugin_dir_path( __DIR__ ) . 'admin/class-oneclickcontent-images-admin-settings.php';
 
 		/**
 		 * The class responsible for automatically running based on the user setting.
 		 */
-		require_once plugin_dir_path( __DIR__ ) . 'admin/class-one-click-images-auto-generate.php';
-		require_once plugin_dir_path( __DIR__ ) . 'admin/class-one-click-images-license-update.php';
+		require_once plugin_dir_path( __DIR__ ) . 'admin/class-oneclickcontent-images-auto-generate.php';
+		require_once plugin_dir_path( __DIR__ ) . 'admin/class-oneclickcontent-images-license-update.php';
 
 		$this->loader = new One_Click_Images_Loader();
 	}

@@ -62,7 +62,7 @@ class One_Click_Images_Admin {
 		) {
 			wp_enqueue_style(
 				$this->plugin_name,
-				plugin_dir_url( __FILE__ ) . 'css/one-click-images-admin.css',
+				plugin_dir_url( __FILE__ ) . 'css/oneclickcontent-images-admin.css',
 				array(),
 				$this->version,
 				'all'
@@ -87,7 +87,7 @@ class One_Click_Images_Admin {
 			// Enqueue the plugin's admin JavaScript file.
 			wp_enqueue_script(
 				$this->plugin_name,
-				plugin_dir_url( __FILE__ ) . 'js/one-click-images-admin.js',
+				plugin_dir_url( __FILE__ ) . 'js/oneclickcontent-images-admin.js',
 				array( 'jquery' ),
 				$this->version,
 				true

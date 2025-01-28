@@ -530,7 +530,7 @@ class One_Click_Images_License_Update {
             // Populate the plugin details from the transient.
             $res = (object) array(
                 'name'          => sanitize_text_field( $plugin_data->name ?? 'One Click Images' ),
-                'slug'          => sanitize_text_field( $plugin_data->slug ?? 'one-click-images' ),
+                'slug'          => sanitize_text_field( $plugin_data->slug ?? 'oneclickcontent-images' ),
                 'version'       => sanitize_text_field( $plugin_data->new_version ?? '1.0.0' ),
                 'author'        => sanitize_text_field( $plugin_data->author ?? __( 'Unknown Author', 'oneclickcontent-images' ) ),
                 'homepage'      => esc_url_raw( $plugin_data->homepage ?? 'https://oneclickcontent.com' ),
@@ -546,7 +546,7 @@ class One_Click_Images_License_Update {
             // Handle case where no transient data is available.
             $res = (object) array(
                 'name'        => 'One Click Images',
-                'slug'        => 'one-click-images',
+                'slug'        => 'oneclickcontent-images',
                 'description' => '<p>' . esc_html__( 'Plugin information is currently unavailable.', 'oneclickcontent-images' ) . '</p>',
             );
         }

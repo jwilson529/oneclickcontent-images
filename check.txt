@@ -1,5 +1,5 @@
 
-FILE: /Users/jameswilson/Local Sites/wp-clean-install/app/public/wp-content/plugins/one-click-images/admin/class-one-click-images-admin-settings.php
+FILE: /Users/jameswilson/Local Sites/wp-clean-install/app/public/wp-content/plugins/oneclickcontent-images/admin/class-oneclickcontent-images-admin-settings.php
 ---------------------------------------------------------------------------------------------------------------------------------------------------------
 FOUND 2 ERRORS AND 2 WARNINGS AFFECTING 4 LINES
 ---------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -11,7 +11,7 @@ FOUND 2 ERRORS AND 2 WARNINGS AFFECTING 4 LINES
 ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-FILE: /Users/jameswilson/Local Sites/wp-clean-install/app/public/wp-content/plugins/one-click-images/admin/class-one-click-images-admin.php
+FILE: /Users/jameswilson/Local Sites/wp-clean-install/app/public/wp-content/plugins/oneclickcontent-images/admin/class-oneclickcontent-images-admin.php
 -------------------------------------------------------------------------------------------------------------------------------------------
 FOUND 0 ERRORS AND 5 WARNINGS AFFECTING 4 LINES
 -------------------------------------------------------------------------------------------------------------------------------------------

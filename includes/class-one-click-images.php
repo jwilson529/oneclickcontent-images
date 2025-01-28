@@ -157,7 +157,11 @@ class One_Click_Images {
 
 		$plugin_auto_generate = new One_Click_Images_Auto_Generate();
 
-		$plugin_license_update = new One_Click_Images_License_Update( 'https://oneclickcontent.com/wp-json/oneclick/v1/', 'oneclickcontent-images', $this->get_version() );
+		$plugin_license_update = new One_Click_Images_License_Update( 
+		    'https://oneclickcontent.local/wp-json/oneclick/v1/updates/', 
+		    'oneclickcontent-images', 
+		    $this->get_version() 
+		);
 
 		// Register the settings page and settings.
 		$this->loader->add_action( 'admin_menu', $plugin_admin_settings, 'oneclick_images_register_options_page' );
@@ -189,6 +193,7 @@ class One_Click_Images {
 		$this->loader->add_filter( 'image_size_names_choose', $plugin_admin, 'oneclick_add_custom_image_sizes' );
 		$this->loader->add_action( 'wp_ajax_get_thumbnail', $plugin_admin, 'get_thumbnail' );
 
+		// Hooking methods related to license update
 		$this->loader->add_filter( 'pre_set_site_transient_update_plugins', $plugin_license_update, 'check_for_update' );
 		$this->loader->add_action( 'admin_init', $plugin_license_update, 'validate_license_on_init' );
 		$this->loader->add_filter( 'site_transient_update_plugins', $plugin_license_update, 'one_click_images_add_update_icon', 20 );
@@ -196,6 +201,7 @@ class One_Click_Images {
 		$this->loader->add_action( 'wp_ajax_get_license_status', $plugin_license_update, 'ajax_get_license_status' );
 		$this->loader->add_action( 'wp_ajax_check_usage', $plugin_license_update, 'oneclick_images_ajax_check_usage' );
 		$this->loader->add_action( 'plugins_api', $plugin_license_update, 'oneclickcontent_plugin_popup_info', 10, 3 );
+
 	}
 
 

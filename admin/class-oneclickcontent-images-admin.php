@@ -155,7 +155,12 @@ class One_Click_Images_Admin {
 	 * @return array Modified form fields including the custom button.
 	 */
 	public function add_generate_metadata_button( $form_fields, $post ) {
-		// Add a custom "Generate Metadata" button to the Media Library.
+		// Only show the "Generate Metadata" button for images.
+		if ( ! preg_match( '/^image\//', $post->post_mime_type ) ) {
+			return $form_fields;
+		}
+
+		// Add the custom "Generate Metadata" button to the Media Library.
 		$form_fields['generate_metadata'] = array(
 			'label' => __( 'Generate Metadata', 'oneclickcontent-images' ),
 			'input' => 'html',
@@ -164,7 +169,6 @@ class One_Click_Images_Admin {
 
 		return $form_fields;
 	}
-
 
 
 	/**

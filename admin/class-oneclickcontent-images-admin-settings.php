@@ -472,34 +472,24 @@ class One_Click_Images_Admin_Settings {
 	 * @return array|false The generated metadata on success, or an array with error details on failure.
 	 */
 	public function oneclick_images_generate_metadata( $image_id ) {
-
-		// Retrieve API key from settings.
-		$api_key = get_option( 'oneclick_images_license_key' );
-
-		// Determine the API endpoint based on the presence of an API key.
+		$api_key    = get_option( 'oneclick_images_license_key' );
 		$remote_url = empty( $api_key )
-			? 'https://oneclickcontent.com/wp-json/free-trial/v1/generate-meta'
-			: 'https://oneclickcontent.com/wp-json/subscriber/v1/generate-meta';
+			? 'https://oneclickcontent.local/wp-json/free-trial/v1/generate-meta'
+			: 'https://oneclickcontent.local/wp-json/subscriber/v1/generate-meta';
 
-		// Get metadata generation settings.
 		$selected_fields   = get_option( 'oneclick_images_metadata_fields', array() );
 		$override_metadata = get_option( 'oneclick_images_override_metadata', false );
 
-		// Retrieve the image file path.
 		$image_path = $this->get_custom_image_size_path( $image_id, 'one-click-image-api' );
-
 		if ( ! $image_path || ! file_exists( $image_path ) ) {
 			$image_path = get_attached_file( $image_id );
 		}
 
-		// Return false if the image path is invalid.
 		if ( ! $image_path || ! file_exists( $image_path ) ) {
 			return false;
 		}
 
-		// Determine which metadata fields need generation.
 		$generate_metadata = $this->determine_metadata_to_generate( $image_id, $selected_fields, $override_metadata );
-
 		if ( empty( $generate_metadata ) ) {
 			return array(
 				'success' => false,
@@ -507,7 +497,6 @@ class One_Click_Images_Admin_Settings {
 			);
 		}
 
-		// Read and encode the image file.
 		$image_data = file_get_contents( $image_path );
 		if ( false === $image_data ) {
 			return false;
@@ -516,10 +505,8 @@ class One_Click_Images_Admin_Settings {
 		$image_base64 = base64_encode( $image_data );
 		$image_type   = wp_check_filetype( $image_path )['ext'];
 
-		// Prepare API request payload.
 		$messages = $this->prepare_messages_payload( $image_base64, $image_type );
-
-		$body = array(
+		$body     = array(
 			'messages'      => $messages,
 			'functions'     => array( $this->get_function_definition() ),
 			'function_call' => array( 'name' => 'generate_image_metadata' ),
@@ -528,7 +515,6 @@ class One_Click_Images_Admin_Settings {
 			'license_key'   => $api_key,
 		);
 
-		// Send the request to the API.
 		$response = wp_remote_post(
 			$remote_url,
 			array(
@@ -541,23 +527,23 @@ class One_Click_Images_Admin_Settings {
 			)
 		);
 
-		// Handle errors in the API response.
 		if ( is_wp_error( $response ) ) {
+			$error_message = $response->get_error_message();
 			return array(
 				'success' => false,
 				'error'   => 'Failed to communicate with the metadata service.',
-				'details' => $response->get_error_message(),
+				'details' => $error_message,
 			);
 		}
 
-		// Decode and validate the API response body.
 		$response_body = wp_remote_retrieve_body( $response );
 		$data          = json_decode( $response_body, true );
 		if ( json_last_error() !== JSON_ERROR_NONE ) {
+			$json_error = json_last_error_msg();
 			return array(
 				'success' => false,
 				'error'   => 'Invalid response from metadata service.',
-				'details' => json_last_error_msg(),
+				'details' => $json_error,
 			);
 		}
 
@@ -571,7 +557,6 @@ class One_Click_Images_Admin_Settings {
 			);
 		}
 
-		// Process and save the generated metadata.
 		$processed_metadata = $this->process_and_save_metadata( $image_id, $data, $generate_metadata );
 		if ( $processed_metadata ) {
 			return array(

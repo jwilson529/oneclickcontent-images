@@ -82,48 +82,49 @@ class One_Click_Images_License_Update {
 	 * @return void
 	 */
 	public function validate_license_on_init() {
-		$license_key = get_option( 'oneclick_images_license_key' );
-		if ( empty( $license_key ) ) {
-			return; // No license key saved, skip validation.
-		}
+	    $license_key = get_option( 'oneclick_images_license_key' );
+	    if ( empty( $license_key ) ) {
+	        return; // No license key saved, skip validation.
+	    }
 
-		// Use a transient to avoid frequent API calls.
-		if ( false !== get_transient( 'oneclick_images_license_validation' ) ) {
-			return;
-		}
+	    // Check transient to prevent excessive API calls
+	    $cached_status = get_transient( 'oneclick_images_license_validation' );
+	    if ( $cached_status !== false ) {
+	        return; // Skip if validation has already been done recently
+	    }
 
-		$request_data = array(
-			'license_key' => sanitize_text_field( $license_key ),
-			'site_url'    => esc_url_raw( home_url() ),
-		);
+	    $request_data = array(
+	        'license_key' => sanitize_text_field( $license_key ),
+	        'site_url'    => esc_url_raw( home_url() ),
+	    );
 
-		$response = wp_remote_post(
-			$this->auth_url,
-			array(
-				'body'    => wp_json_encode( $request_data ),
-				'headers' => array( 'Content-Type' => 'application/json' ),
-				'timeout' => 30,
-			)
-		);
+	    $response = wp_remote_post(
+	        $this->auth_url,
+	        array(
+	            'body'    => wp_json_encode( $request_data ),
+	            'headers' => array( 'Content-Type' => 'application/json' ),
+	            'timeout' => 30,
+	        )
+	    );
 
-		if ( is_wp_error( $response ) ) {
-			return; // Network or other error; fail gracefully.
-		}
+	    if ( is_wp_error( $response ) ) {
+	        return; // Network or other error; fail gracefully.
+	    }
 
-		$response_code = wp_remote_retrieve_response_code( $response );
-		$data          = json_decode( wp_remote_retrieve_body( $response ), true );
+	    $response_code = wp_remote_retrieve_response_code( $response );
+	    $data          = json_decode( wp_remote_retrieve_body( $response ), true );
 
-		if ( json_last_error() !== JSON_ERROR_NONE || 200 !== $response_code ) {
-			return; // Failed to validate license.
-		}
+	    if ( json_last_error() !== JSON_ERROR_NONE || 200 !== $response_code ) {
+	        return; // Failed to validate license.
+	    }
 
-		if ( isset( $data['status'] ) && 'success' === $data['status'] ) {
-			update_option( 'oneclick_images_license_status', 'active' );
-			set_transient( 'oneclick_images_license_validation', 'active', DAY_IN_SECONDS );
-		} else {
-			update_option( 'oneclick_images_license_status', 'inactive' );
-			set_transient( 'oneclick_images_license_validation', 'inactive', HOUR_IN_SECONDS );
-		}
+	    if ( isset( $data['status'] ) && 'success' === $data['status'] ) {
+	        update_option( 'oneclick_images_license_status', 'active' );
+	        set_transient( 'oneclick_images_license_validation', 'active', DAY_IN_SECONDS );
+	    } else {
+	        update_option( 'oneclick_images_license_status', 'inactive' );
+	        set_transient( 'oneclick_images_license_validation', 'inactive', HOUR_IN_SECONDS ); // Recheck sooner if failed
+	    }
 	}
 
 	/**
@@ -150,10 +151,10 @@ class One_Click_Images_License_Update {
 		}
 
 		$request_data = array(
-			'product_key'     => 'product_6799599b70411',
-			'license_key'     => sanitize_text_field( $license_key ),
-			'website_url'     => esc_url_raw( home_url() ),
-			'current_version' => sanitize_text_field( $this->version ),
+		    'product_slug'     => OCC_IMAGES_PRODUCT_SLUG,
+		    'license_key'     => sanitize_text_field( $license_key ),
+		    'website_url'     => esc_url_raw( home_url() ),
+		    'current_version' => sanitize_text_field( $this->version ),
 		);
 
 		$response = wp_remote_post(
@@ -407,46 +408,54 @@ class One_Click_Images_License_Update {
 	 * @return void
 	 */
 	public function oneclick_images_ajax_check_usage() {
-		$nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) : '';
-		if ( ! wp_verify_nonce( $nonce, 'oneclick_images_ajax_nonce' ) ) {
-			wp_send_json_error( array( 'error' => __( 'Invalid nonce.', 'oneclickcontent-images' ) ) );
-		}
+	    // Get and verify the nonce.
+	    $nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) : '';
+	    if ( ! wp_verify_nonce( $nonce, 'oneclick_images_ajax_nonce' ) ) {
+	        wp_send_json_error( array( 'error' => __( 'Invalid nonce.', 'oneclickcontent-images' ) ) );
+	    }
 
-		$license_key = get_option( 'oneclick_images_license_key', '' );
-		$origin_url  = esc_url_raw( home_url() );
+	    // Get the license key and origin URL.
+	    $license_key = get_option( 'oneclick_images_license_key', '' );
+	    $origin_url  = esc_url_raw( home_url() );
 
-		if ( '' === $license_key ) {
-			wp_send_json_error( array( 'error' => __( 'License key is missing.', 'oneclickcontent-images' ) ) );
-		}
+	    if ( '' === $license_key ) {
+	        wp_send_json_error( array( 'error' => __( 'License key is missing.', 'oneclickcontent-images' ) ) );
+	    }
 
-		$response = wp_remote_post(
-			'https://oneclickcontent.local/wp-json/subscriber/v1/check-usage',
-			array(
-				'headers' => array( 'Content-Type' => 'application/json' ),
-				'body'    => wp_json_encode(
-					array(
-						'license_key' => sanitize_text_field( $license_key ),
-						'origin_url'  => $origin_url,
-					)
-				),
-				'timeout' => 20,
-			)
-		);
-		if ( is_wp_error( $response ) ) {
-			wp_send_json_error( array( 'error' => $response->get_error_message() ) );
-		}
+	    // Prepare the data to be sent to the subscriber usage endpoint.
+	    $request_data = array(
+	        'license_key' => sanitize_text_field( $license_key ),
+	        'origin_url'  => $origin_url,
+	        'product_slug' => OCC_IMAGES_PRODUCT_SLUG
+	    );
 
-		$decoded_response = json_decode( wp_remote_retrieve_body( $response ), true );
-		if ( JSON_ERROR_NONE !== json_last_error() ) {
-			wp_send_json_error( array( 'error' => __( 'Invalid response from server.', 'oneclickcontent-images' ) ) );
-		}
+	    // Send the request to the usage endpoint.
+	    $response = wp_remote_post(
+	        'https://oneclickcontent.com/wp-json/subscriber/v1/check-usage',
+	        array(
+	            'headers' => array( 'Content-Type' => 'application/json' ),
+	            'body'    => wp_json_encode( $request_data ),
+	            'timeout' => 20,
+	        )
+	    );
 
-		if ( 200 !== wp_remote_retrieve_response_code( $response ) || isset( $decoded_response['error'] ) ) {
-			$error_message = isset( $decoded_response['error'] ) ? $decoded_response['error'] : __( 'Unknown error occurred.', 'oneclickcontent-images' );
-			wp_send_json_error( array( 'error' => $error_message ) );
-		}
+	    // Check for errors in the response.
+	    if ( is_wp_error( $response ) ) {
+	        wp_send_json_error( array( 'error' => $response->get_error_message() ) );
+	    }
 
-		wp_send_json_success( $decoded_response );
+	    $decoded_response = json_decode( wp_remote_retrieve_body( $response ), true );
+	    if ( JSON_ERROR_NONE !== json_last_error() ) {
+	        wp_send_json_error( array( 'error' => __( 'Invalid response from server.', 'oneclickcontent-images' ) ) );
+	    }
+
+	    if ( 200 !== wp_remote_retrieve_response_code( $response ) || isset( $decoded_response['error'] ) ) {
+	        $error_message = isset( $decoded_response['error'] ) ? $decoded_response['error'] : __( 'Unknown error occurred.', 'oneclickcontent-images' );
+	        wp_send_json_error( array( 'error' => $error_message ) );
+	    }
+
+	    // Send the successful JSON response back to the AJAX caller.
+	    wp_send_json_success( $decoded_response );
 	}
 
 	/**

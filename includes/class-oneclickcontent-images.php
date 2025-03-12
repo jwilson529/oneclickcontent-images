@@ -158,8 +158,8 @@ class One_Click_Images {
 		$plugin_auto_generate = new One_Click_Images_Auto_Generate();
 
 		$plugin_license_update = new One_Click_Images_License_Update(
-			'https://oneclickcontent.local/wp-json/oneclick/v1/auth/validate-license',
-			'https://oneclickcontent.local/wp-json/oneclick/v1/updates/check-update',
+			'https://oneclickcontent.com/wp-json/oneclick/v1/auth/validate-license',
+			'https://oneclickcontent.com/wp-json/oneclick/v1/updates/check-update',
 			'oneclickcontent-images',
 			$this->get_version()
 		);

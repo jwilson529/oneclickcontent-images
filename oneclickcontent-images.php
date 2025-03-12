@@ -35,6 +35,7 @@ if ( ! defined( 'WPINC' ) ) {
  * Rename this for your plugin and update it as you release new versions.
  */
 define( 'OCC_IMAGES_VERSION', '1.1.7' );
+define( 'OCC_IMAGES_PRODUCT_SLUG', 'oneclickcontent-image-meta-generator' );
 
 /**
  * The code that runs during plugin activation.

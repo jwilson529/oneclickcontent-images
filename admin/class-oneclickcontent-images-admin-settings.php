@@ -472,103 +472,108 @@ class One_Click_Images_Admin_Settings {
 	 * @return array|false The generated metadata on success, or an array with error details on failure.
 	 */
 	public function oneclick_images_generate_metadata( $image_id ) {
-		$api_key    = get_option( 'oneclick_images_license_key' );
-		$remote_url = empty( $api_key )
-			? 'https://oneclickcontent.local/wp-json/free-trial/v1/generate-meta'
-			: 'https://oneclickcontent.local/wp-json/subscriber/v1/generate-meta';
+	    $api_key    = get_option( 'oneclick_images_license_key' );
+	    $remote_url = empty( $api_key )
+	        ? 'https://oneclickcontent.com/wp-json/free-trial/v1/generate-meta'
+	        : 'https://oneclickcontent.com/wp-json/subscriber/v1/generate-meta';
 
-		$selected_fields   = get_option( 'oneclick_images_metadata_fields', array() );
-		$override_metadata = get_option( 'oneclick_images_override_metadata', false );
+	    $selected_fields   = get_option( 'oneclick_images_metadata_fields', array() );
+	    $override_metadata = get_option( 'oneclick_images_override_metadata', false );
 
-		$image_path = $this->get_custom_image_size_path( $image_id, 'one-click-image-api' );
-		if ( ! $image_path || ! file_exists( $image_path ) ) {
-			$image_path = get_attached_file( $image_id );
-		}
+	    $image_path = $this->get_custom_image_size_path( $image_id, 'one-click-image-api' );
+	    if ( ! $image_path || ! file_exists( $image_path ) ) {
+	        $image_path = get_attached_file( $image_id );
+	    }
 
-		if ( ! $image_path || ! file_exists( $image_path ) ) {
-			return false;
-		}
+	    if ( ! $image_path || ! file_exists( $image_path ) ) {
+	        return false;
+	    }
 
-		$generate_metadata = $this->determine_metadata_to_generate( $image_id, $selected_fields, $override_metadata );
-		if ( empty( $generate_metadata ) ) {
-			return array(
-				'success' => false,
-				'error'   => 'No metadata fields require generation, and "Override Metadata" is disabled.',
-			);
-		}
+	    $generate_metadata = $this->determine_metadata_to_generate( $image_id, $selected_fields, $override_metadata );
+	    if ( empty( $generate_metadata ) ) {
+	        return array(
+	            'success' => false,
+	            'error'   => 'No metadata fields require generation, and "Override Metadata" is disabled.',
+	        );
+	    }
 
-		$image_data = file_get_contents( $image_path );
-		if ( false === $image_data ) {
-			return false;
-		}
+	    $image_data = file_get_contents( $image_path );
+	    if ( false === $image_data ) {
+	        return false;
+	    }
 
-		$image_base64 = base64_encode( $image_data );
-		$image_type   = wp_check_filetype( $image_path )['ext'];
+	    $image_base64 = base64_encode( $image_data );
+	    $image_type   = wp_check_filetype( $image_path )['ext'];
 
-		$messages = $this->prepare_messages_payload( $image_base64, $image_type );
-		$body     = array(
-			'messages'      => $messages,
-			'functions'     => array( $this->get_function_definition() ),
-			'function_call' => array( 'name' => 'generate_image_metadata' ),
-			'max_tokens'    => 500,
-			'origin_url'    => home_url(),
-			'license_key'   => $api_key,
-		);
+	    $messages = $this->prepare_messages_payload( $image_base64, $image_type );
+	    
+	    // Build the payload.
+	    $body = array(
+	        'messages'      => $messages,
+	        'functions'     => array( $this->get_function_definition() ),
+	        'function_call' => array( 'name' => 'generate_image_metadata' ),
+	        'max_tokens'    => 500,
+	        // Use the current site URL for origin_url.
+	        'origin_url'    => home_url(),
+	        'license_key'   => $api_key,
+	        // Use "product_slug" as expected by the endpoint.
+	        'product_slug'  => defined( 'OCC_IMAGES_PRODUCT_SLUG' ) ? OCC_IMAGES_PRODUCT_SLUG : 'demo',
+	    );
 
-		$response = wp_remote_post(
-			$remote_url,
-			array(
-				'headers' => array(
-					'Content-Type' => 'application/json',
-					'api-key'      => $api_key,
-				),
-				'body'    => wp_json_encode( $body ),
-				'timeout' => 120,
-			)
-		);
+	    $response = wp_remote_post(
+	        $remote_url,
+	        array(
+	            'headers' => array(
+	                'Content-Type' => 'application/json',
+	                'api-key'      => $api_key,
+	            ),
+	            'body'    => wp_json_encode( $body ),
+	            'timeout' => 120,
+	        )
+	    );
 
-		if ( is_wp_error( $response ) ) {
-			$error_message = $response->get_error_message();
-			return array(
-				'success' => false,
-				'error'   => 'Failed to communicate with the metadata service.',
-				'details' => $error_message,
-			);
-		}
+	    if ( is_wp_error( $response ) ) {
+	        $error_message = $response->get_error_message();
+	        return array(
+	            'success' => false,
+	            'error'   => 'Failed to communicate with the metadata service.',
+	            'details' => $error_message,
+	        );
+	    }
 
-		$response_body = wp_remote_retrieve_body( $response );
-		$data          = json_decode( $response_body, true );
-		if ( json_last_error() !== JSON_ERROR_NONE ) {
-			$json_error = json_last_error_msg();
-			return array(
-				'success' => false,
-				'error'   => 'Invalid response from metadata service.',
-				'details' => $json_error,
-			);
-		}
+	    $response_body = wp_remote_retrieve_body( $response );
+	    $data          = json_decode( $response_body, true );
+	    if ( json_last_error() !== JSON_ERROR_NONE ) {
+	        $json_error = json_last_error_msg();
+	        return array(
+	            'success' => false,
+	            'error'   => 'Invalid response from metadata service.',
+	            'details' => $json_error,
+	        );
+	    }
 
-		if ( isset( $data['error'] ) ) {
-			return array(
-				'success' => false,
-				'error'   => $data['error'],
-				'limit'   => isset( $data['limit'] ) ? $data['limit'] : null,
-				'message' => isset( $data['message'] ) ? $data['message'] : '',
-				'ad_url'  => isset( $data['ad_url'] ) ? $data['ad_url'] : '',
-			);
-		}
+	    if ( isset( $data['error'] ) ) {
+	        return array(
+	            'success' => false,
+	            'error'   => $data['error'],
+	            'limit'   => isset( $data['limit'] ) ? $data['limit'] : null,
+	            'message' => isset( $data['message'] ) ? $data['message'] : '',
+	            'ad_url'  => isset( $data['ad_url'] ) ? $data['ad_url'] : '',
+	        );
+	    }
 
-		$processed_metadata = $this->process_and_save_metadata( $image_id, $data, $generate_metadata );
-		if ( $processed_metadata ) {
-			return array(
-				'success'  => true,
-				'metadata' => $processed_metadata,
-			);
-		} else {
-			return array(
-				'success' => false,
-				'error'   => 'Metadata processing failed.',
-			);
-		}
+	    $processed_metadata = $this->process_and_save_metadata( $image_id, $data, $generate_metadata );
+	    if ( $processed_metadata ) {
+	        return array(
+	            'success'  => true,
+	            'metadata' => $processed_metadata,
+	        );
+	    } else {
+	        return array(
+	            'success' => false,
+	            'error'   => 'Metadata processing failed.',
+	        );
+	    }
 	}
 
 	/**
@@ -815,30 +820,38 @@ class One_Click_Images_Admin_Settings {
 	 * AJAX handler to generate metadata for an image.
 	 */
 	public function oneclick_images_ajax_generate_metadata() {
-		// Verify nonce and user permissions.
-		if ( ! check_ajax_referer( 'oneclick_images_ajax_nonce', 'nonce', false ) ) {
-			wp_send_json_error( 'Nonce verification failed.' );
-		}
+	    error_log('[Metadata PHP] oneclick_images_ajax_generate_metadata called.');
 
-		if ( ! current_user_can( 'upload_files' ) ) {
-			wp_send_json_error( 'Permission denied.' );
-		}
+	    // Verify nonce and user permissions.
+	    if ( ! check_ajax_referer( 'oneclick_images_ajax_nonce', 'nonce', false ) ) {
+	        error_log('[Metadata PHP] Nonce verification failed.');
+	        wp_send_json_error( 'Nonce verification failed.' );
+	    }
 
-		$image_id = isset( $_POST['image_id'] ) ? absint( $_POST['image_id'] ) : 0;
-		if ( ! $image_id ) {
-			wp_send_json_error( 'Invalid image ID.' );
-		}
+	    if ( ! current_user_can( 'upload_files' ) ) {
+	        error_log('[Metadata PHP] User does not have permission to upload files.');
+	        wp_send_json_error( 'Permission denied.' );
+	    }
 
-		$metadata = $this->oneclick_images_generate_metadata( $image_id );
-		if ( $metadata ) {
-			wp_send_json_success(
-				array(
-					'message'  => 'Metadata generated successfully.',
-					'metadata' => $metadata,
-				)
-			);
-		} else {
-			wp_send_json_error( 'Failed to generate metadata.' );
-		}
+	    $image_id = isset( $_POST['image_id'] ) ? absint( $_POST['image_id'] ) : 0;
+	    error_log('[Metadata PHP] Received image ID: ' . $image_id);
+	    if ( ! $image_id ) {
+	        error_log('[Metadata PHP] Invalid image ID.');
+	        wp_send_json_error( 'Invalid image ID.' );
+	    }
+
+	    $metadata = $this->oneclick_images_generate_metadata( $image_id );
+	    if ( $metadata ) {
+	        error_log('[Metadata PHP] Metadata generated successfully for image ID ' . $image_id . '. Metadata: ' . print_r( $metadata, true ));
+	        wp_send_json_success(
+	            array(
+	                'message'  => 'Metadata generated successfully.',
+	                'metadata' => $metadata,
+	            )
+	        );
+	    } else {
+	        error_log('[Metadata PHP] Failed to generate metadata for image ID ' . $image_id . '.');
+	        wp_send_json_error( 'Failed to generate metadata.' );
+	    }
 	}
 }

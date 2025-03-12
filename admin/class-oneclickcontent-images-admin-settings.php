@@ -846,6 +846,7 @@ class OneClickContent_Images_Admin_Settings {
 		}
 
 		$image_id = isset( $_POST['image_id'] ) ? absint( $_POST['image_id'] ) : 0;
+
 		if ( ! $image_id ) {
 			wp_send_json_error( __( 'Invalid image ID.', 'oneclickcontent-images' ) );
 			return;
@@ -862,5 +863,31 @@ class OneClickContent_Images_Admin_Settings {
 		} else {
 			wp_send_json_error( __( 'Failed to generate metadata.', 'oneclickcontent-images' ) );
 		}
+	}
+
+	/**
+	 * AJAX handler to refresh the nonce.
+	 *
+	 * @since 1.0.0
+	 * @return void
+	 */
+	public function oneclick_images_ajax_refresh_nonce() {
+		if ( ! check_ajax_referer( 'oneclick_images_ajax_nonce', 'nonce', false ) ) {
+			wp_send_json_error( __( 'Nonce verification failed.', 'oneclickcontent-images' ) );
+			return;
+		}
+
+		if ( ! current_user_can( 'upload_files' ) ) {
+			wp_send_json_error( __( 'Permission denied.', 'oneclickcontent-images' ) );
+			return;
+		}
+
+		$new_nonce = wp_create_nonce( 'oneclick_images_ajax_nonce' );
+
+		wp_send_json_success(
+			array(
+				'nonce' => $new_nonce,
+			)
+		);
 	}
 }

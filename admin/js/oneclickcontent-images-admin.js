@@ -201,28 +201,36 @@
          *
          * @param {Array}  ids   Array of image IDs to process.
          * @param {number} index Current index in the array.
+         * @param {string} nonce The nonce to use for AJAX requests.
          */
-        function processNextImage(ids, index) {
+        function processNextImage(ids, index, nonce) {
+            console.log(`[Bulk Metadata] Starting processNextImage - Index: ${index}, Total: ${ids.length}`);
+
             if (index >= ids.length) {
+                console.log('[Bulk Metadata] All images processed');
                 $('#bulk_generate_status').append('<p>All media items processed.</p>');
                 $('#bulk_generate_metadata_button').prop('disabled', false).text('Generate Metadata for Media Library');
                 return;
             }
 
             const imageId = ids[index];
+            console.log(`[Bulk Metadata] Processing image ID: ${imageId}`);
 
             $.ajax({
                 url: oneclick_images_admin_vars.ajax_url,
                 type: 'POST',
                 data: {
                     action: 'oneclick_images_generate_metadata',
-                    nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
+                    nonce: nonce || oneclick_images_admin_vars.oneclick_images_ajax_nonce,
                     image_id: imageId
                 },
                 success: function(response) {
+                    console.log(`[Bulk Metadata] AJAX success for ID ${imageId}`, response);
+
                     if (typeof response !== 'object') {
+                        console.error(`[Bulk Metadata] Invalid response format for ID ${imageId}`, response);
                         $('#bulk_generate_status').append('<p>Error: Invalid response format for ID ' + imageId + '.</p>');
-                        processNextImage(ids, index + 1);
+                        processNextImage(ids, index + 1, nonce);
                         return;
                     }
 
@@ -230,7 +238,7 @@
                         const metadata = response.data.metadata;
 
                         if (metadata.error && (metadata.error.includes('Usage limit reached') || metadata.error.includes('Free trial limit reached'))) {
-                            console.log('[Bulk Metadata] Usage limit reached for image ID ' + imageId + '.');
+                            console.log(`[Bulk Metadata] Usage limit reached for ID ${imageId}`, metadata);
                             if (metadata.cta_payload && metadata.cta_payload.html) {
                                 showLimitPrompt(metadata.cta_payload.html);
                             } else {
@@ -242,55 +250,108 @@
                         }
 
                         if (metadata.error && metadata.error.startsWith('Image validation failed')) {
+                            console.log(`[Bulk Metadata] Image rejected for ID ${imageId}: ${metadata.error}`);
                             showImageRejectionModal(metadata.error);
                             $('#bulk_generate_status').append(
                                 `<p>${imageId} - <span style="color: orange;">Rejected: </span>${metadata.error}</p>`
                             );
-                            processNextImage(ids, index + 1);
+                            processNextImage(ids, index + 1, nonce);
                             return;
                         }
 
                         if (metadata.success) {
                             const mediaLibraryUrl = `/wp-admin/post.php?post=${imageId}&action=edit`;
                             const newData = metadata.metadata || {};
+                            console.log(`[Bulk Metadata] Metadata generated for ID ${imageId}`, newData);
+
                             $.ajax({
-                                url: `/wp-admin/admin-ajax.php?action=get_thumbnail&image_id=${imageId}`,
+                                url: oneclick_images_admin_vars.ajax_url,
                                 type: 'GET',
-                                success: function(thumbnailResponse) {
-                                    const thumbnailUrl = thumbnailResponse.success && thumbnailResponse.data?.thumbnail ?
-                                        esc_url(thumbnailResponse.data.thumbnail) :
-                                        '/path/to/placeholder-image.jpg';
-                                    renderMetadataUI(mediaLibraryUrl, thumbnailUrl, newData, imageId);
-                                    processNextImage(ids, index + 1);
+                                data: {
+                                    action: 'get_thumbnail',
+                                    image_id: imageId,
+                                    oneclick_images_ajax_nonce: nonce || oneclick_images_admin_vars.oneclick_images_ajax_nonce
                                 },
-                                error: function() {
-                                    const thumbnailUrl = '/path/to/placeholder-image.jpg';
+                                success: function(thumbnailResponse) {
+                                    console.log(`[Bulk Metadata] Thumbnail fetch success for ID ${imageId}`, thumbnailResponse);
+                                    const thumbnailUrl = thumbnailResponse.success && thumbnailResponse.data?.thumbnail ?
+                                        thumbnailResponse.data.thumbnail :
+                                        '/path/to/placeholder-image.jpg';
+                                    console.log(`[Bulk Metadata] Passing to renderMetadataUI - ID: ${imageId}, Thumbnail: ${thumbnailUrl}`);
                                     renderMetadataUI(mediaLibraryUrl, thumbnailUrl, newData, imageId);
-                                    processNextImage(ids, index + 1);
+                                    processNextImage(ids, index + 1, nonce);
+                                },
+                                error: function(xhr, status, error) {
+                                    console.error(`[Bulk Metadata] Thumbnail fetch failed for ID ${imageId}`, { status, error });
+                                    const thumbnailUrl = '/path/to/placeholder-image.jpg';
+                                    console.log(`[Bulk Metadata] Passing to renderMetadataUI (error case) - ID: ${imageId}, Thumbnail: ${thumbnailUrl}`);
+                                    renderMetadataUI(mediaLibraryUrl, thumbnailUrl, newData, imageId);
+                                    processNextImage(ids, index + 1, nonce);
                                 }
                             });
                             return;
                         }
 
+                        console.log(`[Bulk Metadata] Skipped ID ${imageId} - Already has details`);
                         $('#bulk_generate_status').append(
                             `<p>${imageId} - <span style="color: gray;">Skipped (Already has details).</span></p>`
                         );
                     } else {
+                        console.log(`[Bulk Metadata] Skipped ID ${imageId} - Unexpected response`, response);
                         $('#bulk_generate_status').append(
                             `<p>${imageId} - <span style="color: gray;">Skipped (Unexpected response).</span></p>`
                         );
                     }
-                    processNextImage(ids, index + 1);
+                    processNextImage(ids, index + 1, nonce);
                 },
                 error: function(xhr, status, error) {
-                    $('#bulk_generate_status').append('<p>Error processing ID ' + imageId + ': ' + error + '</p>');
-                    processNextImage(ids, index + 1);
+                    console.error(`[Bulk Metadata] AJAX error for ID ${imageId}`, { status, error, xhr });
+                    if (xhr.responseJSON && xhr.responseJSON.data === 'Nonce verification failed.') {
+                        console.log('[Bulk Metadata] Nonce failed - Attempting refresh');
+                        refreshNonce().then(newNonce => {
+                            if (newNonce) {
+                                processNextImage(ids, index, newNonce);
+                            } else {
+                                $('#bulk_generate_status').append('<p>Error: Unable to refresh nonce for ID ' + imageId + '</p>');
+                                processNextImage(ids, index + 1, nonce);
+                            }
+                        });
+                    } else {
+                        $('#bulk_generate_status').append('<p>Error processing ID ' + imageId + ': ' + error + '</p>');
+                        processNextImage(ids, index + 1, nonce);
+                    }
                 }
             });
 
             if (++updateCounter % 5 === 0) {
+                console.log('[Bulk Metadata] Fetching usage status at counter:', updateCounter);
                 fetchUsageStatus();
             }
+        }
+
+        // Function to refresh nonce
+        function refreshNonce() {
+            return $.ajax({
+                url: oneclick_images_admin_vars.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'oneclick_images_refresh_nonce',
+                    nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce
+                },
+                success: function(response) {
+                    if (response.success && response.data.nonce) {
+                        console.log('[Bulk Metadata] Nonce refreshed:', response.data.nonce);
+                        oneclick_images_admin_vars.oneclick_images_ajax_nonce = response.data.nonce;
+                        return response.data.nonce;
+                    }
+                    console.error('[Bulk Metadata] Failed to refresh nonce:', response);
+                    return null;
+                },
+                error: function(xhr, status, error) {
+                    console.error('[Bulk Metadata] Nonce refresh AJAX error:', { status, error });
+                    return null;
+                }
+            });
         }
 
         /**
@@ -302,10 +363,12 @@
          * @param {number} imageId        The ID of the image.
          */
         function renderMetadataUI(mediaLibraryUrl, thumbnailUrl, metadata, imageId) {
+            console.log(`[Bulk Metadata] renderMetadataUI called - ID: ${imageId}, Thumbnail: ${thumbnailUrl}, Media URL: ${mediaLibraryUrl}`);
+
             const metadataRows = Object.entries(metadata).length > 0 ?
                 Object.entries(metadata)
-                .map(([key, value]) => `<tr><td>${key}</td><td>${value}</td></tr>`)
-                .join('') :
+                    .map(([key, value]) => `<tr><td>${key}</td><td>${value}</td></tr>`)
+                    .join('') :
                 '<tr><td colspan="2">No metadata available</td></tr>';
 
             const metadataTable = `
@@ -319,7 +382,7 @@
                 <div class="status-item" style="display: flex; align-items: flex-start; margin-bottom: 20px; border: 1px solid #ddd; padding: 10px; border-radius: 5px;">
                     <div class="thumbnail-container" style="flex: 0 0 150px; margin-right: 20px;">
                         <img
-                            src="${esc_url(thumbnailUrl)}"
+                            src="${thumbnailUrl}"  <!-- Removed esc_url -->
                             alt="Thumbnail for ${imageId}"
                             class="thumbnail-preview"
                             style="width: 150px; height: auto; border: 1px solid #ccc; border-radius: 3px;"
@@ -328,7 +391,7 @@
                     </div>
                     <div class="metadata-container" style="flex: 1;">
                         <p>
-                            <a href="${esc_url(mediaLibraryUrl)}" target="_blank" style="text-decoration: none; color: #0073aa; font-weight: normal; font-size: 14px;">
+                            <a href="${mediaLibraryUrl}" target="_blank" style="text-decoration: none; color: #0073aa; font-weight: normal; font-size: 14px;">  <!-- Removed esc_url -->
                                 ${imageId} - Done
                                 <span class="dashicons dashicons-external" style="margin-left: 5px;"></span>
                             </a>
@@ -338,6 +401,7 @@
                 </div>
             `;
             $('#bulk_generate_status').append(content);
+            console.log(`[Bulk Metadata] UI rendered for ID: ${imageId}`);
         }
 
         /**

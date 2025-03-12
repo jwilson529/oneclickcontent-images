@@ -88,20 +88,26 @@ class OneClickContent_Images_Admin {
 	/**
 	 * Enqueue admin-specific JavaScript files for the plugin.
 	 *
-	 * Loads JavaScript files on relevant admin screens, including jQuery and media library dependencies.
+	 * Loads JavaScript files and localized data on relevant admin screens, including jQuery and media library dependencies.
 	 *
 	 * @since 1.0.0
 	 * @return void
 	 */
 	public function enqueue_scripts() {
+		if ( ! is_admin() ) {
+			return; // Exit early if not in admin area to prevent frontend loading.
+		}
+
 		$screen = get_current_screen();
 
 		if ( ! $screen instanceof WP_Screen ) {
-			return; // Exit early if screen is not available.
+			return; // Ensure screen object exists before proceeding.
 		}
 
 		$allowed_screens = array( 'upload', 'post', 'post-new' );
-		if ( in_array( $screen->base, $allowed_screens, true ) || 'settings_page_oneclickcontent-images-settings' === $screen->id ) {
+		$settings_page   = 'settings_page_oneclickcontent-images-settings';
+
+		if ( in_array( $screen->base, $allowed_screens, true ) || $screen->id === $settings_page ) {
 			wp_enqueue_script(
 				$this->plugin_name,
 				plugin_dir_url( __FILE__ ) . 'js/oneclickcontent-images-admin.js',
@@ -120,9 +126,8 @@ class OneClickContent_Images_Admin {
 
 			wp_enqueue_media();
 
-			$selected_fields = get_option( 'oneclick_images_metadata_fields', array() );
 			$selected_fields = wp_parse_args(
-				$selected_fields,
+				get_option( 'oneclick_images_metadata_fields', array() ),
 				array(
 					'title'       => false,
 					'description' => false,
@@ -133,23 +138,26 @@ class OneClickContent_Images_Admin {
 
 			$license_status = get_option( 'oneclick_images_license_status', 'unknown' );
 
+			$admin_vars = array(
+				'ajax_url'                   => admin_url( 'admin-ajax.php' ),
+				'oneclick_images_ajax_nonce' => wp_create_nonce( 'oneclick_images_ajax_nonce' ),
+				'selected_fields'            => $selected_fields,
+				'license_status'             => sanitize_text_field( $license_status ),
+				'upload_base_url'            => wp_upload_dir()['baseurl'],
+			);
+
 			wp_localize_script(
 				$this->plugin_name,
 				'oneclick_images_admin_vars',
-				array(
-					'ajax_url'                   => esc_url_raw( admin_url( 'admin-ajax.php' ) ),
-					'oneclick_images_ajax_nonce' => wp_create_nonce( 'oneclick_images_ajax_nonce' ),
-					'selected_fields'            => $selected_fields,
-					'license_status'             => sanitize_text_field( $license_status ),
-				)
+				$admin_vars
 			);
 
 			wp_localize_script(
 				$this->plugin_name . '-error-check',
 				'oneclick_images_error_vars',
 				array(
-					'ajax_url'                   => esc_url_raw( admin_url( 'admin-ajax.php' ) ),
-					'oneclick_images_ajax_nonce' => wp_create_nonce( 'oneclick_images_ajax_nonce' ),
+					'ajax_url'                   => $admin_vars['ajax_url'],
+					'oneclick_images_ajax_nonce' => $admin_vars['oneclick_images_ajax_nonce'],
 				)
 			);
 		}
@@ -226,7 +234,6 @@ class OneClickContent_Images_Admin {
 			$admin_settings->oneclick_images_generate_metadata( intval( $post_id ) );
 		}
 
-		// Append both the count and a nonce for the generated details.
 		$generated_details_nonce = wp_create_nonce( 'generated_details_nonce' );
 		$args                    = array(
 			'generated_details'       => count( $post_ids ),
@@ -242,12 +249,10 @@ class OneClickContent_Images_Admin {
 	 * @return void
 	 */
 	public function generate_details_bulk_action_admin_notice() {
-		// Check that both parameters exist.
 		if ( ! isset( $_REQUEST['generated_details'], $_REQUEST['generated_details_nonce'] ) ) {
 			return;
 		}
 
-		// Sanitize and verify the nonce.
 		$nonce = sanitize_text_field( wp_unslash( $_REQUEST['generated_details_nonce'] ) );
 		if ( ! wp_verify_nonce( $nonce, 'generated_details_nonce' ) ) {
 			return;
@@ -304,19 +309,18 @@ class OneClickContent_Images_Admin {
 	 * @return void Outputs JSON response with the thumbnail URL or an error message.
 	 */
 	public function get_thumbnail() {
-		// Verify nonce for security. The AJAX request should include the 'oneclick_images_ajax_nonce' parameter.
 		$nonce = isset( $_GET['oneclick_images_ajax_nonce'] ) ? sanitize_text_field( wp_unslash( $_GET['oneclick_images_ajax_nonce'] ) ) : '';
 		if ( ! wp_verify_nonce( $nonce, 'oneclick_images_ajax_nonce' ) ) {
 			wp_send_json_error( array( 'message' => __( 'Security check failed.', 'oneclickcontent-images' ) ) );
 			return;
 		}
 
-		if ( ! isset( $_GET['image_id'] ) || ! is_numeric( $_GET['image_id'] ) ) {
+		$image_id = isset( $_GET['image_id'] ) ? absint( wp_unslash( $_GET['image_id'] ) ) : 0;
+		if ( ! $image_id ) {
 			wp_send_json_error( array( 'message' => __( 'Invalid image ID.', 'oneclickcontent-images' ) ) );
 			return;
 		}
 
-		$image_id      = intval( $_GET['image_id'] );
 		$thumbnail_url = wp_get_attachment_thumb_url( $image_id );
 
 		if ( $thumbnail_url ) {

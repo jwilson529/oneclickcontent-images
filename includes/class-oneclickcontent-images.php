@@ -167,6 +167,8 @@ class OneClickContent_Images {
 		// AJAX action for generating metadata.
 		$this->loader->add_action( 'wp_ajax_oneclick_images_generate_metadata', $plugin_admin_settings, 'oneclick_images_ajax_generate_metadata' );
 
+		$this->loader->add_action( 'wp_ajax_oneclick_images_refresh_nonce', $plugin_admin_settings, 'oneclick_images_ajax_refresh_nonce' );
+
 		// Add the "Generate Metadata" button to the Media Library.
 		$this->loader->add_filter( 'attachment_fields_to_edit', $plugin_admin, 'add_generate_metadata_button', 10, 2 );
 		$this->loader->add_filter( 'bulk_actions-upload', $plugin_admin, 'add_generate_details_bulk_action' );

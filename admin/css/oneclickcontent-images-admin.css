@@ -1,8 +1,18 @@
-/***********************************************
- * General Styling
- ***********************************************/
+/**
+ * CSS styles for the OneClickContent Image Details plugin admin interface.
+ *
+ * Provides styling for settings forms, modals, bulk generation status, and UI elements.
+ *
+ * @package    One_Click_Images
+ * @subpackage One_Click_Images/admin/css
+ * @author     OneClickContent <support@oneclickcontent.com>
+ * @since      1.0.0
+ * @copyright  2025 OneClickContent
+ * @license    GPL-2.0+
+ * @link       https://oneclickcontent.com
+ */
 
-/* Container Styling */
+/* General Container Styling */
 #oneclick_images.wrap {
     max-width: 900px;
     margin: 0 auto;
@@ -13,97 +23,133 @@
     font-family: 'Helvetica Neue', Arial, sans-serif;
 }
 
-/***********************************************
- * Headings
- ***********************************************/
+/* Headings */
 #oneclick_images h1 {
-    color: #333;
+    color: #fff;
+    font-size: 2.5rem;
     font-weight: bold;
-    font-size: 28px;
     margin-bottom: 20px;
+    padding: 1rem;
     text-align: center;
 }
 
 #oneclick_images h2 {
     color: #444;
-    font-weight: bold;
     font-size: 20px;
+    font-weight: bold;
     margin-bottom: 15px;
 }
 
-/***********************************************
- * Settings Divider
- ***********************************************/
+/* Settings Divider */
 #oneclick_images .settings-divider {
     border: 1px solid #ddd;
     margin: 30px 0;
 }
 
-/***********************************************
- * Form Styling
- ***********************************************/
+/* Form Styling */
 #oneclick_images form {
     margin-bottom: 20px;
 }
 
-/***********************************************
- * Usage Information Styling
- ***********************************************/
+/* Jumbotron Styling */
+#oneclick_images .jumbotron-wrapper {
+    position: relative;
+    max-height: 225px;
+    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+#oneclick_images .jumbotron-wrapper img {
+    width: 100%;
+    height: auto;
+    max-height: 100%;
+    border-radius: inherit;
+    object-fit: none;
+}
+
+#oneclick_images .jumbotron-title {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    padding: 10px 20px;
+    width: 90%;
+    color: #fff;
+    font-size: 36px;
+    font-weight: bold;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+    border-radius: 4px;
+}
+
+/* Usage Information Section */
 #oneclick_images .usage-info-section {
+    margin-bottom: 20px;
+    padding: 20px;
     background: #f8f9fa;
     border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 #oneclick_images .usage-summary strong {
     display: block;
-    font-size: 18px;
     margin-bottom: 10px;
     color: #333;
+    font-size: 18px;
 }
 
 #oneclick_images .progress {
+    height: 20px;
     background-color: #e9ecef;
     border-radius: 4px;
     overflow: hidden;
-    height: 20px;
 }
 
 #oneclick_images .progress-bar {
-    text-align: center;
     line-height: 20px;
-    font-size: 14px;
     color: white;
+    font-size: 14px;
+    text-align: center;
     transition: width 0.5s ease;
 }
 
-/***********************************************
- * Bulk Generate Section
- ***********************************************/
+#oneclick_images .bg-success {
+    background-color: #28a745 !important;
+}
+
+#oneclick_images .bg-warning {
+    background-color: #ffc107 !important;
+    color: #333 !important;
+}
+
+#oneclick_images .bg-danger {
+    background-color: #dc3545 !important;
+}
+
+/* Bulk Generate Section */
 #oneclick_images .bulk-generate-section {
+    padding: 20px;
     background: #fdfdfd;
     border: 1px solid #e1e1e1;
     border-radius: 8px;
-    padding: 20px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 #oneclick_images .bulk-generate-section p {
     margin-bottom: 15px;
-    font-size: 16px;
     color: #555;
+    font-size: 16px;
 }
 
 #oneclick_images #bulk_generate_metadata_button {
     display: inline-block;
+    padding: 10px 20px;
     background-color: #007cba;
     color: white;
     font-size: 16px;
-    border-radius: 4px;
-    padding: 10px 20px;
     border: none;
+    border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.3s;
 }
@@ -117,44 +163,13 @@
     background-color: #005a8c;
 }
 
-#oneclick_images .bulk-generate-status {
-    margin-top: 20px;
-    font-size: 14px;
-    color: #333;
-}
-
-/***********************************************
- * Notifications
- ***********************************************/
-
-/* Success and Error States */
-.notice-success {
-    background-color: #e8f6ec;
-    border-left: 4px solid #28a745;
-    padding: 15px;
-    border-radius: 4px;
-    color: #155724;
-    font-size: 14px;
-}
-
-.notice-error {
-    background-color: #f8d7da;
-    border-left: 4px solid #dc3545;
-    padding: 15px;
-    border-radius: 4px;
-    color: #721c24;
-    font-size: 14px;
-}
-
-/***********************************************
- * Bulk Generation Status
- ***********************************************/
 #oneclick_images #bulk_generate_status {
-    background-color: #f8f9fa;
-    padding: 20px;
-    border-radius: 4px;
     max-height: 300px;
+    margin-top: 20px;
+    padding: 20px;
     overflow-y: auto;
+    background-color: #f8f9fa;
+    border-radius: 4px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     font-size: 14px;
 }
@@ -173,359 +188,26 @@
     color: #ffcc00;
 }
 
-/***********************************************
- * Modal Styling
- ***********************************************/
-
-/* Modal Overlay */
-.occ-subscription-modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 160001; /* Higher than the Media Library */
-    background: rgba(0, 0, 0, 0.6);
-    overflow: auto;
-}
-
-.occ-subscription-modal-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    z-index: 1;
-}
-
-/* Modal Content */
-.occ-subscription-modal-content {
-    position: relative;
-    margin: 5% auto;
-    padding: 20px;
-    width: 90%;
-    max-width: 600px;
-    background: #fff;
-    border-radius: 8px;
-    z-index: 160002; /* Ensure content is above the overlay */
-    text-align: center;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-/* Modal Close Button */
-.occ-subscription-modal-close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 20px;
-    cursor: pointer;
-}
-
-/***********************************************
- * Subscription Options
- ***********************************************/
-
-/* Options Container */
-.occ-subscription-options {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
-    gap: 20px;
-}
-
-.occ-subscription-tier {
-    flex: 1;
-    min-width: 150px;
+/* Notifications */
+.notice-success {
     padding: 15px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background: #f9f9f9;
-    text-align: center;
-}
-
-.occ-subscription-tier h3 {
-    margin: 0 0 10px;
-}
-
-.occ-subscription-tier strong {
-    display: block;
-    margin: 10px 0;
-    font-size: 1.2em;
-    color: #333;
-}
-
-.occ-subscription-button {
-    display: inline-block;
-    padding: 10px 15px;
-    color: #fff;
-    background: #0073aa;
-    text-decoration: none;
-    border-radius: 5px;
-    transition: background 0.3s;
-}
-
-.occ-subscription-button:hover {
-    background: #005f8d;
-}
-
-.occ-subscription-button a:active, a:hover {
-    color: #fff;
-}
-
-/* Modal Link */
-.occ-subscription-modal-link {
-    display: block;
-    margin-top: 20px;
-    color: #0073aa;
-    text-decoration: underline;
-    font-weight: bold;
-}
-
-.occ-subscription-modal-link:hover {
-    text-decoration: none;
-}
-
-#occ-subscription-modal .occ-subscription-tier a:active, #occ-subscription-modal .occ-subscription-tier a:hover {
-    color: #fff;
-}
-
-/* Progress Bar Styling */
-#oneclick_images .progress {
-    background-color: #e9ecef;
+    background-color: #e8f6ec;
+    border-left: 4px solid #28a745;
     border-radius: 4px;
-    overflow: hidden;
-}
-
-#oneclick_images .progress-bar {
-    text-align: center;
-    line-height: 20px;
-    font-size: 14px;
-    color: white;
-    transition: width 0.5s ease;
-}
-
-/* Usage States */
-#oneclick_images .bg-success {
-    background-color: #28a745 !important;
-}
-
-#oneclick_images .bg-warning {
-    background-color: #ffc107 !important;
-    color: #333 !important;
-}
-
-#oneclick_images .bg-danger {
-    background-color: #dc3545 !important;
-}
-
-/***********************************************
- * Jumbotron Styling
- ***********************************************/
-
-/* Jumbotron Wrapper */
-#oneclick_images .jumbotron-wrapper {
-    position: relative;
-    width: 100%;
-    max-height: 225px; /* Constrain the maximum height */
-    overflow: hidden;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-/* Jumbotron Image */
-#oneclick_images .jumbotron-wrapper img {
-    width: 100%;
-    height: auto;
-    object-fit: none;
-    max-height: 100%; 
-    border-radius: inherit;
-}
-
-/* Jumbotron Title */
-#oneclick_images .jumbotron-title {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 36px;
-    color: #fff;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
-    font-weight: bold;
-    margin: 0;
-    padding: 10px 20px;
-    border-radius: 4px;
-    width: 90%;
-}
-
-#oneclick_images h1 {
-    color: #fff;
-    font-weight: bold;
-    font-size: 2.5rem;
-    margin-bottom: 20px;
-    text-align: center;
-    padding: 1rem;
-}
-
-
-#occ-image-rejection-modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 160003;
-    background-color: rgba(0, 0, 0, 0.5);
-}
-
-#occ-image-rejection-modal .occ-modal-content {
-    background: #fff;
-    padding: 20px;
-    max-width: 500px;
-    margin: 50px auto;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-    position: relative;
-    text-align: center;
-}
-
-#occ-image-rejection-modal .occ-modal-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-}
-
-#occ-image-rejection-modal .occ-modal-close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    cursor: pointer;
-}
-
-#occ-image-rejection-modal .occ-modal-button {
-    margin-top: 15px;
-    padding: 10px 20px;
-    background-color: #007cba;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-
-/* Modal Styles */
-.occ-modal {
-    display: none; /* Hidden by default */
-    position: fixed;
-    z-index: 160003;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
-}
-
-.occ-modal-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Background overlay */
-}
-
-.occ-modal-content {
-    position: relative;
-    margin: 15% auto;
-    padding: 20px;
-    width: 90%;
-    max-width: 500px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    animation: fadeIn 0.3s ease-in-out;
-}
-
-.occ-modal-content h2 {
-    font-size: 20px;
-    margin-bottom: 10px;
-    color: #333;
-    display: flex;
-    align-items: center;
-}
-
-.occ-modal-content h2 span {
-    margin-right: 10px;
-}
-
-.occ-modal-content p {
-    font-size: 16px;
-    color: #555;
-    margin-bottom: 20px;
-}
-
-.occ-modal-button {
-    display: inline-block;
-    padding: 10px 20px;
-    background-color: #007cba; /* WordPress blue */
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    font-size: 14px;
-    cursor: pointer;
-    text-align: center;
-}
-
-.occ-modal-button:hover {
-    background-color: #005a8c;
-}
-
-.occ-modal-close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    cursor: pointer;
-    font-size: 16px;
-    color: #888;
-}
-
-.occ-modal-close:hover {
-    color: #333;
-}
-
-.occ-modal-link {
-    display: inline-block;
-    margin-top: 10px;
-    color: #007cba; /* WordPress blue */
-    font-weight: bold;
-    text-decoration: none;
+    color: #155724;
     font-size: 14px;
 }
 
-.occ-modal-link:hover {
-    text-decoration: underline;
-    color: #005a8c;
+.notice-error {
+    padding: 15px;
+    background-color: #f8d7da;
+    border-left: 4px solid #dc3545;
+    border-radius: 4px;
+    color: #721c24;
+    font-size: 14px;
 }
 
-/* Fade-in Animation */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-
+/* Saving Messages */
 .saving-message {
     font-size: 0.9em;
     font-weight: bold;
@@ -539,15 +221,17 @@
     color: red;
 }
 
+/* Metadata Table */
 .metadata-table {
     width: 100%;
-    border-collapse: collapse;
     margin-top: 10px;
+    border-collapse: collapse;
 }
 
-.metadata-table th, .metadata-table td {
-    border: 1px solid #ccc;
+.metadata-table th,
+.metadata-table td {
     padding: 5px;
+    border: 1px solid #ccc;
     text-align: left;
 }
 
@@ -557,4 +241,200 @@
 
 .status-item {
     margin-bottom: 15px;
+}
+
+/* Modal Styling */
+.occ-modal,
+.occ-subscription-modal,
+#occ-image-rejection-modal,
+#occ-subscriber-limit-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 160003; /* Higher than Media Library */
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.occ-modal-overlay,
+.occ-subscription-modal-overlay,
+#occ-image-rejection-modal .occ-modal-overlay,
+#occ-subscriber-limit-modal .occ-subscriber-limit-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+}
+
+.occ-modal-content,
+.occ-subscription-modal-content,
+#occ-image-rejection-modal .occ-modal-content,
+#occ-subscriber-limit-modal .occ-subscriber-limit-modal-content {
+    position: relative;
+    margin: 15% auto;
+    padding: 20px;
+    width: 90%;
+    max-width: 500px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    z-index: 160004;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.occ-modal-close,
+.occ-subscription-modal-close,
+#occ-image-rejection-modal .occ-modal-close,
+#occ-subscriber-limit-modal .occ-subscriber-limit-modal-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: #888;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.occ-modal-close:hover,
+.occ-subscription-modal-close:hover,
+#occ-image-rejection-modal .occ-modal-close:hover,
+#occ-subscriber-limit-modal .occ-subscriber-limit-modal-close:hover {
+    color: #333;
+}
+
+.occ-modal-content h2,
+.occ-subscription-modal-content h2,
+#occ-image-rejection-modal h2,
+#occ-subscriber-limit-modal h2 {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    color: #333;
+    font-size: 20px;
+}
+
+.occ-modal-content h2 span,
+.occ-subscription-modal-content h2 span,
+#occ-image-rejection-modal h2 span,
+#occ-subscriber-limit-modal h2 span {
+    margin-right: 10px;
+}
+
+.occ-modal-content p,
+.occ-subscription-modal-content p,
+#occ-image-rejection-modal p,
+#occ-subscriber-limit-modal p {
+    margin-bottom: 20px;
+    color: #555;
+    font-size: 16px;
+}
+
+.occ-modal-button,
+#occ-image-rejection-modal .occ-modal-button {
+    display: inline-block;
+    padding: 10px 20px;
+    margin-top: 15px;
+    background-color: #007cba;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.occ-modal-button:hover,
+#occ-image-rejection-modal .occ-modal-button:hover {
+    background-color: #005a8c;
+}
+
+.occ-modal-link {
+    display: inline-block;
+    margin-top: 10px;
+    color: #007cba;
+    font-size: 14px;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.occ-modal-link:hover {
+    color: #005a8c;
+    text-decoration: underline;
+}
+
+/* Subscription Modal Specific Styles */
+.occ-subscription-options {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    gap: 20px;
+}
+
+.occ-subscription-tier {
+    flex: 1;
+    min-width: 150px;
+    padding: 15px;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.occ-subscription-tier h3 {
+    margin: 0 0 10px;
+}
+
+.occ-subscription-tier strong {
+    display: block;
+    margin: 10px 0;
+    color: #333;
+    font-size: 1.2em;
+}
+
+.occ-subscription-button {
+    display: inline-block;
+    padding: 10px 15px;
+    background: #0073aa;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background 0.3s;
+}
+
+.occ-subscription-button:hover {
+    background: #005f8d;
+}
+
+.occ-subscription-modal-link {
+    display: block;
+    margin-top: 20px;
+    color: #0073aa;
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+.occ-subscription-modal-link:hover {
+    text-decoration: none;
+}
+
+#occ-subscription-modal .occ-subscription-tier a:active,
+#occ-subscription-modal .occ-subscription-tier a:hover {
+    color: #fff;
+}
+
+/* Fade-in Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

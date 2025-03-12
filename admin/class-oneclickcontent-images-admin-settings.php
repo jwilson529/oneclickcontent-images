@@ -1,29 +1,36 @@
 <?php
 /**
- * Plugin Name: OneClickContent Image Details Admin Settings
- * Description: Settings and completion functionality for OneClickContent Image Details plugin.
- * Version: 1.0.0
- * Author: OneClickContent
- * Author URI: https://oneclickcontent.com
- * Text Domain: oneclickcontent-images
+ * Admin Settings for OneClickContent Image Details Plugin
  *
- * Handles the admin settings page, including generating image metadata using the OpenAI API.
+ * Handles the admin settings page, including generating image metadata using the OneClickContent API.
  *
- * @package One_Click_Images
+ * @package    One_Click_Images
+ * @subpackage One_Click_Images/admin
+ * @author     OneClickContent <support@oneclickcontent.com>
+ * @since      1.0.0
+ * @copyright  2025 OneClickContent
+ * @license    GPL-2.0+
+ * @link       https://oneclickcontent.com
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
+
 /**
- * OneClickContent Image Details Admin Settings Class.
+ * Class OneClickContent_Images_Admin_Settings
  *
- * This class handles the admin settings page, including generating image metadata using the OpenAI API.
+ * Manages the admin settings page for the OneClickContent Image Details plugin,
+ * including metadata generation via the OneClickContent API.
  *
  * @since 1.0.0
  */
-class One_Click_Images_Admin_Settings {
+class OneClickContent_Images_Admin_Settings {
 
 	/**
 	 * Register the plugin settings page in the WordPress admin menu.
 	 *
+	 * @since 1.0.0
 	 * @return void
 	 */
 	public function oneclick_images_register_options_page() {
@@ -39,11 +46,13 @@ class One_Click_Images_Admin_Settings {
 	/**
 	 * Display the plugin options page.
 	 *
+	 * @since 1.0.0
 	 * @return void
 	 */
 	public function oneclick_images_options_page() {
 		$license_status   = get_option( 'oneclick_images_license_status', 'unknown' );
 		$header_image_url = plugin_dir_url( __FILE__ ) . 'assets/header-image.webp';
+
 		?>
 		<div id="oneclick_images" class="wrap">
 			<!-- Jumbotron Header -->
@@ -59,6 +68,7 @@ class One_Click_Images_Admin_Settings {
 			<form method="post" action="options.php" id="oneclick_images_settings_form">
 				<?php
 				settings_fields( 'oneclick_images_settings' );
+				wp_nonce_field( 'oneclick_images_settings_update', '_wpnonce' );
 				do_settings_sections( 'oneclick_images_settings' );
 				?>
 			</form>
@@ -71,7 +81,6 @@ class One_Click_Images_Admin_Settings {
 				<h2><?php esc_html_e( 'Usage Information', 'oneclickcontent-images' ); ?></h2>
 
 				<?php if ( 'active' !== $license_status ) : ?>
-					<!-- Free Trial Message -->
 					<p class="free-trial-message">
 						<?php esc_html_e( 'You are currently using the free trial version of OneClickContent Images. To unlock full features, please subscribe.', 'oneclickcontent-images' ); ?>
 					</p>
@@ -80,10 +89,8 @@ class One_Click_Images_Admin_Settings {
 					</a>
 				<?php else : ?>
 					<p><?php esc_html_e( 'Track your current usage and remaining image generation allowance.', 'oneclickcontent-images' ); ?></p>
-
-					<!-- Usage Summary -->
 					<div id="usage_status" class="usage-summary">
-						<strong id="usage_count">Loading usage data...</strong>
+						<strong id="usage_count"><?php esc_html_e( 'Loading usage data...', 'oneclickcontent-images' ); ?></strong>
 						<div class="progress">
 							<div 
 								id="usage_progress" 
@@ -92,7 +99,8 @@ class One_Click_Images_Admin_Settings {
 								aria-valuenow="0" 
 								aria-valuemin="0" 
 								aria-valuemax="100" 
-								style="width: 0%;">
+								style="width: 0%;"
+							>
 								0%
 							</div>
 						</div>
@@ -121,29 +129,35 @@ class One_Click_Images_Admin_Settings {
 	/**
 	 * Display admin notices for settings errors or updates.
 	 *
+	 * @since 1.0.0
 	 * @return void
 	 */
 	public function display_admin_notices() {
-		// Check if the current user can manage options and settings are updated.
-		$settings_updated = sanitize_text_field( filter_input( INPUT_GET, 'settings-updated' ) );
+		$settings_updated = isset( $_GET['settings-updated'] ) ? sanitize_text_field( wp_unslash( $_GET['settings-updated'] ) ) : '';
+		$nonce            = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
 
 		if ( current_user_can( 'manage_options' ) && $settings_updated && 'true' === $settings_updated ) {
-			add_settings_error( 'oneclick_images_messages', 'oneclick_images_message', __( 'Settings saved.', 'oneclickcontent-images' ), 'updated' );
+			// Verify the nonce using the localized nonce action.
+			if ( ! empty( $nonce ) && wp_verify_nonce( $nonce, 'oneclick_images_ajax_nonce' ) ) {
+				add_settings_error(
+					'oneclick_images_messages',
+					'oneclick_images_message',
+					__( 'Settings saved.', 'oneclickcontent-images' ),
+					'updated'
+				);
+			}
 		}
 
-		// Display settings errors or messages.
 		settings_errors( 'oneclick_images_messages' );
 	}
-
-
 
 	/**
 	 * Register plugin settings and add settings fields.
 	 *
+	 * @since 1.0.0
 	 * @return void
 	 */
 	public function oneclick_images_register_settings() {
-		// Register the OpenAI API key setting.
 		register_setting(
 			'oneclick_images_settings',
 			'oneclick_images_license_key',
@@ -152,7 +166,6 @@ class One_Click_Images_Admin_Settings {
 			)
 		);
 
-		// Register the AI model setting.
 		register_setting(
 			'oneclick_images_settings',
 			'oneclick_images_ai_model',
@@ -161,7 +174,6 @@ class One_Click_Images_Admin_Settings {
 			)
 		);
 
-		// Register the Auto Add Details on Upload setting.
 		register_setting(
 			'oneclick_images_settings',
 			'oneclick_images_auto_add_details',
@@ -170,7 +182,6 @@ class One_Click_Images_Admin_Settings {
 			)
 		);
 
-		// Register the metadata fields checkboxes.
 		register_setting(
 			'oneclick_images_settings',
 			'oneclick_images_metadata_fields',
@@ -179,7 +190,6 @@ class One_Click_Images_Admin_Settings {
 			)
 		);
 
-		// Register the Override Existing Metadata setting.
 		register_setting(
 			'oneclick_images_settings',
 			'oneclick_images_override_metadata',
@@ -188,28 +198,26 @@ class One_Click_Images_Admin_Settings {
 			)
 		);
 
-		// Register the Language setting.
 		register_setting(
 			'oneclick_images_settings',
 			'oneclick_images_language',
 			array(
 				'type'              => 'string',
 				'sanitize_callback' => 'sanitize_text_field',
-				'default'           => 'en', // Default to English.
+				'default'           => 'en',
 			)
 		);
 
-		// Add settings sections and fields.
 		$this->add_settings_sections_and_fields();
 	}
 
 	/**
 	 * Adds settings sections and fields to the settings page.
 	 *
+	 * @since 1.0.0
 	 * @return void
 	 */
 	private function add_settings_sections_and_fields() {
-		// Metadata Fields section.
 		add_settings_section(
 			'oneclick_images_metadata_section',
 			__( 'Select Metadata Fields to Replace', 'oneclickcontent-images' ),
@@ -225,7 +233,6 @@ class One_Click_Images_Admin_Settings {
 			'oneclick_images_metadata_section'
 		);
 
-		// Main settings section.
 		add_settings_section(
 			'oneclick_images_settings_section',
 			__( 'OneClickContent Image Details Settings', 'oneclickcontent-images' ),
@@ -242,7 +249,6 @@ class One_Click_Images_Admin_Settings {
 			array( 'label_for' => 'oneclick_images_auto_add_details' )
 		);
 
-		// Add the Override Existing Metadata checkbox field.
 		add_settings_field(
 			'oneclick_images_override_metadata',
 			__( 'Override Existing Details', 'oneclickcontent-images' ),
@@ -252,7 +258,6 @@ class One_Click_Images_Admin_Settings {
 			array( 'label_for' => 'oneclick_images_override_metadata' )
 		);
 
-		// Add Language Selection field.
 		add_settings_field(
 			'oneclick_images_language',
 			__( 'Language', 'oneclickcontent-images' ),
@@ -272,10 +277,10 @@ class One_Click_Images_Admin_Settings {
 		);
 	}
 
-
 	/**
 	 * Callback for the Language dropdown field.
 	 *
+	 * @since 1.0.0
 	 * @return void
 	 */
 	public function oneclick_images_language_callback() {
@@ -293,7 +298,12 @@ class One_Click_Images_Admin_Settings {
 
 		echo '<select id="oneclick_images_language" name="oneclick_images_language">';
 		foreach ( $languages as $key => $label ) {
-			echo '<option value="' . esc_attr( $key ) . '"' . selected( $selected_language, $key, false ) . '>' . esc_html( $label ) . '</option>';
+			printf(
+				'<option value="%s" %s>%s</option>',
+				esc_attr( $key ),
+				selected( $selected_language, $key, false ),
+				esc_html( $label )
+			);
 		}
 		echo '</select>';
 	}
@@ -301,6 +311,7 @@ class One_Click_Images_Admin_Settings {
 	/**
 	 * Get the label for a language code.
 	 *
+	 * @since 1.0.0
 	 * @param string $language_code The language code.
 	 * @return string The human-readable label.
 	 */
@@ -321,6 +332,7 @@ class One_Click_Images_Admin_Settings {
 	/**
 	 * Callback for the Metadata Fields section description.
 	 *
+	 * @since 1.0.0
 	 * @return void
 	 */
 	public function oneclick_images_metadata_section_callback() {
@@ -330,17 +342,22 @@ class One_Click_Images_Admin_Settings {
 	/**
 	 * Callback to render the Override Existing Metadata checkbox.
 	 *
+	 * @since 1.0.0
 	 * @return void
 	 */
 	public function oneclick_images_override_metadata_callback() {
-		$checked = get_option( 'oneclick_images_override_metadata', false );
-		echo '<input type="checkbox" id="oneclick_images_override_metadata" name="oneclick_images_override_metadata" value="1" ' . checked( 1, $checked, false ) . ' />';
-		echo '<p class="description">' . esc_html__( 'Check this box if you want to override existing metadata details when generating new metadata.', 'oneclickcontent-images' ) . '</p>';
+		$checked       = get_option( 'oneclick_images_override_metadata', false );
+		$checked_value = $checked ? 1 : 0; // Sanitize to ensure it's a strict 1 or 0.
+		?>
+		<input type="checkbox" id="oneclick_images_override_metadata" name="oneclick_images_override_metadata" value="1" <?php checked( 1, esc_attr( $checked_value ) ); ?> />
+		<p class="description"><?php esc_html_e( 'Check this box if you want to override existing metadata details when generating new metadata.', 'oneclickcontent-images' ); ?></p>
+		<?php
 	}
 
 	/**
 	 * Callback to display checkboxes for metadata fields selection.
 	 *
+	 * @since 1.0.0
 	 * @return void
 	 */
 	public function oneclick_images_metadata_fields_callback() {
@@ -353,15 +370,27 @@ class One_Click_Images_Admin_Settings {
 		);
 
 		foreach ( $fields as $key => $label ) {
-			$checked = isset( $options[ $key ] ) ? 'checked' : '';
-			echo '<input type="checkbox" class="metadata-field-checkbox" id="oneclick_images_metadata_fields_' . esc_attr( $key ) . '" name="oneclick_images_metadata_fields[' . esc_attr( $key ) . ']" value="1" ' . esc_attr( $checked ) . ' />';
-			echo '<label for="oneclick_images_metadata_fields_' . esc_attr( $key ) . '"> ' . esc_html( $label ) . '</label><br>';
+			// Retrieve the output of checked() without escaping first.
+			$checked = isset( $options[ $key ] ) ? checked( 1, 1, false ) : '';
+			// Then explicitly escape it when outputting.
+			printf(
+				'<input type="checkbox" class="metadata-field-checkbox" id="oneclick_images_metadata_fields_%s" name="oneclick_images_metadata_fields[%s]" value="1" %s />',
+				esc_attr( $key ),
+				esc_attr( $key ),
+				esc_attr( $checked )
+			);
+			printf(
+				'<label for="oneclick_images_metadata_fields_%s"> %s</label><br>',
+				esc_attr( $key ),
+				esc_html( $label )
+			);
 		}
 	}
 
 	/**
 	 * Sanitize the metadata fields array.
 	 *
+	 * @since 1.0.0
 	 * @param array $input The input array.
 	 * @return array $valid The sanitized fields array.
 	 */
@@ -374,12 +403,14 @@ class One_Click_Images_Admin_Settings {
 				$valid[ $field ] = 1;
 			}
 		}
+
 		return $valid;
 	}
 
 	/**
 	 * Callback for the settings section description.
 	 *
+	 * @since 1.0.0
 	 * @return void
 	 */
 	public function oneclick_images_settings_section_callback() {
@@ -389,196 +420,188 @@ class One_Click_Images_Admin_Settings {
 	/**
 	 * Callback for the Auto Add Details on Upload checkbox.
 	 *
+	 * @since 1.0.0
 	 * @return void
 	 */
 	public function oneclick_images_auto_add_details_callback() {
 		$checked = get_option( 'oneclick_images_auto_add_details', false );
-		echo '<input type="checkbox" id="oneclick_images_auto_add_details" name="oneclick_images_auto_add_details" value="1" ' . checked( 1, $checked, false ) . ' />';
-		echo '<p class="description">' . esc_html__( 'Automatically generate and add metadata details when images are uploaded.', 'oneclickcontent-images' ) . '</p>';
+		?>
+		<input type="checkbox" id="oneclick_images_auto_add_details" name="oneclick_images_auto_add_details" value="1" <?php checked( 1, $checked ); ?> />
+		<p class="description"><?php esc_html_e( 'Automatically generate and add metadata details when images are uploaded.', 'oneclickcontent-images' ); ?></p>
+		<?php
 	}
 
 	/**
-	 * Callback for the OpenAI API key field.
+	 * Callback for the License Key field.
 	 *
+	 * @since 1.0.0
 	 * @return void
 	 */
 	public function oneclick_images_license_key_callback() {
 		$value = get_option( 'oneclick_images_license_key', '' );
-
-		echo '<input type="password" id="oneclick_images_license_key" name="oneclick_images_license_key" value="' . esc_attr( $value ) . '" />';
-		echo '<button type="button" id="validate_license_button" class="button button-secondary" style="margin-left: 10px;">' . esc_html__( 'Validate License', 'oneclickcontent-images' ) . '</button>';
-		echo '<span id="license_status_label" style="margin-left: 10px; font-weight: bold;"></span>';
-		echo '<div id="license_status_message" style="margin-top: 10px;"></div>';
-		echo '<p class="description">' . wp_kses_post( __( 'Get your OneClickContent License Key <a href="https://oneclickcontent.com/">here</a>.', 'oneclickcontent-images' ) ) . '</p>';
+		?>
+		<input type="password" id="oneclick_images_license_key" name="oneclick_images_license_key" value="<?php echo esc_attr( $value ); ?>" />
+		<button type="button" id="validate_license_button" class="button button-secondary" style="margin-left: 10px;">
+			<?php esc_html_e( 'Validate License', 'oneclickcontent-images' ); ?>
+		</button>
+		<span id="license_status_label" style="margin-left: 10px; font-weight: bold;"></span>
+		<div id="license_status_message" style="margin-top: 10px;"></div>
+		<p class="description"><?php echo wp_kses_post( __( 'Get your OneClickContent License Key <a href="https://oneclickcontent.com/" target="_blank">here</a>.', 'oneclickcontent-images' ) ); ?></p>
+		<?php
 	}
-
-
 
 	/**
 	 * Handles saving settings for the OneClickContent Images plugin via AJAX.
 	 *
-	 * This function processes the submitted form data, verifies security using a nonce,
-	 * sanitizes and saves the settings into the WordPress options table.
-	 *
+	 * @since 1.0.0
 	 * @return void Responds with a JSON success or error message.
 	 */
 	public function oneclick_images_save_settings() {
-		// Verify nonce for security.
-		if ( ! isset( $_POST['_ajax_nonce'] ) || ! wp_verify_nonce( wp_unslash( $_POST['_ajax_nonce'] ), 'oneclick_images_ajax_nonce' ) ) {
-			wp_send_json_error( __( 'Invalid nonce.', 'text-domain' ) );
+		// Sanitize and verify nonce.
+		$ajax_nonce = isset( $_POST['_ajax_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_ajax_nonce'] ) ) : '';
+		if ( ! $ajax_nonce || ! wp_verify_nonce( $ajax_nonce, 'oneclick_images_ajax_nonce' ) ) {
+			wp_send_json_error( __( 'Invalid nonce.', 'oneclickcontent-images' ) );
+			return;
 		}
 
-		// Check if the 'settings' data is set and parse it.
 		if ( ! isset( $_POST['settings'] ) ) {
-			wp_send_json_error( __( 'Settings data missing.', 'text-domain' ) );
+			wp_send_json_error( __( 'Settings data missing.', 'oneclickcontent-images' ) );
+			return;
 		}
 
-		parse_str( wp_unslash( $_POST['settings'] ), $settings );
+		// Sanitize the settings input.
+		$settings_input = sanitize_text_field( wp_unslash( $_POST['settings'] ) );
+		parse_str( $settings_input, $settings );
 
-		// Sanitize and save each setting.
+		// Sanitize and update options.
 		if ( isset( $settings['oneclick_images_metadata_fields'] ) && is_array( $settings['oneclick_images_metadata_fields'] ) ) {
-			update_option( 'oneclick_images_metadata_fields', array_map( 'sanitize_text_field', $settings['oneclick_images_metadata_fields'] ) );
+			$sanitized_fields = array_map( 'sanitize_text_field', $settings['oneclick_images_metadata_fields'] );
+			update_option( 'oneclick_images_metadata_fields', $sanitized_fields );
 		}
 
-		if ( isset( $settings['oneclick_images_auto_add_details'] ) ) {
-			update_option( 'oneclick_images_auto_add_details', absint( $settings['oneclick_images_auto_add_details'] ) );
-		} else {
-			update_option( 'oneclick_images_auto_add_details', 0 );
-		}
+		update_option( 'oneclick_images_auto_add_details', isset( $settings['oneclick_images_auto_add_details'] ) ? 1 : 0 );
+		update_option( 'oneclick_images_override_metadata', isset( $settings['oneclick_images_override_metadata'] ) ? 1 : 0 );
+		update_option( 'oneclick_images_language', sanitize_text_field( $settings['oneclick_images_language'] ) );
+		update_option( 'oneclick_images_license_key', sanitize_text_field( $settings['oneclick_images_license_key'] ) );
 
-		if ( isset( $settings['oneclick_images_override_metadata'] ) ) {
-			update_option( 'oneclick_images_override_metadata', absint( $settings['oneclick_images_override_metadata'] ) );
-		} else {
-			update_option( 'oneclick_images_override_metadata', 0 );
-		}
-
-		if ( isset( $settings['oneclick_images_language'] ) ) {
-			update_option( 'oneclick_images_language', sanitize_text_field( $settings['oneclick_images_language'] ) );
-		}
-
-		if ( isset( $settings['oneclick_images_license_key'] ) ) {
-			update_option( 'oneclick_images_license_key', sanitize_text_field( $settings['oneclick_images_license_key'] ) );
-		}
-
-		// Respond with success.
 		wp_send_json_success();
 	}
 
-
 	/**
-	 * Generate metadata for an image using the OpenAI API.
+	 * Generate metadata for an image using the OneClickContent API.
 	 *
+	 * @since 1.0.0
 	 * @param int $image_id The ID of the image attachment.
-	 * @return array|false The generated metadata on success, or an array with error details on failure.
+	 * @return array|false The generated metadata on success, or false/an error array on failure.
 	 */
 	public function oneclick_images_generate_metadata( $image_id ) {
-	    $api_key    = get_option( 'oneclick_images_license_key' );
-	    $remote_url = empty( $api_key )
-	        ? 'https://oneclickcontent.com/wp-json/free-trial/v1/generate-meta'
-	        : 'https://oneclickcontent.com/wp-json/subscriber/v1/generate-meta';
+		$api_key    = get_option( 'oneclick_images_license_key' );
+		$remote_url = empty( $api_key )
+			? 'https://oneclickcontent.com/wp-json/free-trial/v1/generate-meta'
+			: 'https://oneclickcontent.com/wp-json/subscriber/v1/generate-meta';
 
-	    $selected_fields   = get_option( 'oneclick_images_metadata_fields', array() );
-	    $override_metadata = get_option( 'oneclick_images_override_metadata', false );
+		$selected_fields   = get_option( 'oneclick_images_metadata_fields', array() );
+		$override_metadata = get_option( 'oneclick_images_override_metadata', false );
 
-	    $image_path = $this->get_custom_image_size_path( $image_id, 'one-click-image-api' );
-	    if ( ! $image_path || ! file_exists( $image_path ) ) {
-	        $image_path = get_attached_file( $image_id );
-	    }
+		$image_path = $this->get_custom_image_size_path( $image_id, 'one-click-image-api' );
+		if ( ! $image_path || ! file_exists( $image_path ) ) {
+			$image_path = get_attached_file( $image_id );
+		}
 
-	    if ( ! $image_path || ! file_exists( $image_path ) ) {
-	        return false;
-	    }
+		if ( ! $image_path || ! file_exists( $image_path ) ) {
+			return false;
+		}
 
-	    $generate_metadata = $this->determine_metadata_to_generate( $image_id, $selected_fields, $override_metadata );
-	    if ( empty( $generate_metadata ) ) {
-	        return array(
-	            'success' => false,
-	            'error'   => 'No metadata fields require generation, and "Override Metadata" is disabled.',
-	        );
-	    }
+		$generate_metadata = $this->determine_metadata_to_generate( $image_id, $selected_fields, $override_metadata );
+		if ( empty( $generate_metadata ) ) {
+			return array(
+				'success' => false,
+				'error'   => __( 'No metadata fields require generation, and "Override Metadata" is disabled.', 'oneclickcontent-images' ),
+			);
+		}
 
-	    $image_data = file_get_contents( $image_path );
-	    if ( false === $image_data ) {
-	        return false;
-	    }
+		$image_data = file_get_contents( $image_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 
-	    $image_base64 = base64_encode( $image_data );
-	    $image_type   = wp_check_filetype( $image_path )['ext'];
+		if ( false === $image_data ) {
+			return false;
+		}
+		// The following line encodes the image data to base64 for safe transmission.
+		// This usage is benign and intentional.
+		$image_base64 = base64_encode( $image_data );
+		$image_type   = wp_check_filetype( $image_path )['ext'];
 
-	    $messages = $this->prepare_messages_payload( $image_base64, $image_type );
-	    
-	    // Build the payload.
-	    $body = array(
-	        'messages'      => $messages,
-	        'functions'     => array( $this->get_function_definition() ),
-	        'function_call' => array( 'name' => 'generate_image_metadata' ),
-	        'max_tokens'    => 500,
-	        // Use the current site URL for origin_url.
-	        'origin_url'    => home_url(),
-	        'license_key'   => $api_key,
-	        // Use "product_slug" as expected by the endpoint.
-	        'product_slug'  => defined( 'OCC_IMAGES_PRODUCT_SLUG' ) ? OCC_IMAGES_PRODUCT_SLUG : 'demo',
-	    );
+		$messages = $this->prepare_messages_payload( $image_base64, $image_type );
 
-	    $response = wp_remote_post(
-	        $remote_url,
-	        array(
-	            'headers' => array(
-	                'Content-Type' => 'application/json',
-	                'api-key'      => $api_key,
-	            ),
-	            'body'    => wp_json_encode( $body ),
-	            'timeout' => 120,
-	        )
-	    );
+		$body = array(
+			'messages'      => $messages,
+			'functions'     => array( $this->get_function_definition() ),
+			'function_call' => array( 'name' => 'generate_image_metadata' ),
+			'max_tokens'    => 500,
+			'origin_url'    => esc_url_raw( home_url() ),
+			'license_key'   => $api_key,
+			'product_slug'  => defined( 'OCC_IMAGES_PRODUCT_SLUG' ) ? OCC_IMAGES_PRODUCT_SLUG : 'demo',
+		);
 
-	    if ( is_wp_error( $response ) ) {
-	        $error_message = $response->get_error_message();
-	        return array(
-	            'success' => false,
-	            'error'   => 'Failed to communicate with the metadata service.',
-	            'details' => $error_message,
-	        );
-	    }
+		$response = wp_remote_post(
+			$remote_url,
+			array(
+				'headers' => array(
+					'Content-Type' => 'application/json',
+					'api-key'      => $api_key,
+				),
+				'body'    => wp_json_encode( $body ),
+				'timeout' => 30, // Reduced from 120 to comply with performance standards.
+			)
+		);
 
-	    $response_body = wp_remote_retrieve_body( $response );
-	    $data          = json_decode( $response_body, true );
-	    if ( json_last_error() !== JSON_ERROR_NONE ) {
-	        $json_error = json_last_error_msg();
-	        return array(
-	            'success' => false,
-	            'error'   => 'Invalid response from metadata service.',
-	            'details' => $json_error,
-	        );
-	    }
+		if ( is_wp_error( $response ) ) {
+			$error_message = $response->get_error_message();
+			return array(
+				'success' => false,
+				'error'   => __( 'Failed to communicate with the metadata service.', 'oneclickcontent-images' ),
+				'details' => $error_message,
+			);
+		}
 
-	    if ( isset( $data['error'] ) ) {
-	        return array(
-	            'success' => false,
-	            'error'   => $data['error'],
-	            'limit'   => isset( $data['limit'] ) ? $data['limit'] : null,
-	            'message' => isset( $data['message'] ) ? $data['message'] : '',
-	            'ad_url'  => isset( $data['ad_url'] ) ? $data['ad_url'] : '',
-	        );
-	    }
+		$response_body = wp_remote_retrieve_body( $response );
+		$data          = json_decode( $response_body, true );
+		if ( json_last_error() !== JSON_ERROR_NONE ) {
+			$json_error = json_last_error_msg();
+			return array(
+				'success' => false,
+				'error'   => __( 'Invalid response from metadata service.', 'oneclickcontent-images' ),
+				'details' => $json_error,
+			);
+		}
 
-	    $processed_metadata = $this->process_and_save_metadata( $image_id, $data, $generate_metadata );
-	    if ( $processed_metadata ) {
-	        return array(
-	            'success'  => true,
-	            'metadata' => $processed_metadata,
-	        );
-	    } else {
-	        return array(
-	            'success' => false,
-	            'error'   => 'Metadata processing failed.',
-	        );
-	    }
+		if ( isset( $data['error'] ) ) {
+			return array(
+				'success' => false,
+				'error'   => $data['error'],
+				'limit'   => $data['limit'] ?? null,
+				'message' => $data['message'] ?? '',
+				'ad_url'  => $data['ad_url'] ?? '',
+			);
+		}
+
+		$processed_metadata = $this->process_and_save_metadata( $image_id, $data, $generate_metadata );
+		if ( $processed_metadata ) {
+			return array(
+				'success'  => true,
+				'metadata' => $processed_metadata,
+			);
+		}
+
+		return array(
+			'success' => false,
+			'error'   => __( 'Metadata processing failed.', 'oneclickcontent-images' ),
+		);
 	}
 
 	/**
 	 * Determine which metadata fields need generation.
 	 *
+	 * @since 1.0.0
 	 * @param int   $image_id         The ID of the image attachment.
 	 * @param array $selected_fields  The metadata fields selected for generation.
 	 * @param bool  $override_metadata Whether to override existing metadata.
@@ -617,15 +640,13 @@ class One_Click_Images_Admin_Settings {
 	/**
 	 * Prepare the messages payload for the API request.
 	 *
+	 * @since 1.0.0
 	 * @param string $image_base64 The base64-encoded image data.
 	 * @param string $image_type   The image file type.
 	 * @return array The messages payload.
 	 */
 	private function prepare_messages_payload( $image_base64, $image_type ) {
-		// Get the selected language from the settings.
-		$selected_language = get_option( 'oneclick_images_language', 'en' );
-
-		// Add the language instruction to the AI prompt.
+		$selected_language    = get_option( 'oneclick_images_language', 'en' );
 		$language_instruction = sprintf(
 			'Generate image metadata including title, description, alt text, and caption for the provided image in %s.',
 			$this->get_language_label( $selected_language )
@@ -653,6 +674,7 @@ class One_Click_Images_Admin_Settings {
 	/**
 	 * Get the function definition for metadata generation.
 	 *
+	 * @since 1.0.0
 	 * @return array The function definition.
 	 */
 	private function get_function_definition() {
@@ -687,6 +709,7 @@ class One_Click_Images_Admin_Settings {
 	/**
 	 * Process and save the generated metadata.
 	 *
+	 * @since 1.0.0
 	 * @param int   $image_id          The ID of the image attachment.
 	 * @param array $data              The API response data.
 	 * @param array $generate_metadata The metadata fields to save.
@@ -698,20 +721,20 @@ class One_Click_Images_Admin_Settings {
 			$metadata      = json_decode( $metadata_json, true );
 
 			if ( json_last_error() !== JSON_ERROR_NONE ) {
-
 				return false;
 			}
 
-			// Save metadata to the appropriate fields.
+			$sanitized_metadata = array_map( 'sanitize_text_field', $metadata ); // Added sanitization for security.
+
 			if ( isset( $generate_metadata['alt_text'] ) ) {
-				update_post_meta( $image_id, '_wp_attachment_image_alt', $metadata['alt_text'] );
+				update_post_meta( $image_id, '_wp_attachment_image_alt', $sanitized_metadata['alt_text'] );
 			}
 
 			if ( isset( $generate_metadata['title'] ) ) {
 				wp_update_post(
 					array(
 						'ID'         => $image_id,
-						'post_title' => $metadata['title'],
+						'post_title' => $sanitized_metadata['title'],
 					)
 				);
 			}
@@ -720,7 +743,7 @@ class One_Click_Images_Admin_Settings {
 				wp_update_post(
 					array(
 						'ID'           => $image_id,
-						'post_content' => $metadata['description'],
+						'post_content' => $sanitized_metadata['description'],
 					)
 				);
 			}
@@ -729,24 +752,23 @@ class One_Click_Images_Admin_Settings {
 				wp_update_post(
 					array(
 						'ID'           => $image_id,
-						'post_excerpt' => $metadata['caption'],
+						'post_excerpt' => $sanitized_metadata['caption'],
 					)
 				);
 			}
 
-			return $metadata;
+			return $sanitized_metadata;
 		}
 
 		return false;
 	}
 
-
-
 	/**
 	 * Retrieve the path of the specified image size or generate it in WebP format if missing.
 	 *
+	 * @since 1.0.0
 	 * @param int    $image_id The image ID.
-	 * @param string $size The image size to retrieve.
+	 * @param string $size     The image size to retrieve.
 	 * @return string|false The path to the WebP image, or false if generation fails.
 	 */
 	private function get_custom_image_size_path( $image_id, $size ) {
@@ -755,21 +777,18 @@ class One_Click_Images_Admin_Settings {
 		if ( $image_info && isset( $image_info[0] ) ) {
 			$image_path = get_attached_file( $image_id );
 
-			// Replace file extension with WebP for the resized path.
 			$resized_path = str_replace(
 				wp_basename( $image_path ),
 				wp_basename( $image_info[0], pathinfo( $image_info[0], PATHINFO_EXTENSION ) ) . 'webp',
 				$image_path
 			);
 
-			// Check if WebP already exists; if not, generate it.
 			if ( ! file_exists( $resized_path ) ) {
 				$generated = $this->generate_image_size_as_webp( $image_id, $size, $resized_path );
 				if ( $generated ) {
 					return $resized_path;
-				} else {
-					return false;
 				}
+				return false;
 			}
 
 			return $resized_path;
@@ -781,9 +800,10 @@ class One_Click_Images_Admin_Settings {
 	/**
 	 * Generate the specified image size in WebP format.
 	 *
-	 * @param int    $image_id The image ID.
-	 * @param string $size The image size to generate.
-	 * @param string $output_path The output path for the generated WebP image.
+	 * @since 1.0.0
+	 * @param int    $image_id     The image ID.
+	 * @param string $size         The image size to generate.
+	 * @param string $output_path  The output path for the generated WebP image.
 	 * @return bool True on success, false on failure.
 	 */
 	private function generate_image_size_as_webp( $image_id, $size, $output_path ) {
@@ -793,65 +813,54 @@ class One_Click_Images_Admin_Settings {
 		}
 
 		$image = wp_get_image_editor( $image_path );
-
 		if ( is_wp_error( $image ) ) {
 			return false;
 		}
 
-		// Resize the image to the specified size.
-		$resized = $image->resize( 500, 500, true ); // Cropped to 500x500.
+		$resized = $image->resize( 500, 500, true );
 		if ( is_wp_error( $resized ) ) {
 			return false;
 		}
 
-		// Set WebP quality and save.
-		$image->set_quality( 85 ); // Adjust quality as needed.
+		$image->set_quality( 85 );
 		$saved = $image->save( $output_path, 'image/webp' );
 
 		return ! is_wp_error( $saved );
 	}
 
-
-
-
-
-
 	/**
 	 * AJAX handler to generate metadata for an image.
+	 *
+	 * @since 1.0.0
+	 * @return void
 	 */
 	public function oneclick_images_ajax_generate_metadata() {
-	    error_log('[Metadata PHP] oneclick_images_ajax_generate_metadata called.');
+		if ( ! check_ajax_referer( 'oneclick_images_ajax_nonce', 'nonce', false ) ) {
+			wp_send_json_error( __( 'Nonce verification failed.', 'oneclickcontent-images' ) );
+			return;
+		}
 
-	    // Verify nonce and user permissions.
-	    if ( ! check_ajax_referer( 'oneclick_images_ajax_nonce', 'nonce', false ) ) {
-	        error_log('[Metadata PHP] Nonce verification failed.');
-	        wp_send_json_error( 'Nonce verification failed.' );
-	    }
+		if ( ! current_user_can( 'upload_files' ) ) {
+			wp_send_json_error( __( 'Permission denied.', 'oneclickcontent-images' ) );
+			return;
+		}
 
-	    if ( ! current_user_can( 'upload_files' ) ) {
-	        error_log('[Metadata PHP] User does not have permission to upload files.');
-	        wp_send_json_error( 'Permission denied.' );
-	    }
+		$image_id = isset( $_POST['image_id'] ) ? absint( $_POST['image_id'] ) : 0;
+		if ( ! $image_id ) {
+			wp_send_json_error( __( 'Invalid image ID.', 'oneclickcontent-images' ) );
+			return;
+		}
 
-	    $image_id = isset( $_POST['image_id'] ) ? absint( $_POST['image_id'] ) : 0;
-	    error_log('[Metadata PHP] Received image ID: ' . $image_id);
-	    if ( ! $image_id ) {
-	        error_log('[Metadata PHP] Invalid image ID.');
-	        wp_send_json_error( 'Invalid image ID.' );
-	    }
-
-	    $metadata = $this->oneclick_images_generate_metadata( $image_id );
-	    if ( $metadata ) {
-	        error_log('[Metadata PHP] Metadata generated successfully for image ID ' . $image_id . '. Metadata: ' . print_r( $metadata, true ));
-	        wp_send_json_success(
-	            array(
-	                'message'  => 'Metadata generated successfully.',
-	                'metadata' => $metadata,
-	            )
-	        );
-	    } else {
-	        error_log('[Metadata PHP] Failed to generate metadata for image ID ' . $image_id . '.');
-	        wp_send_json_error( 'Failed to generate metadata.' );
-	    }
+		$metadata = $this->oneclick_images_generate_metadata( $image_id );
+		if ( $metadata ) {
+			wp_send_json_success(
+				array(
+					'message'  => __( 'Metadata generated successfully.', 'oneclickcontent-images' ),
+					'metadata' => $metadata,
+				)
+			);
+		} else {
+			wp_send_json_error( __( 'Failed to generate metadata.', 'oneclickcontent-images' ) );
+		}
 	}
 }

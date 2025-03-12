@@ -2,37 +2,36 @@
 /**
  * Define the internationalization functionality
  *
- * Loads and defines the internationalization files for this plugin
+ * Loads and defines the internationalization files for the OneClickContent Image Details plugin
  * so that it is ready for translation.
  *
  * @link       https://oneclickcontent.com
  * @since      1.0.0
  *
- * @package    One_Click_Images
- * @subpackage One_Click_Images/includes
+ * @package    OneClickContent_Images
+ * @subpackage OneClickContent_Images/includes
  */
 
 /**
  * Define the internationalization functionality.
  *
- * Loads and defines the internationalization files for this plugin
+ * Loads and defines the internationalization files for the OneClickContent Image Details plugin
  * so that it is ready for translation.
  *
  * @since      1.0.0
- * @package    One_Click_Images
- * @subpackage One_Click_Images/includes
+ * @package    OneClickContent_Images
+ * @subpackage OneClickContent_Images/includes
  * @author     James Wilson <james@oneclickcontent.com>
  */
-class One_Click_Images_I18n {
-
+class OneClickContent_Images_I18n {
 
 	/**
 	 * Load the plugin text domain for translation.
 	 *
-	 * @since    1.0.0
+	 * @since 1.0.0
+	 * @return void
 	 */
 	public function load_plugin_textdomain() {
-
 		load_plugin_textdomain(
 			'oneclickcontent-images',
 			false,

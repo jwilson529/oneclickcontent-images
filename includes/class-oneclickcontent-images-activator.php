@@ -5,8 +5,8 @@
  * @link       https://oneclickcontent.com
  * @since      1.0.0
  *
- * @package    One_Click_Images
- * @subpackage One_Click_Images/includes
+ * @package    OneClickContent_Images
+ * @subpackage OneClickContent_Images/includes
  */
 
 /**
@@ -15,19 +15,21 @@
  * This class defines all code necessary to run during the plugin's activation.
  *
  * @since      1.0.0
- * @package    One_Click_Images
- * @subpackage One_Click_Images/includes
+ * @package    OneClickContent_Images
+ * @subpackage OneClickContent_Images/includes
  * @author     James Wilson <james@oneclickcontent.com>
  */
-class One_Click_Images_Activator {
+class OneClickContent_Images_Activator {
 
 	/**
 	 * Fired during plugin activation.
 	 *
+	 * Sets a transient flag for redirection to the settings page after activation.
+	 *
 	 * @since 1.0.0
+	 * @return void
 	 */
 	public static function activate() {
-		// Set a transient flag for redirection.
 		add_option( 'oneclick_images_activation_redirect', true );
 	}
 }

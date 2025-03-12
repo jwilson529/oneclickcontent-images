@@ -5,8 +5,8 @@
  * @link       https://oneclickcontent.com
  * @since      1.0.0
  *
- * @package    One_Click_Images
- * @subpackage One_Click_Images/includes
+ * @package    OneClickContent_Images
+ * @subpackage OneClickContent_Images/includes
  */
 
 /**
@@ -15,19 +15,21 @@
  * This class defines all code necessary to run during the plugin's deactivation.
  *
  * @since      1.0.0
- * @package    One_Click_Images
- * @subpackage One_Click_Images/includes
+ * @package    OneClickContent_Images
+ * @subpackage OneClickContent_Images/includes
  * @author     James Wilson <james@oneclickcontent.com>
  */
-class One_Click_Images_Deactivator {
+class OneClickContent_Images_Deactivator {
 
 	/**
-	 * Short Description. (use period)
+	 * Fired during plugin deactivation.
 	 *
-	 * Long Description.
+	 * Performs cleanup or other actions when the plugin is deactivated.
 	 *
-	 * @since    1.0.0
+	 * @since 1.0.0
+	 * @return void
 	 */
 	public static function deactivate() {
+		// Add deactivation logic here if needed.
 	}
 }

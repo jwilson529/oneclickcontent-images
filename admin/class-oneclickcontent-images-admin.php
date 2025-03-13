@@ -28,140 +28,270 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class OneClickContent_Images_Admin {
 
-	/**
-	 * The name of the plugin.
-	 *
-	 * @since 1.0.0
-	 * @var string
-	 */
-	private $plugin_name;
+    /**
+     * The name of the plugin.
+     *
+     * @since 1.0.0
+     * @var string
+     */
+    private $plugin_name;
 
-	/**
-	 * The version of the plugin.
-	 *
-	 * @since 1.0.0
-	 * @var string
-	 */
-	private $version;
+    /**
+     * The version of the plugin.
+     *
+     * @since 1.0.0
+     * @var string
+     */
+    private $version;
 
-	/**
-	 * Constructor for the admin class.
-	 *
-	 * Initializes the plugin name and version.
-	 *
-	 * @since 1.0.0
-	 * @param string $plugin_name The name of the plugin.
-	 * @param string $version     The version of this plugin.
-	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
-		$this->version     = $version;
-	}
+    /**
+     * Constructor for the admin class.
+     *
+     * Initializes the plugin name and version.
+     *
+     * @since 1.0.0
+     * @param string $plugin_name The name of the plugin.
+     * @param string $version     The version of this plugin.
+     */
+    public function __construct( $plugin_name, $version ) {
+        $this->plugin_name = $plugin_name;
+        $this->version     = $version;
+    }
 
-	/**
-	 * Enqueue admin-specific stylesheets for the plugin.
-	 *
-	 * Loads CSS files on relevant admin screens (e.g., Media Library, plugin settings).
-	 *
-	 * @since 1.0.0
-	 * @return void
-	 */
-	public function enqueue_styles() {
-		$screen = get_current_screen();
+    /**
+     * Register the top-level admin menu with tabs.
+     *
+     * @since 1.0.0
+     * @return void
+     */
+    public function register_admin_menu() {
+        add_menu_page(
+            __( 'OneClickContent Images', 'oneclickcontent-images' ), // Page title.
+            __( 'OneClickContent Images', 'oneclickcontent-images' ), // Menu title.
+            'edit_posts', // Capability (minimum for bulk edit; settings will check manage_options).
+            'oneclickcontent-images', // Menu slug.
+            array( $this, 'render_admin_page' ), // Callback.
+            'dashicons-images-alt2', // Icon.
+            25 // Position.
+        );
+    }
 
-		if ( ! $screen instanceof WP_Screen ) {
-			return; // Exit early if screen is not available.
-		}
+    /**
+     * Render the admin page with tabs.
+     *
+     * @since 1.0.0
+     * @return void
+     */
+    public function render_admin_page() {
+        $tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'settings';
+        $plugin_admin_settings = new OneClickContent_Images_Admin_Settings(); // Temporary; ideally injected.
+        $plugin_bulk_edit      = new OneClickContent_Images_Bulk_Edit(); // Temporary; ideally injected.
+        ?>
+        <div class="wrap">
+            <h1><?php esc_html_e( 'OneClickContent Images', 'oneclickcontent-images' ); ?></h1>
+            <h2 class="nav-tab-wrapper">
+                <a href="<?php echo esc_url( admin_url( 'admin.php?page=oneclickcontent-images&tab=settings' ) ); ?>" class="nav-tab <?php echo 'settings' === $tab ? 'nav-tab-active' : ''; ?>">
+                    <?php esc_html_e( 'Settings', 'oneclickcontent-images' ); ?>
+                </a>
+                <a href="<?php echo esc_url( admin_url( 'admin.php?page=oneclickcontent-images&tab=bulk-edit' ) ); ?>" class="nav-tab <?php echo 'bulk-edit' === $tab ? 'nav-tab-active' : ''; ?>">
+                    <?php esc_html_e( 'Bulk Edit', 'oneclickcontent-images' ); ?>
+                </a>
+            </h2>
+            <?php
+            if ( 'settings' === $tab ) {
+                $license_status   = get_option( 'oneclick_images_license_status', 'unknown' );
+                $header_image_url = plugin_dir_url( __FILE__ ) . 'assets/header-image.webp';
+                ?>
+                <div id="oneclick_images" class="wrap">
+                    <!-- Jumbotron Header -->
+                    <div class="jumbotron-wrapper">
+                        <picture>
+                            <source srcset="<?php echo esc_url( $header_image_url ); ?>" type="image/webp">
+                            <?php // phpcs:ignore PluginCheck.CodeAnalysis.ImageFunctions.NonEnqueuedImage -- Custom image used, not from Media Library. ?>
+                            <img src="<?php echo esc_url( $header_image_url ); ?>" alt="<?php esc_attr_e( 'OneClickContent Image Details', 'oneclickcontent-images' ); ?>">
+                        </picture>
+                        <h1 class="jumbotron-title"><?php esc_html_e( 'OneClickContent Image Details Settings', 'oneclickcontent-images' ); ?></h1>
+                    </div>
 
-		$allowed_screens = array( 'upload', 'post', 'post-new' );
-		if ( in_array( $screen->base, $allowed_screens, true ) || 'settings_page_oneclickcontent-images-settings' === $screen->id ) {
-			wp_enqueue_style(
-				$this->plugin_name,
-				plugin_dir_url( __FILE__ ) . 'css/oneclickcontent-images-admin.css',
-				array(),
-				$this->version,
-				'all'
-			);
-		}
-	}
+                    <!-- Settings Form -->
+                    <form method="post" action="options.php" id="oneclick_images_settings_form">
+                        <?php
+                        settings_fields( 'oneclick_images_settings' );
+                        wp_nonce_field( 'oneclick_images_settings_update', '_wpnonce' );
+                        do_settings_sections( 'oneclick_images_settings' );
+                        submit_button();
+                        ?>
+                    </form>
+                </div>
+                <?php
+            } elseif ( 'bulk-edit' === $tab ) {
+                $plugin_bulk_edit->render_bulk_edit_tab();
+            }
+            ?>
+        </div>
+        <?php
+    }
 
-	/**
-	 * Enqueue admin-specific JavaScript files for the plugin.
-	 *
-	 * Loads JavaScript files and localized data on relevant admin screens, including jQuery and media library dependencies.
-	 *
-	 * @since 1.0.0
-	 * @return void
-	 */
-	public function enqueue_scripts() {
-		if ( ! is_admin() ) {
-			return; // Exit early if not in admin area to prevent frontend loading.
-		}
+    /**
+     * Enqueue admin-specific stylesheets for the plugin.
+     *
+     * Loads CSS files on relevant admin screens (e.g., Media Library, plugin pages).
+     *
+     * @since 1.0.0
+     * @return void
+     */
+    public function enqueue_styles() {
+        $screen = get_current_screen();
 
-		$screen = get_current_screen();
+        if ( ! $screen instanceof WP_Screen ) {
+            return; // Exit early if screen is not available.
+        }
 
-		if ( ! $screen instanceof WP_Screen ) {
-			return; // Ensure screen object exists before proceeding.
-		}
+        $allowed_screens = array( 'upload', 'post', 'post-new', 'toplevel_page_oneclickcontent-images' );
+        if ( in_array( $screen->base, $allowed_screens, true ) ) {
+            wp_enqueue_style(
+                $this->plugin_name,
+                plugin_dir_url( __FILE__ ) . 'css/oneclickcontent-images-admin.css',
+                array(),
+                $this->version,
+                'all'
+            );
 
-		$allowed_screens = array( 'upload', 'post', 'post-new' );
-		$settings_page   = 'settings_page_oneclickcontent-images-settings';
+            // DataTables CSS for bulk edit tab.
+            if ( 'toplevel_page_oneclickcontent-images' === $screen->id && isset( $_GET['tab'] ) && 'bulk-edit' === sanitize_key( $_GET['tab'] ) ) {
+                wp_enqueue_style(
+                    $this->plugin_name . '-datatables',
+                    plugin_dir_url( __FILE__ ) . 'css/jquery.dataTables.min.css',
+                    array(),
+                    '1.13.1'
+                );
+                wp_enqueue_style(
+                    $this->plugin_name . '-datatables-buttons',
+                    plugin_dir_url( __FILE__ ) . 'css/buttons.dataTables.min.css',
+                    array( $this->plugin_name . '-datatables' ),
+                    '2.4.2'
+                );
+            }
+        }
+    }
 
-		if ( in_array( $screen->base, $allowed_screens, true ) || $screen->id === $settings_page ) {
-			wp_enqueue_script(
-				$this->plugin_name,
-				plugin_dir_url( __FILE__ ) . 'js/oneclickcontent-images-admin.js',
-				array( 'jquery' ),
-				$this->version,
-				true
-			);
+    /**
+     * Enqueue admin-specific JavaScript files for the plugin.
+     *
+     * Loads JavaScript files and localized data on relevant admin screens.
+     *
+     * @since 1.0.0
+     * @return void
+     */
+    public function enqueue_scripts() {
+        if ( ! is_admin() ) {
+            return; // Exit early if not in admin area to prevent frontend loading.
+        }
 
-			wp_enqueue_script(
-				$this->plugin_name . '-error-check',
-				plugin_dir_url( __FILE__ ) . 'js/one-click-error-check.js',
-				array( 'jquery' ),
-				$this->version,
-				true
-			);
+        $screen = get_current_screen();
 
-			wp_enqueue_media();
+        if ( ! $screen instanceof WP_Screen ) {
+            return; // Ensure screen object exists before proceeding.
+        }
 
-			$selected_fields = wp_parse_args(
-				get_option( 'oneclick_images_metadata_fields', array() ),
-				array(
-					'title'       => false,
-					'description' => false,
-					'alt_text'    => false,
-					'caption'     => false,
-				)
-			);
+        $allowed_screens = array( 'upload', 'post', 'post-new', 'toplevel_page_oneclickcontent-images' );
 
-			$license_status = get_option( 'oneclick_images_license_status', 'unknown' );
+        if ( in_array( $screen->base, $allowed_screens, true ) ) {
+            wp_enqueue_script(
+                $this->plugin_name,
+                plugin_dir_url( __FILE__ ) . 'js/oneclickcontent-images-admin.js',
+                array( 'jquery' ),
+                $this->version,
+                true
+            );
 
-			$admin_vars = array(
-				'ajax_url'                   => admin_url( 'admin-ajax.php' ),
-				'oneclick_images_ajax_nonce' => wp_create_nonce( 'oneclick_images_ajax_nonce' ),
-				'selected_fields'            => $selected_fields,
-				'license_status'             => sanitize_text_field( $license_status ),
-				'upload_base_url'            => wp_upload_dir()['baseurl'],
-			);
+            wp_enqueue_script(
+                $this->plugin_name . '-error-check',
+                plugin_dir_url( __FILE__ ) . 'js/one-click-error-check.js',
+                array( 'jquery' ),
+                $this->version,
+                true
+            );
 
-			wp_localize_script(
-				$this->plugin_name,
-				'oneclick_images_admin_vars',
-				$admin_vars
-			);
+            wp_enqueue_media();
 
-			wp_localize_script(
-				$this->plugin_name . '-error-check',
-				'oneclick_images_error_vars',
-				array(
-					'ajax_url'                   => $admin_vars['ajax_url'],
-					'oneclick_images_ajax_nonce' => $admin_vars['oneclick_images_ajax_nonce'],
-				)
-			);
-		}
-	}
+            $selected_fields = wp_parse_args(
+                get_option( 'oneclick_images_metadata_fields', array() ),
+                array(
+                    'title'       => false,
+                    'description' => false,
+                    'alt_text'    => false,
+                    'caption'     => false,
+                )
+            );
+
+            $license_status = get_option( 'oneclick_images_license_status', 'unknown' );
+
+            $admin_vars = array(
+                'ajax_url'                   => admin_url( 'admin-ajax.php' ),
+                'oneclick_images_ajax_nonce' => wp_create_nonce( 'oneclick_images_ajax_nonce' ),
+                'selected_fields'            => $selected_fields,
+                'license_status'             => sanitize_text_field( $license_status ),
+                'upload_base_url'            => wp_upload_dir()['baseurl'],
+                'fallback_image_url'         => plugin_dir_url( __FILE__ ) . 'assets/icon.png' // Correct path from admin/
+            );
+
+            wp_localize_script(
+                $this->plugin_name,
+                'oneclick_images_admin_vars',
+                $admin_vars
+            );
+
+            wp_localize_script(
+                $this->plugin_name . '-error-check',
+                'oneclick_images_error_vars',
+                array(
+                    'ajax_url'                   => $admin_vars['ajax_url'],
+                    'oneclick_images_ajax_nonce' => $admin_vars['oneclick_images_ajax_nonce'],
+                )
+            );
+
+            // DataTables for bulk edit tab.
+            if ( 'toplevel_page_oneclickcontent-images' === $screen->id && isset( $_GET['tab'] ) && 'bulk-edit' === sanitize_key( $_GET['tab'] ) ) {
+                wp_enqueue_script(
+                    $this->plugin_name . '-datatables',
+                    plugin_dir_url( __FILE__ ) . 'js/jquery.dataTables.min.js',
+                    array( 'jquery' ),
+                    '1.13.1',
+                    true
+                );
+                wp_enqueue_script(
+                    $this->plugin_name . '-datatables-buttons',
+                    plugin_dir_url( __FILE__ ) . 'js/dataTables.buttons.min.js',
+                    array( $this->plugin_name . '-datatables' ),
+                    '2.4.2',
+                    true
+                );
+                wp_enqueue_script(
+                    $this->plugin_name . '-datatables-buttons-html5',
+                    plugin_dir_url( __FILE__ ) . 'js/buttons.html5.min.js',
+                    array( $this->plugin_name . '-datatables-buttons' ),
+                    '2.4.2',
+                    true
+                );
+                wp_enqueue_script(
+                    $this->plugin_name . '-bulk-edit',
+                    plugin_dir_url( __FILE__ ) . 'js/bulk-edit.js',
+                    array( $this->plugin_name . '-datatables', $this->plugin_name . '-datatables-buttons-html5' ),
+                    $this->version,
+                    true
+                );
+                wp_localize_script(
+                    $this->plugin_name . '-bulk-edit',
+                    'oneclick_images_bulk_vars',
+                    array(
+                        'ajax_url' => admin_url( 'admin-ajax.php' ),
+                        'nonce'    => wp_create_nonce( 'oneclick_images_bulk_edit' ),
+                    )
+                );
+            }
+        }
+    }
 
 	/**
 	 * Add a "Generate Metadata" button to the Media Library attachment details.

@@ -2,11 +2,11 @@
 
 **Contributors**: jwilson529  
 **Donate link**: [Donate](https://oneclickcontent.com/donate)  
-**Tags**: images, metadata, OpenAI, AI, accessibility, multilingual  
+**Tags**: images, metadata, OpenAI, AI, accessibility  
 **Requires at least**: 5.0  
-**Tested up to**: 6.3  
+**Tested up to**: 6.7  
 **Requires PHP**: 7.2  
-**Stable tag**: 1.1.7 
+**Stable tag**: 1.1.7  
 **License**: GPLv2 or later  
 **License URI**: [GPLv2](https://www.gnu.org/licenses/gpl-2.0.html)  
 
@@ -106,12 +106,16 @@ If enabled, the plugin will automatically generate metadata for any images you u
 
 4. **Language Selection**: Choose your preferred language for metadata generation.
    ![Language Selection](assets/language.png)
+
 ---
 
 ## Changelog
 
+### 1.1.7
+- Fixed nonce issue in `get_thumbnail` AJAX call.
+
 ### 1.1.6
-- Redirect to settings on activate
+- Redirect to settings on activate.
 
 ### 1.1.5
 - General fixes and improvements to the update system.
@@ -133,6 +137,9 @@ If enabled, the plugin will automatically generate metadata for any images you u
 ---
 
 ## Upgrade Notice
+
+### 1.1.7
+- Fixes nonce verification in thumbnail fetching for improved security.
 
 ### 1.1.5
 - Fixes and enhancements to the update system. Resolves issues with stale update indicators and transient handling.

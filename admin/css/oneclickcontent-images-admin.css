@@ -2,6 +2,7 @@
  * CSS styles for the OneClickContent Image Details plugin admin interface.
  *
  * Provides styling for settings forms, modals, bulk generation status, and UI elements.
+ * All selectors are prefixed with .toplevel_page_oneclickcontent-images to avoid clashes.
  *
  * @package    One_Click_Images
  * @subpackage One_Click_Images/admin/css
@@ -12,8 +13,10 @@
  * @link       https://oneclickcontent.com
  */
 
-/* General Container Styling */
-#oneclick_images.wrap {
+/* ==========================================================================
+   General Container Styling
+   ========================================================================== */
+.toplevel_page_oneclickcontent-images #oneclick_images.wrap {
     max-width: 900px;
     margin: 0 auto;
     padding: 30px;
@@ -23,8 +26,10 @@
     font-family: 'Helvetica Neue', Arial, sans-serif;
 }
 
-/* Headings */
-#oneclick_images h1 {
+/* ==========================================================================
+   Headings
+   ========================================================================== */
+.toplevel_page_oneclickcontent-images #oneclick_images h1 {
     color: #fff;
     font-size: 2.5rem;
     font-weight: bold;
@@ -33,26 +38,32 @@
     text-align: center;
 }
 
-#oneclick_images h2 {
+.toplevel_page_oneclickcontent-images #oneclick_images h2 {
     color: #444;
     font-size: 20px;
     font-weight: bold;
     margin-bottom: 15px;
 }
 
-/* Settings Divider */
-#oneclick_images .settings-divider {
+/* ==========================================================================
+   Dividers
+   ========================================================================== */
+.toplevel_page_oneclickcontent-images #oneclick_images .settings-divider {
     border: 1px solid #ddd;
     margin: 30px 0;
 }
 
-/* Form Styling */
-#oneclick_images form {
+/* ==========================================================================
+   Form Styling
+   ========================================================================== */
+.toplevel_page_oneclickcontent-images #oneclick_images form {
     margin-bottom: 20px;
 }
 
-/* Jumbotron Styling */
-#oneclick_images .jumbotron-wrapper {
+/* ==========================================================================
+   Jumbotron Styling
+   ========================================================================== */
+.toplevel_page_oneclickcontent-images #oneclick_images .jumbotron-wrapper {
     position: relative;
     max-height: 225px;
     overflow: hidden;
@@ -60,7 +71,7 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-#oneclick_images .jumbotron-wrapper img {
+.toplevel_page_oneclickcontent-images #oneclick_images .jumbotron-wrapper img {
     width: 100%;
     height: auto;
     max-height: 100%;
@@ -68,7 +79,7 @@
     object-fit: none;
 }
 
-#oneclick_images .jumbotron-title {
+.toplevel_page_oneclickcontent-images #oneclick_images .jumbotron-title {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -83,8 +94,10 @@
     border-radius: 4px;
 }
 
-/* Usage Information Section */
-#oneclick_images .usage-info-section {
+/* ==========================================================================
+   Usage Information Section
+   ========================================================================== */
+.toplevel_page_oneclickcontent-images #oneclick_images .usage-info-section {
     margin-bottom: 20px;
     padding: 20px;
     background: #f8f9fa;
@@ -92,21 +105,21 @@
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-#oneclick_images .usage-summary strong {
+.toplevel_page_oneclickcontent-images #oneclick_images .usage-summary strong {
     display: block;
     margin-bottom: 10px;
     color: #333;
     font-size: 18px;
 }
 
-#oneclick_images .progress {
+.toplevel_page_oneclickcontent-images #oneclick_images .progress {
     height: 20px;
     background-color: #e9ecef;
     border-radius: 4px;
     overflow: hidden;
 }
 
-#oneclick_images .progress-bar {
+.toplevel_page_oneclickcontent-images #oneclick_images .progress-bar {
     line-height: 20px;
     color: white;
     font-size: 14px;
@@ -114,21 +127,24 @@
     transition: width 0.5s ease;
 }
 
-#oneclick_images .bg-success {
+.toplevel_page_oneclickcontent-images #oneclick_images .bg-success {
     background-color: #28a745 !important;
 }
 
-#oneclick_images .bg-warning {
+.toplevel_page_oneclickcontent-images #oneclick_images .bg-warning {
     background-color: #ffc107 !important;
     color: #333 !important;
 }
 
-#oneclick_images .bg-danger {
+.toplevel_page_oneclickcontent-images #oneclick_images .bg-danger {
     background-color: #dc3545 !important;
 }
 
-/* Bulk Generate Section */
-#oneclick_images .bulk-generate-section {
+/* ==========================================================================
+   Bulk Generate Section (Deprecated)
+   ========================================================================== */
+/* Note: Bulk generation moved to Bulk Edit tab; keeping styles for reference */
+.toplevel_page_oneclickcontent-images #oneclick_images .bulk-generate-section {
     padding: 20px;
     background: #fdfdfd;
     border: 1px solid #e1e1e1;
@@ -136,13 +152,13 @@
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-#oneclick_images .bulk-generate-section p {
+.toplevel_page_oneclickcontent-images #oneclick_images .bulk-generate-section p {
     margin-bottom: 15px;
     color: #555;
     font-size: 16px;
 }
 
-#oneclick_images #bulk_generate_metadata_button {
+.toplevel_page_oneclickcontent-images #oneclick_images #bulk_generate_metadata_button {
     display: inline-block;
     padding: 10px 20px;
     background-color: #007cba;
@@ -154,42 +170,82 @@
     transition: background-color 0.3s;
 }
 
-#oneclick_images #bulk_generate_metadata_button:disabled {
+.toplevel_page_oneclickcontent-images #oneclick_images #bulk_generate_metadata_button:disabled {
     background-color: #6c757d;
     cursor: not-allowed;
 }
 
-#oneclick_images #bulk_generate_metadata_button:hover:not(:disabled) {
+.toplevel_page_oneclickcontent-images #oneclick_images #bulk_generate_metadata_button:hover:not(:disabled) {
     background-color: #005a8c;
 }
 
-#oneclick_images #bulk_generate_status {
-    max-height: 300px;
-    margin-top: 20px;
-    padding: 20px;
-    overflow-y: auto;
+/* ==========================================================================
+   Bulk Generate Status (Above Table)
+   ========================================================================== */
+.toplevel_page_oneclickcontent-images #bulk-generate-status {
+    margin-bottom: 20px;
+    padding: 10px;
     background-color: #f8f9fa;
-    border-radius: 4px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+}
+
+.toplevel_page_oneclickcontent-images #bulk-generate-status p {
+    margin: 5px 0;
     font-size: 14px;
 }
 
-#oneclick_images #bulk_generate_status p {
-    margin: 0;
-    padding: 5px 0;
+.toplevel_page_oneclickcontent-images .status-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #fff;
 }
 
-#oneclick_images #bulk_generate_status span {
+.toplevel_page_oneclickcontent-images .thumbnail-container {
+    flex: 0 0 150px;
+    margin-right: 20px;
+}
+
+.toplevel_page_oneclickcontent-images .thumbnail-preview {
+    width: 150px;
+    height: auto;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+.toplevel_page_oneclickcontent-images .metadata-container {
+    flex: 1;
+}
+
+.toplevel_page_oneclickcontent-images .metadata-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.toplevel_page_oneclickcontent-images .metadata-table th,
+.toplevel_page_oneclickcontent-images .metadata-table td {
+    border: 1px solid #ddd;
+    padding: 5px;
+    text-align: left;
+}
+
+.toplevel_page_oneclickcontent-images .metadata-table th {
+    background-color: #f5f5f5;
     font-weight: bold;
-    color: #28a745;
 }
 
-#oneclick_images #bulk_generate_status p span.skipped {
-    color: #ffcc00;
-}
-
-/* Notifications */
-.notice-success {
+/* ==========================================================================
+   Notifications
+   ========================================================================== */
+.toplevel_page_oneclickcontent-images .notice-success {
     padding: 15px;
     background-color: #e8f6ec;
     border-left: 4px solid #28a745;
@@ -198,7 +254,7 @@
     font-size: 14px;
 }
 
-.notice-error {
+.toplevel_page_oneclickcontent-images .notice-error {
     padding: 15px;
     background-color: #f8d7da;
     border-left: 4px solid #dc3545;
@@ -207,167 +263,304 @@
     font-size: 14px;
 }
 
-/* Saving Messages */
-.saving-message {
-    font-size: 0.9em;
+/* ==========================================================================
+   Saving Messages
+   ========================================================================== */
+.toplevel_page_oneclickcontent-images .input-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.toplevel_page_oneclickcontent-images .save-status {
+    display: none;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    z-index: 10;
+}
+
+.toplevel_page_oneclickcontent-images .save-status-saving {
+    background-color: #007cba;
+    color: #fff;
+}
+
+.toplevel_page_oneclickcontent-images .save-status-saved {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.toplevel_page_oneclickcontent-images .save-status-error {
+    background-color: #d94f4f;
+    color: #fff;
+}
+
+.toplevel_page_oneclickcontent-images .save-status-nochange {
+    background-color: #6c757d;
+    color: #fff;
+}
+
+.toplevel_page_oneclickcontent-images #image-metadata-table input,
+.toplevel_page_oneclickcontent-images #image-metadata-table textarea {
+    padding-right: 60px;
+}
+
+/* ==========================================================================
+   Action Wrapper for Status
+   ========================================================================== */
+.toplevel_page_oneclickcontent-images .action-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    text-align: center;
+}
+
+.toplevel_page_oneclickcontent-images .action-status {
+    display: none;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    z-index: 10;
+}
+
+.toplevel_page_oneclickcontent-images .action-status-working {
+    background-color: #007cba;
+    color: #fff;
+}
+
+.toplevel_page_oneclickcontent-images .action-status-success {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.toplevel_page_oneclickcontent-images .action-status-error {
+    background-color: #d94f4f;
+    color: #fff;
+}
+
+.toplevel_page_oneclickcontent-images .generate-metadata {
+    position: relative;
+    padding-right: 60px;
+}
+
+/* ==========================================================================
+   DataTables Styling
+   ========================================================================== */
+.toplevel_page_oneclickcontent-images #image-metadata-table {
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.toplevel_page_oneclickcontent-images #image-metadata-table th,
+.toplevel_page_oneclickcontent-images #image-metadata-table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    vertical-align: top;
+    text-align: center;
+}
+
+.toplevel_page_oneclickcontent-images #image-metadata-table th {
+    background-color: #f5f5f5;
     font-weight: bold;
 }
 
-.saving-message.saving-success {
-    color: green;
-}
-
-.saving-message.saving-error {
-    color: red;
-}
-
-/* Metadata Table */
-.metadata-table {
-    width: 100%;
-    margin-top: 10px;
-    border-collapse: collapse;
-}
-
-.metadata-table th,
-.metadata-table td {
-    padding: 5px;
+.toplevel_page_oneclickcontent-images #image-metadata-table .thumbnail-preview {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
     border: 1px solid #ccc;
-    text-align: left;
+    border-radius: 3px;
+    display: block;
+    margin: 0 auto;
 }
 
-.metadata-table th {
-    background-color: #f9f9f9;
+.toplevel_page_oneclickcontent-images #image-metadata-table img.attachment-thumbnail.size-thumbnail {
+    max-width: 100% !important;
 }
 
-.status-item {
-    margin-bottom: 15px;
+.toplevel_page_oneclickcontent-images #image-metadata-table input,
+.toplevel_page_oneclickcontent-images #image-metadata-table textarea {
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    padding: 4px;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+    display: block;
 }
 
-/* Modal Styling */
-.occ-modal,
-.occ-subscription-modal,
-#occ-image-rejection-modal,
-#occ-subscriber-limit-modal {
+.toplevel_page_oneclickcontent-images #image-metadata-table textarea {
+    height: 60px;
+    resize: vertical;
+}
+
+.toplevel_page_oneclickcontent-images #image-metadata-table .generate-metadata {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: #fff;
+    padding: 4px 8px;
+    font-size: 12px;
+    margin: 0 auto;
+    display: block;
+}
+
+.toplevel_page_oneclickcontent-images #image-metadata-table .generate-metadata:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+
+.toplevel_page_oneclickcontent-images #image-metadata-table .generate-metadata:disabled {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    cursor: not-allowed;
+}
+
+/* ==========================================================================
+   Usage Info
+   ========================================================================== */
+.toplevel_page_oneclickcontent-images .usage-info-section {
+    margin: 20px 0;
+}
+
+.toplevel_page_oneclickcontent-images .free-trial-message {
+    color: #d94f4f;
+    font-weight: bold;
+}
+
+.toplevel_page_oneclickcontent-images .usage-summary {
+    margin-top: 10px;
+}
+
+.toplevel_page_oneclickcontent-images .progress {
+    height: 20px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.toplevel_page_oneclickcontent-images .progress-bar {
+    background-color: #28a745;
+    transition: width 0.6s ease;
+}
+
+/* ==========================================================================
+   Loading Indicator
+   ========================================================================== */
+.toplevel_page_oneclickcontent-images #image-metadata-table.loading {
+    opacity: 0.7;
+    position: relative;
+}
+
+.toplevel_page_oneclickcontent-images #image-metadata-table.loading::after {
+    content: 'Generating...';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    z-index: 1000;
+}
+
+/* ==========================================================================
+   Bulk Edit Header
+   ========================================================================== */
+.toplevel_page_oneclickcontent-images .bulk-edit-header {
+    margin-bottom: 20px;
+}
+
+.toplevel_page_oneclickcontent-images .bulk-edit-header .button-hero {
+    font-size: 18px;
+    padding: 10px 20px;
+    background-color: #007cba;
+    border-color: #007cba;
+    color: #fff;
+}
+
+.toplevel_page_oneclickcontent-images .bulk-edit-header .button-hero:hover {
+    background-color: #005ea2;
+    border-color: #005ea2;
+}
+
+.toplevel_page_oneclickcontent-images .bulk-edit-header .description {
+    margin-top: 10px;
+    font-style: italic;
+    color: #666;
+}
+
+/* ==========================================================================
+   Animations
+   ========================================================================== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Modal Overlay */
+.occ-subscription-modal {
     display: none;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 160003; /* Higher than Media Library */
+    z-index: 160001; /* Higher than the Media Library */
+    background: rgba(0, 0, 0, 0.6);
     overflow: auto;
-    background-color: rgba(0, 0, 0, 0.5);
 }
 
-.occ-modal-overlay,
-.occ-subscription-modal-overlay,
-#occ-image-rejection-modal .occ-modal-overlay,
-#occ-subscriber-limit-modal .occ-subscriber-limit-modal-overlay {
+.occ-subscription-modal-overlay {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.6);
     z-index: 1;
 }
 
-.occ-modal-content,
-.occ-subscription-modal-content,
-#occ-image-rejection-modal .occ-modal-content,
-#occ-subscriber-limit-modal .occ-subscriber-limit-modal-content {
+/* Modal Content */
+.occ-subscription-modal-content {
     position: relative;
-    margin: 15% auto;
+    margin: 5% auto;
     padding: 20px;
     width: 90%;
-    max-width: 500px;
+    max-width: 600px;
     background: #fff;
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 160002; /* Ensure content is above the overlay */
     text-align: center;
-    z-index: 160004;
-    animation: fadeIn 0.3s ease-in-out;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.occ-modal-close,
-.occ-subscription-modal-close,
-#occ-image-rejection-modal .occ-modal-close,
-#occ-subscriber-limit-modal .occ-subscriber-limit-modal-close {
+/* Modal Close Button */
+.occ-subscription-modal-close {
     position: absolute;
     top: 10px;
     right: 10px;
-    color: #888;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-.occ-modal-close:hover,
-.occ-subscription-modal-close:hover,
-#occ-image-rejection-modal .occ-modal-close:hover,
-#occ-subscriber-limit-modal .occ-subscriber-limit-modal-close:hover {
-    color: #333;
-}
-
-.occ-modal-content h2,
-.occ-subscription-modal-content h2,
-#occ-image-rejection-modal h2,
-#occ-subscriber-limit-modal h2 {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-    color: #333;
     font-size: 20px;
-}
-
-.occ-modal-content h2 span,
-.occ-subscription-modal-content h2 span,
-#occ-image-rejection-modal h2 span,
-#occ-subscriber-limit-modal h2 span {
-    margin-right: 10px;
-}
-
-.occ-modal-content p,
-.occ-subscription-modal-content p,
-#occ-image-rejection-modal p,
-#occ-subscriber-limit-modal p {
-    margin-bottom: 20px;
-    color: #555;
-    font-size: 16px;
-}
-
-.occ-modal-button,
-#occ-image-rejection-modal .occ-modal-button {
-    display: inline-block;
-    padding: 10px 20px;
-    margin-top: 15px;
-    background-color: #007cba;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    font-size: 14px;
     cursor: pointer;
 }
 
-.occ-modal-button:hover,
-#occ-image-rejection-modal .occ-modal-button:hover {
-    background-color: #005a8c;
-}
 
-.occ-modal-link {
-    display: inline-block;
-    margin-top: 10px;
-    color: #007cba;
-    font-size: 14px;
-    font-weight: bold;
-    text-decoration: none;
-}
-
-.occ-modal-link:hover {
-    color: #005a8c;
-    text-decoration: underline;
-}
-
-/* Subscription Modal Specific Styles */
+/* Options Container */
 .occ-subscription-options {
     display: flex;
     flex-wrap: wrap;
@@ -379,9 +572,9 @@
     flex: 1;
     min-width: 150px;
     padding: 15px;
-    background: #f9f9f9;
     border: 1px solid #ddd;
     border-radius: 8px;
+    background: #f9f9f9;
     text-align: center;
 }
 
@@ -392,15 +585,15 @@
 .occ-subscription-tier strong {
     display: block;
     margin: 10px 0;
-    color: #333;
     font-size: 1.2em;
+    color: #333;
 }
 
 .occ-subscription-button {
     display: inline-block;
     padding: 10px 15px;
-    background: #0073aa;
     color: #fff;
+    background: #0073aa;
     text-decoration: none;
     border-radius: 5px;
     transition: background 0.3s;
@@ -410,31 +603,102 @@
     background: #005f8d;
 }
 
+.occ-subscription-button a:active, a:hover {
+    color: #fff;
+}
+
+/* Modal Link */
 .occ-subscription-modal-link {
     display: block;
     margin-top: 20px;
     color: #0073aa;
-    font-weight: bold;
     text-decoration: underline;
+    font-weight: bold;
 }
 
 .occ-subscription-modal-link:hover {
     text-decoration: none;
 }
 
-#occ-subscription-modal .occ-subscription-tier a:active,
-#occ-subscription-modal .occ-subscription-tier a:hover {
+#occ-subscription-modal .occ-subscription-tier a:active, #occ-subscription-modal .occ-subscription-tier a:hover {
     color: #fff;
 }
 
-/* Fade-in Animation */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.bulk-edit-license-warning.compact {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  background: radial-gradient(circle at top left, #a1c4fd, #c2e9fb, #c2e9fb 70%);
+  color: #000;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: fadeIn 0.6s ease;
+}
+
+.bulk-edit-license-warning.compact .cta-left {
+  flex: 1 1 60%;
+  min-width: 250px;
+}
+
+.bulk-edit-license-warning.compact .cta-left h2 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.bulk-edit-license-warning.compact .cta-left p {
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 15px;
+}
+
+.bulk-edit-license-warning.compact .benefits-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.bulk-edit-license-warning.compact .benefits-list li {
+  position: relative;
+  padding-left: 22px;
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.bulk-edit-license-warning.compact .benefits-list li::before {
+  content: "✔";
+  position: absolute;
+  left: 0;
+  color: #b5f1ff;
+  font-weight: bold;
+}
+
+.bulk-edit-license-warning.compact .cta-right {
+  flex: 1 1 30%;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.bulk-edit-license-warning.compact .btn-license {
+  background-color: #ffffff;
+  color: #007cba;
+  padding: 10px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+.bulk-edit-license-warning.compact .btn-license:hover {
+  background-color: #f1f1f1;
+  transform: scale(1.05);
+}
+
+.bulk-edit-license-warning.compact .cta-left h2,
+.bulk-edit-license-warning.compact .cta-left p {
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
 }

@@ -1,11 +1,11 @@
-=== OneClickContent - Images ===
+=== OneClickContent - Image Meta Generator ===
 Contributors: jwilson529  
 Donate link: https://oneclickcontent.com/donate  
-Tags: images, metadata, OpenAI, AI, accessibility, multilingual  
+Tags: images, metadata, OpenAI, AI, accessibility  
 Requires at least: 5.0  
-Tested up to: 6.3  
+Tested up to: 6.7  
 Requires PHP: 7.2  
-Stable tag: 1.1.5
+Stable tag: 1.1.7
 License: GPLv2 or later  
 License URI: https://www.gnu.org/licenses/gpl-2.0.html  
 
@@ -91,6 +91,9 @@ If enabled, the plugin will automatically generate metadata for any images you u
 
 == Changelog ==
 
+= 1.1.7 =
+* Fixed nonce issue in get_thumbnail AJAX call.
+
 = 1.1.6 =
 * Redirects to settings on activate.
 
@@ -112,6 +115,9 @@ If enabled, the plugin will automatically generate metadata for any images you u
 * Initial release of OneClickContent - Images.
 
 == Upgrade Notice ==
+
+= 1.1.7 =
+* Fixes nonce verification in thumbnail fetching for improved security.
 
 = 1.1.5 =
 * Fixes and enhancements to the update system. Resolves issues with stale update indicators and transient handling.

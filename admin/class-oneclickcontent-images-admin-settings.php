@@ -27,255 +27,173 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class OneClickContent_Images_Admin_Settings {
 
-	/**
-	 * Register the plugin settings page in the WordPress admin menu.
-	 *
-	 * @since 1.0.0
-	 * @return void
-	 */
-	public function oneclick_images_register_options_page() {
-		add_options_page(
-			__( 'OneClickContent Image Details Settings', 'oneclickcontent-images' ),
-			__( 'OneClickContent Image Details', 'oneclickcontent-images' ),
-			'manage_options',
-			'oneclickcontent-images-settings',
-			array( $this, 'oneclick_images_options_page' )
-		);
-	}
+    /**
+     * Display admin notices for settings errors or updates.
+     *
+     * @since 1.0.0
+     * @return void
+     */
+    public function display_admin_notices() {
+        $settings_updated = isset( $_GET['settings-updated'] ) ? sanitize_text_field( wp_unslash( $_GET['settings-updated'] ) ) : '';
+        $nonce            = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
 
-	/**
-	 * Display the plugin options page.
-	 *
-	 * @since 1.0.0
-	 * @return void
-	 */
-	public function oneclick_images_options_page() {
-		$license_status   = get_option( 'oneclick_images_license_status', 'unknown' );
-		$header_image_url = plugin_dir_url( __FILE__ ) . 'assets/header-image.webp';
+        if ( current_user_can( 'manage_options' ) && $settings_updated && 'true' === $settings_updated ) {
+            if ( ! empty( $nonce ) && wp_verify_nonce( $nonce, 'oneclick_images_ajax_nonce' ) ) {
+                add_settings_error(
+                    'oneclick_images_messages',
+                    'oneclick_images_message',
+                    __( 'Settings saved.', 'oneclickcontent-images' ),
+                    'updated'
+                );
+            }
+        }
 
-		?>
-		<div id="oneclick_images" class="wrap">
-			<!-- Jumbotron Header -->
-			<div class="jumbotron-wrapper">
-				<picture>
-					<source srcset="<?php echo esc_url( $header_image_url ); ?>" type="image/webp">
-					<img src="<?php echo esc_url( $header_image_url ); ?>" alt="<?php esc_attr_e( 'OneClickContent Image Details', 'oneclickcontent-images' ); ?>">
-				</picture>
-				<h1 class="jumbotron-title"><?php esc_html_e( 'OneClickContent Image Details Settings', 'oneclickcontent-images' ); ?></h1>
-			</div>
+        settings_errors( 'oneclick_images_messages' );
+    }
 
-			<!-- Settings Form -->
-			<form method="post" action="options.php" id="oneclick_images_settings_form">
-				<?php
-				settings_fields( 'oneclick_images_settings' );
-				wp_nonce_field( 'oneclick_images_settings_update', '_wpnonce' );
-				do_settings_sections( 'oneclick_images_settings' );
-				?>
-			</form>
+    /**
+     * Register plugin settings and add settings fields.
+     *
+     * @since 1.0.0
+     * @return void
+     */
+    public function oneclick_images_register_settings() {
+        // phpcs:ignore PluginCheck.CodeAnalysis.SettingSanitization.register_settingDynamic -- sanitize_callback is defined and safe.
+        $option_group = 'oneclick_images_settings';
 
-			<!-- Divider -->
-			<hr class="settings-divider" />
+        register_setting(
+            $option_group,
+            'oneclick_images_license_key',
+            array(
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_text_field',
+                'default'           => '',
+            )
+        );
 
-			<!-- Usage Information Section -->
-			<div class="usage-info-section">
-				<h2><?php esc_html_e( 'Usage Information', 'oneclickcontent-images' ); ?></h2>
+        register_setting(
+            $option_group,
+            'oneclick_images_ai_model',
+            array(
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_text_field',
+                'default'           => 'gpt-4o-mini',
+            )
+        );
 
-				<?php if ( 'active' !== $license_status ) : ?>
-					<p class="free-trial-message">
-						<?php esc_html_e( 'You are currently using the free trial version of OneClickContent Images. To unlock full features, please subscribe.', 'oneclickcontent-images' ); ?>
-					</p>
-					<a href="https://oneclickcontent.com/image-detail-generator/" target="_blank" class="button button-primary">
-						<?php esc_html_e( 'Subscribe Now', 'oneclickcontent-images' ); ?>
-					</a>
-				<?php else : ?>
-					<p><?php esc_html_e( 'Track your current usage and remaining image generation allowance.', 'oneclickcontent-images' ); ?></p>
-					<div id="usage_status" class="usage-summary">
-						<strong id="usage_count"><?php esc_html_e( 'Loading usage data...', 'oneclickcontent-images' ); ?></strong>
-						<div class="progress">
-							<div 
-								id="usage_progress" 
-								class="progress-bar bg-success" 
-								role="progressbar" 
-								aria-valuenow="0" 
-								aria-valuemin="0" 
-								aria-valuemax="100" 
-								style="width: 0%;"
-							>
-								0%
-							</div>
-						</div>
-					</div>
-				<?php endif; ?>
-			</div>
+        register_setting(
+            $option_group,
+            'oneclick_images_auto_add_details',
+            array(
+                'type'              => 'boolean',
+                'sanitize_callback' => 'rest_sanitize_boolean',
+                'default'           => false,
+            )
+        );
 
-			<!-- Divider -->
-			<hr class="settings-divider" />
+        register_setting(
+            $option_group,
+            'oneclick_images_metadata_fields',
+            array(
+                'type'              => 'array',
+                'sanitize_callback' => array( $this, 'oneclick_images_sanitize_metadata_fields' ),
+                'default'           => array(
+                    'title'       => false,
+                    'description' => false,
+                    'alt_text'    => false,
+                    'caption'     => false,
+                ),
+            )
+        );
 
-			<!-- Bulk Generate Details Section -->
-			<div class="bulk-generate-section">
-				<h2><?php esc_html_e( 'Bulk Generate Details for Media Library', 'oneclickcontent-images' ); ?></h2>
-				<p><?php esc_html_e( 'Automatically generate details for images in your media library based on your settings.', 'oneclickcontent-images' ); ?></p>
-				<button id="bulk_generate_metadata_button" class="button button-primary">
-					<?php esc_html_e( 'Generate Details for Media Library', 'oneclickcontent-images' ); ?>
-				</button>
-				<div id="bulk_generate_status" class="bulk-generate-status">
-					<!-- Status messages will appear here -->
-				</div>
-			</div>
-		</div>
-		<?php
-	}
+        register_setting(
+            $option_group,
+            'oneclick_images_override_metadata',
+            array(
+                'type'              => 'boolean',
+                'sanitize_callback' => 'rest_sanitize_boolean',
+                'default'           => false,
+            )
+        );
 
-	/**
-	 * Display admin notices for settings errors or updates.
-	 *
-	 * @since 1.0.0
-	 * @return void
-	 */
-	public function display_admin_notices() {
-		$settings_updated = isset( $_GET['settings-updated'] ) ? sanitize_text_field( wp_unslash( $_GET['settings-updated'] ) ) : '';
-		$nonce            = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
+        register_setting(
+            $option_group,
+            'oneclick_images_language',
+            array(
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_text_field',
+                'default'           => 'en',
+            )
+        );
 
-		if ( current_user_can( 'manage_options' ) && $settings_updated && 'true' === $settings_updated ) {
-			// Verify the nonce using the localized nonce action.
-			if ( ! empty( $nonce ) && wp_verify_nonce( $nonce, 'oneclick_images_ajax_nonce' ) ) {
-				add_settings_error(
-					'oneclick_images_messages',
-					'oneclick_images_message',
-					__( 'Settings saved.', 'oneclickcontent-images' ),
-					'updated'
-				);
-			}
-		}
+        $this->add_settings_sections_and_fields();
+    }
 
-		settings_errors( 'oneclick_images_messages' );
-	}
+    /**
+     * Adds settings sections and fields to the settings page.
+     *
+     * @since 1.0.0
+     * @return void
+     */
+    private function add_settings_sections_and_fields() {
+        add_settings_section(
+            'oneclick_images_metadata_section',
+            __( 'Select Metadata Fields to Replace', 'oneclickcontent-images' ),
+            array( $this, 'oneclick_images_metadata_section_callback' ),
+            'oneclick_images_settings'
+        );
 
-	/**
-	 * Register plugin settings and add settings fields.
-	 *
-	 * @since 1.0.0
-	 * @return void
-	 */
-	public function oneclick_images_register_settings() {
-		register_setting(
-			'oneclick_images_settings',
-			'oneclick_images_license_key',
-			array(
-				'sanitize_callback' => 'sanitize_text_field',
-			)
-		);
+        add_settings_field(
+            'oneclick_images_metadata_fields',
+            __( 'Metadata Fields', 'oneclickcontent-images' ),
+            array( $this, 'oneclick_images_metadata_fields_callback' ),
+            'oneclick_images_settings',
+            'oneclick_images_metadata_section'
+        );
 
-		register_setting(
-			'oneclick_images_settings',
-			'oneclick_images_ai_model',
-			array(
-				'sanitize_callback' => 'sanitize_text_field',
-			)
-		);
+        add_settings_section(
+            'oneclick_images_settings_section',
+            __( 'OneClickContent Image Details Settings', 'oneclickcontent-images' ),
+            array( $this, 'oneclick_images_settings_section_callback' ),
+            'oneclick_images_settings'
+        );
 
-		register_setting(
-			'oneclick_images_settings',
-			'oneclick_images_auto_add_details',
-			array(
-				'sanitize_callback' => 'rest_sanitize_boolean',
-			)
-		);
+        add_settings_field(
+            'oneclick_images_auto_add_details',
+            __( 'Auto Add Details on Upload', 'oneclickcontent-images' ),
+            array( $this, 'oneclick_images_auto_add_details_callback' ),
+            'oneclick_images_settings',
+            'oneclick_images_settings_section',
+            array( 'label_for' => 'oneclick_images_auto_add_details' )
+        );
 
-		register_setting(
-			'oneclick_images_settings',
-			'oneclick_images_metadata_fields',
-			array(
-				'sanitize_callback' => array( $this, 'oneclick_images_sanitize_metadata_fields' ),
-			)
-		);
+        add_settings_field(
+            'oneclick_images_override_metadata',
+            __( 'Override Existing Details', 'oneclickcontent-images' ),
+            array( $this, 'oneclick_images_override_metadata_callback' ),
+            'oneclick_images_settings',
+            'oneclick_images_settings_section',
+            array( 'label_for' => 'oneclick_images_override_metadata' )
+        );
 
-		register_setting(
-			'oneclick_images_settings',
-			'oneclick_images_override_metadata',
-			array(
-				'sanitize_callback' => 'rest_sanitize_boolean',
-			)
-		);
+        add_settings_field(
+            'oneclick_images_language',
+            __( 'Language', 'oneclickcontent-images' ),
+            array( $this, 'oneclick_images_language_callback' ),
+            'oneclick_images_settings',
+            'oneclick_images_settings_section',
+            array( 'label_for' => 'oneclick_images_language' )
+        );
 
-		register_setting(
-			'oneclick_images_settings',
-			'oneclick_images_language',
-			array(
-				'type'              => 'string',
-				'sanitize_callback' => 'sanitize_text_field',
-				'default'           => 'en',
-			)
-		);
-
-		$this->add_settings_sections_and_fields();
-	}
-
-	/**
-	 * Adds settings sections and fields to the settings page.
-	 *
-	 * @since 1.0.0
-	 * @return void
-	 */
-	private function add_settings_sections_and_fields() {
-		add_settings_section(
-			'oneclick_images_metadata_section',
-			__( 'Select Metadata Fields to Replace', 'oneclickcontent-images' ),
-			array( $this, 'oneclick_images_metadata_section_callback' ),
-			'oneclick_images_settings'
-		);
-
-		add_settings_field(
-			'oneclick_images_metadata_fields',
-			__( 'Metadata Fields', 'oneclickcontent-images' ),
-			array( $this, 'oneclick_images_metadata_fields_callback' ),
-			'oneclick_images_settings',
-			'oneclick_images_metadata_section'
-		);
-
-		add_settings_section(
-			'oneclick_images_settings_section',
-			__( 'OneClickContent Image Details Settings', 'oneclickcontent-images' ),
-			array( $this, 'oneclick_images_settings_section_callback' ),
-			'oneclick_images_settings'
-		);
-
-		add_settings_field(
-			'oneclick_images_auto_add_details',
-			__( 'Auto Add Details on Upload', 'oneclickcontent-images' ),
-			array( $this, 'oneclick_images_auto_add_details_callback' ),
-			'oneclick_images_settings',
-			'oneclick_images_settings_section',
-			array( 'label_for' => 'oneclick_images_auto_add_details' )
-		);
-
-		add_settings_field(
-			'oneclick_images_override_metadata',
-			__( 'Override Existing Details', 'oneclickcontent-images' ),
-			array( $this, 'oneclick_images_override_metadata_callback' ),
-			'oneclick_images_settings',
-			'oneclick_images_settings_section',
-			array( 'label_for' => 'oneclick_images_override_metadata' )
-		);
-
-		add_settings_field(
-			'oneclick_images_language',
-			__( 'Language', 'oneclickcontent-images' ),
-			array( $this, 'oneclick_images_language_callback' ),
-			'oneclick_images_settings',
-			'oneclick_images_settings_section',
-			array( 'label_for' => 'oneclick_images_language' )
-		);
-
-		add_settings_field(
-			'oneclick_images_license_key',
-			__( 'OneClickContent License Key', 'oneclickcontent-images' ),
-			array( $this, 'oneclick_images_license_key_callback' ),
-			'oneclick_images_settings',
-			'oneclick_images_settings_section',
-			array( 'label_for' => 'oneclick_images_license_key' )
-		);
-	}
+        add_settings_field(
+            'oneclick_images_license_key',
+            __( 'OneClickContent License Key', 'oneclickcontent-images' ),
+            array( $this, 'oneclick_images_license_key_callback' ),
+            'oneclick_images_settings',
+            'oneclick_images_settings_section',
+            array( 'label_for' => 'oneclick_images_license_key' )
+        );
+    }
 
 	/**
 	 * Callback for the Language dropdown field.
@@ -553,6 +471,8 @@ class OneClickContent_Images_Admin_Settings {
 				'timeout' => 30, // Reduced from 120 to comply with performance standards.
 			)
 		);
+
+		error_log('response: ' . print_r($response, true));
 
 		if ( is_wp_error( $response ) ) {
 			$error_message = $response->get_error_message();

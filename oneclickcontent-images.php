@@ -18,7 +18,7 @@
  * Plugin Name:       OneClickContent - Image Meta Generator
  * Plugin URI:        https://oneclickcontent.com
  * Description:       Uploads images to OneClickContent AI to auto generate titles, descriptions, captions, and alt text.
- * Version:           1.1.7
+ * Version:           1.1.8
  * Author:            James Wilson
  * Author URI:        https://oneclickcontent.com/
  * License:           GPL-2.0+
@@ -45,7 +45,7 @@ if ( ! defined( 'WPINC' ) ) {
  *
  * @since 1.0.0
  */
-define( 'OCC_IMAGES_VERSION', '1.1.7' );
+define( 'OCC_IMAGES_VERSION', '1.1.8' );
 define( 'OCC_IMAGES_PRODUCT_SLUG', 'oneclickcontent-image-meta-generator' );
 
 /**

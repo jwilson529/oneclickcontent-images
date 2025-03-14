@@ -131,23 +131,23 @@ class OneClickContent_Images_Auto_Generate {
 	 * @return void Outputs JSON response with the list of image IDs or an error message.
 	 */
 	public function oneclick_images_get_all_media_ids() {
-	    check_ajax_referer( 'oneclick_images_ajax_nonce', 'nonce' );
+		check_ajax_referer( 'oneclick_images_ajax_nonce', 'nonce' );
 
-	    if ( ! current_user_can( 'upload_files' ) ) {
-	        wp_send_json_error( array( 'message' => __( 'Permission denied.', 'oneclickcontent-images' ) ) );
-	        return;
-	    }
+		if ( ! current_user_can( 'upload_files' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'oneclickcontent-images' ) ) );
+			return;
+		}
 
-	    $args = array(
-	        'post_type'      => 'attachment',
-	        'post_status'    => 'inherit',
-	        'posts_per_page' => -1, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page
-	        'post_mime_type' => 'image',
-	    );
+		$args = array(
+			'post_type'      => 'attachment',
+			'post_status'    => 'inherit',
+			'posts_per_page' => -1, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page
+			'post_mime_type' => 'image',
+		);
 
-	    $query     = new WP_Query( $args );
-	    $image_ids = wp_list_pluck( $query->posts, 'ID' );
+		$query     = new WP_Query( $args );
+		$image_ids = wp_list_pluck( $query->posts, 'ID' );
 
-	    wp_send_json_success( array( 'ids' => $image_ids ) );
+		wp_send_json_success( array( 'ids' => $image_ids ) );
 	}
 }

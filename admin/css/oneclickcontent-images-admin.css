@@ -2,11 +2,11 @@
  * CSS styles for the OneClickContent Image Details plugin admin interface.
  *
  * Provides styling for settings forms, modals, bulk generation status, and UI elements.
- * All selectors are prefixed with .toplevel_page_oneclickcontent-images to avoid clashes.
+ * All selectors are prefixed with .toplevel_page_oneclickcontent-images or .occ- to avoid clashes.
  *
  * @package    One_Click_Images
  * @subpackage One_Click_Images/admin/css
- * @author     OneClickContent <support@oneclickcontent.com>
+ * @author     OneClickContent
  * @since      1.0.0
  * @copyright  2025 OneClickContent
  * @license    GPL-2.0+
@@ -14,11 +14,12 @@
  */
 
 /* ==========================================================================
-   General Container Styling
+   1.0 General Container & Page Styling
    ========================================================================== */
+
 .toplevel_page_oneclickcontent-images #oneclick_images.wrap {
     max-width: 900px;
-    margin: 0 auto;
+    margin: 1rem auto;
     padding: 30px;
     background: #fff;
     border-radius: 8px;
@@ -26,9 +27,14 @@
     font-family: 'Helvetica Neue', Arial, sans-serif;
 }
 
+.toplevel_page_oneclickcontent-images #oneclick_images form {
+    margin-bottom: 20px;
+}
+
 /* ==========================================================================
-   Headings
+   2.0 Headings & Dividers
    ========================================================================== */
+
 .toplevel_page_oneclickcontent-images #oneclick_images h1 {
     color: #fff;
     font-size: 2.5rem;
@@ -45,24 +51,68 @@
     margin-bottom: 15px;
 }
 
-/* ==========================================================================
-   Dividers
-   ========================================================================== */
 .toplevel_page_oneclickcontent-images #oneclick_images .settings-divider {
     border: 1px solid #ddd;
     margin: 30px 0;
 }
 
 /* ==========================================================================
-   Form Styling
+   3.0 Usage Information Section
    ========================================================================== */
-.toplevel_page_oneclickcontent-images #oneclick_images form {
+
+.toplevel_page_oneclickcontent-images #oneclick_images .usage-info-section {
     margin-bottom: 20px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.toplevel_page_oneclickcontent-images #oneclick_images .usage-summary strong {
+    display: block;
+    margin-bottom: 10px;
+    color: #333;
+    font-size: 18px;
+}
+
+/* Progress bar container & bar */
+.toplevel_page_oneclickcontent-images .progress {
+    height: 20px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.toplevel_page_oneclickcontent-images .progress-bar {
+    line-height: 20px;
+    color: #fff;
+    font-size: 14px;
+    text-align: center;
+    transition: width 0.5s ease;
+}
+
+/* Progress bar color states */
+.toplevel_page_oneclickcontent-images .bg-success {
+    background-color: #28a745 !important;
+}
+
+.toplevel_page_oneclickcontent-images .bg-warning {
+    background-color: #ffc107 !important;
+    color: #333 !important;
+}
+
+.toplevel_page_oneclickcontent-images .bg-danger {
+    background-color: #dc3545 !important;
+}
+
+#usage_status {
+    margin: 1rem 0;
 }
 
 /* ==========================================================================
-   Jumbotron Styling
+   4.0 Jumbotron (Optional Section)
    ========================================================================== */
+
 .toplevel_page_oneclickcontent-images #oneclick_images .jumbotron-wrapper {
     position: relative;
     max-height: 225px;
@@ -95,386 +145,9 @@
 }
 
 /* ==========================================================================
-   Usage Information Section
+   5.0 Bulk Edit Header & Main CTA
    ========================================================================== */
-.toplevel_page_oneclickcontent-images #oneclick_images .usage-info-section {
-    margin-bottom: 20px;
-    padding: 20px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
 
-.toplevel_page_oneclickcontent-images #oneclick_images .usage-summary strong {
-    display: block;
-    margin-bottom: 10px;
-    color: #333;
-    font-size: 18px;
-}
-
-.toplevel_page_oneclickcontent-images #oneclick_images .progress {
-    height: 20px;
-    background-color: #e9ecef;
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-.toplevel_page_oneclickcontent-images #oneclick_images .progress-bar {
-    line-height: 20px;
-    color: white;
-    font-size: 14px;
-    text-align: center;
-    transition: width 0.5s ease;
-}
-
-.toplevel_page_oneclickcontent-images #oneclick_images .bg-success {
-    background-color: #28a745 !important;
-}
-
-.toplevel_page_oneclickcontent-images #oneclick_images .bg-warning {
-    background-color: #ffc107 !important;
-    color: #333 !important;
-}
-
-.toplevel_page_oneclickcontent-images #oneclick_images .bg-danger {
-    background-color: #dc3545 !important;
-}
-
-/* ==========================================================================
-   Bulk Generate Section (Deprecated)
-   ========================================================================== */
-/* Note: Bulk generation moved to Bulk Edit tab; keeping styles for reference */
-.toplevel_page_oneclickcontent-images #oneclick_images .bulk-generate-section {
-    padding: 20px;
-    background: #fdfdfd;
-    border: 1px solid #e1e1e1;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-.toplevel_page_oneclickcontent-images #oneclick_images .bulk-generate-section p {
-    margin-bottom: 15px;
-    color: #555;
-    font-size: 16px;
-}
-
-.toplevel_page_oneclickcontent-images #oneclick_images #bulk_generate_metadata_button {
-    display: inline-block;
-    padding: 10px 20px;
-    background-color: #007cba;
-    color: white;
-    font-size: 16px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.toplevel_page_oneclickcontent-images #oneclick_images #bulk_generate_metadata_button:disabled {
-    background-color: #6c757d;
-    cursor: not-allowed;
-}
-
-.toplevel_page_oneclickcontent-images #oneclick_images #bulk_generate_metadata_button:hover:not(:disabled) {
-    background-color: #005a8c;
-}
-
-/* ==========================================================================
-   Bulk Generate Status (Above Table)
-   ========================================================================== */
-.toplevel_page_oneclickcontent-images #bulk-generate-status {
-    margin-bottom: 20px;
-    padding: 10px;
-    background-color: #f8f9fa;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    max-height: 200px;
-    overflow-y: auto;
-    display: none;
-}
-
-.toplevel_page_oneclickcontent-images #bulk-generate-status p {
-    margin: 5px 0;
-    font-size: 14px;
-}
-
-.toplevel_page_oneclickcontent-images .status-item {
-    display: flex;
-    align-items: flex-start;
-    margin-bottom: 10px;
-    border: 1px solid #ddd;
-    padding: 10px;
-    border-radius: 5px;
-    background-color: #fff;
-}
-
-.toplevel_page_oneclickcontent-images .thumbnail-container {
-    flex: 0 0 150px;
-    margin-right: 20px;
-}
-
-.toplevel_page_oneclickcontent-images .thumbnail-preview {
-    width: 150px;
-    height: auto;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-}
-
-.toplevel_page_oneclickcontent-images .metadata-container {
-    flex: 1;
-}
-
-.toplevel_page_oneclickcontent-images .metadata-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-}
-
-.toplevel_page_oneclickcontent-images .metadata-table th,
-.toplevel_page_oneclickcontent-images .metadata-table td {
-    border: 1px solid #ddd;
-    padding: 5px;
-    text-align: left;
-}
-
-.toplevel_page_oneclickcontent-images .metadata-table th {
-    background-color: #f5f5f5;
-    font-weight: bold;
-}
-
-/* ==========================================================================
-   Notifications
-   ========================================================================== */
-.toplevel_page_oneclickcontent-images .notice-success {
-    padding: 15px;
-    background-color: #e8f6ec;
-    border-left: 4px solid #28a745;
-    border-radius: 4px;
-    color: #155724;
-    font-size: 14px;
-}
-
-.toplevel_page_oneclickcontent-images .notice-error {
-    padding: 15px;
-    background-color: #f8d7da;
-    border-left: 4px solid #dc3545;
-    border-radius: 4px;
-    color: #721c24;
-    font-size: 14px;
-}
-
-/* ==========================================================================
-   Saving Messages
-   ========================================================================== */
-.toplevel_page_oneclickcontent-images .input-wrapper {
-    position: relative;
-    display: inline-block;
-    width: 100%;
-}
-
-.toplevel_page_oneclickcontent-images .save-status {
-    display: none;
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 12px;
-    padding: 2px 6px;
-    border-radius: 3px;
-    z-index: 10;
-}
-
-.toplevel_page_oneclickcontent-images .save-status-saving {
-    background-color: #007cba;
-    color: #fff;
-}
-
-.toplevel_page_oneclickcontent-images .save-status-saved {
-    background-color: #28a745;
-    color: #fff;
-}
-
-.toplevel_page_oneclickcontent-images .save-status-error {
-    background-color: #d94f4f;
-    color: #fff;
-}
-
-.toplevel_page_oneclickcontent-images .save-status-nochange {
-    background-color: #6c757d;
-    color: #fff;
-}
-
-.toplevel_page_oneclickcontent-images #image-metadata-table input,
-.toplevel_page_oneclickcontent-images #image-metadata-table textarea {
-    padding-right: 60px;
-}
-
-/* ==========================================================================
-   Action Wrapper for Status
-   ========================================================================== */
-.toplevel_page_oneclickcontent-images .action-wrapper {
-    position: relative;
-    display: inline-block;
-    width: 100%;
-    text-align: center;
-}
-
-.toplevel_page_oneclickcontent-images .action-status {
-    display: none;
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 12px;
-    padding: 2px 6px;
-    border-radius: 3px;
-    z-index: 10;
-}
-
-.toplevel_page_oneclickcontent-images .action-status-working {
-    background-color: #007cba;
-    color: #fff;
-}
-
-.toplevel_page_oneclickcontent-images .action-status-success {
-    background-color: #28a745;
-    color: #fff;
-}
-
-.toplevel_page_oneclickcontent-images .action-status-error {
-    background-color: #d94f4f;
-    color: #fff;
-}
-
-.toplevel_page_oneclickcontent-images .generate-metadata {
-    position: relative;
-    padding-right: 60px;
-}
-
-/* ==========================================================================
-   DataTables Styling
-   ========================================================================== */
-.toplevel_page_oneclickcontent-images #image-metadata-table {
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-.toplevel_page_oneclickcontent-images #image-metadata-table th,
-.toplevel_page_oneclickcontent-images #image-metadata-table td {
-    padding: 10px;
-    border: 1px solid #ddd;
-    vertical-align: top;
-    text-align: center;
-}
-
-.toplevel_page_oneclickcontent-images #image-metadata-table th {
-    background-color: #f5f5f5;
-    font-weight: bold;
-}
-
-.toplevel_page_oneclickcontent-images #image-metadata-table .thumbnail-preview {
-    width: 50px;
-    height: 50px;
-    object-fit: cover;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-    display: block;
-    margin: 0 auto;
-}
-
-.toplevel_page_oneclickcontent-images #image-metadata-table img.attachment-thumbnail.size-thumbnail {
-    max-width: 100% !important;
-}
-
-.toplevel_page_oneclickcontent-images #image-metadata-table input,
-.toplevel_page_oneclickcontent-images #image-metadata-table textarea {
-    border: 1px solid #ccc;
-    border-radius: 3px;
-    padding: 4px;
-    width: 100%;
-    max-width: 300px;
-    margin: 0 auto;
-    display: block;
-}
-
-.toplevel_page_oneclickcontent-images #image-metadata-table textarea {
-    height: 60px;
-    resize: vertical;
-}
-
-.toplevel_page_oneclickcontent-images #image-metadata-table .generate-metadata {
-    background-color: #28a745;
-    border-color: #28a745;
-    color: #fff;
-    padding: 4px 8px;
-    font-size: 12px;
-    margin: 0 auto;
-    display: block;
-}
-
-.toplevel_page_oneclickcontent-images #image-metadata-table .generate-metadata:hover {
-    background-color: #218838;
-    border-color: #1e7e34;
-}
-
-.toplevel_page_oneclickcontent-images #image-metadata-table .generate-metadata:disabled {
-    background-color: #6c757d;
-    border-color: #6c757d;
-    cursor: not-allowed;
-}
-
-/* ==========================================================================
-   Usage Info
-   ========================================================================== */
-.toplevel_page_oneclickcontent-images .usage-info-section {
-    margin: 20px 0;
-}
-
-.toplevel_page_oneclickcontent-images .free-trial-message {
-    color: #d94f4f;
-    font-weight: bold;
-}
-
-.toplevel_page_oneclickcontent-images .usage-summary {
-    margin-top: 10px;
-}
-
-.toplevel_page_oneclickcontent-images .progress {
-    height: 20px;
-    background-color: #e9ecef;
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-.toplevel_page_oneclickcontent-images .progress-bar {
-    background-color: #28a745;
-    transition: width 0.6s ease;
-}
-
-/* ==========================================================================
-   Loading Indicator
-   ========================================================================== */
-.toplevel_page_oneclickcontent-images #image-metadata-table.loading {
-    opacity: 0.7;
-    position: relative;
-}
-
-.toplevel_page_oneclickcontent-images #image-metadata-table.loading::after {
-    content: 'Generating...';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: rgba(0, 0, 0, 0.7);
-    color: #fff;
-    padding: 10px 20px;
-    border-radius: 5px;
-    z-index: 1000;
-}
-
-/* ==========================================================================
-   Bulk Edit Header
-   ========================================================================== */
 .toplevel_page_oneclickcontent-images .bulk-edit-header {
     margin-bottom: 20px;
 }
@@ -499,19 +172,347 @@
 }
 
 /* ==========================================================================
-   Animations
+   6.0 Bulk Generate Status
    ========================================================================== */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.toplevel_page_oneclickcontent-images #bulk-generate-status {
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    max-height: 330px;
+    overflow-y: auto;
+    display: none;
+    /* Hidden until generation starts */
 }
+
+.toplevel_page_oneclickcontent-images #bulk-generate-status p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+/* ==========================================================================
+   7.0 Notifications
+   ========================================================================== */
+
+.toplevel_page_oneclickcontent-images .notice-success {
+    padding: 15px;
+    background-color: #e8f6ec;
+    border-left: 4px solid #28a745;
+    border-radius: 4px;
+    color: #155724;
+    font-size: 14px;
+}
+
+.toplevel_page_oneclickcontent-images .notice-error {
+    padding: 15px;
+    background-color: #f8d7da;
+    border-left: 4px solid #dc3545;
+    border-radius: 4px;
+    color: #721c24;
+    font-size: 14px;
+}
+
+/* ==========================================================================
+   8.0 Table & DataTables Styling
+   ========================================================================== */
+
+.toplevel_page_oneclickcontent-images #image-metadata-table {
+    border-collapse: collapse;
+}
+
+.toplevel_page_oneclickcontent-images #image-metadata-table th,
+.toplevel_page_oneclickcontent-images #image-metadata-table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    vertical-align: top;
+    text-align: center;
+}
+
+.toplevel_page_oneclickcontent-images #image-metadata-table th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+}
+
+/* Thumbnail preview within table */
+.toplevel_page_oneclickcontent-images #image-metadata-table .thumbnail-preview {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    display: block;
+    margin: 0 auto;
+}
+
+/* Force WordPress's thumbnail to respect sizing */
+.toplevel_page_oneclickcontent-images #image-metadata-table img.attachment-thumbnail.size-thumbnail {
+    max-width: 100% !important;
+}
+
+/* Form elements in table cells */
+.toplevel_page_oneclickcontent-images #image-metadata-table input,
+.toplevel_page_oneclickcontent-images #image-metadata-table textarea {
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    padding: 4px;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+    display: block;
+}
+
+.toplevel_page_oneclickcontent-images #image-metadata-table textarea {
+    height: 60px;
+    resize: vertical;
+}
+
+/* Generate button in table rows */
+.toplevel_page_oneclickcontent-images #image-metadata-table .generate-metadata {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: #fff;
+    padding: 4px 8px;
+    font-size: 12px;
+    margin: 0 auto;
+    display: block;
+    transition: background-color 0.3s ease;
+}
+
+.toplevel_page_oneclickcontent-images #image-metadata-table .generate-metadata:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+
+.toplevel_page_oneclickcontent-images #image-metadata-table .generate-metadata:disabled {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    cursor: not-allowed;
+}
+
+/* ==========================================================================
+   9.0 Saving & Action Status Messages
+   ========================================================================== */
+
+/* Inputs: add extra padding for the status icon on the right */
+.toplevel_page_oneclickcontent-images #image-metadata-table input,
+.toplevel_page_oneclickcontent-images #image-metadata-table textarea {
+    padding-right: 60px;
+}
+
+/* Wrapper for inputs with save status */
+.toplevel_page_oneclickcontent-images .input-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+/* Save status element */
+.toplevel_page_oneclickcontent-images .save-status {
+    display: none;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    z-index: 10;
+}
+
+/* Different states */
+.toplevel_page_oneclickcontent-images .save-status-saving {
+    background-color: #007cba;
+    color: #fff;
+}
+
+.toplevel_page_oneclickcontent-images .save-status-saved {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.toplevel_page_oneclickcontent-images .save-status-error {
+    background-color: #d94f4f;
+    color: #fff;
+}
+
+.toplevel_page_oneclickcontent-images .save-status-nochange {
+    background-color: #6c757d;
+    color: #fff;
+}
+
+/* Action wrapper & status for "Generate" buttons */
+.toplevel_page_oneclickcontent-images .action-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    text-align: center;
+}
+
+.toplevel_page_oneclickcontent-images .action-status {
+    display: none;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    z-index: 10;
+}
+
+/* Different states for action status */
+.toplevel_page_oneclickcontent-images .action-status-working {
+    background-color: #007cba;
+    color: #fff;
+}
+
+.toplevel_page_oneclickcontent-images .action-status-success {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.toplevel_page_oneclickcontent-images .action-status-error {
+    background-color: #d94f4f;
+    color: #fff;
+}
+
+.toplevel_page_oneclickcontent-images .generate-metadata {
+    position: relative;
+    padding-right: 60px;
+}
+
+/* ==========================================================================
+   10.0 Bulk Generation Progress (Alternate Implementation)
+   ========================================================================== */
+
+   /* ==========================================================================
+      10.0 Bulk Generation Progress (Alternate Implementation)
+      ========================================================================== */
+
+   .bulk-generate-status {
+       margin-bottom: 20px;
+       padding: 20px;
+       background-color: #f8f9fa;
+       border: 1px solid #ddd;
+       border-radius: 5px;
+       display: none; /* Hidden until generation starts */
+       max-height: 400px; /* Set a reasonable maximum height */
+       overflow-y: auto; /* Enable vertical scrolling when content exceeds max-height */
+   }
+
+   .bulk-generate-status h3 {
+       margin: 0 0 10px;
+       font-size: 18px;
+       color: #333;
+   }
+
+   .bulk-generate-progress-container {
+       width: 100%;
+       background-color: #e9ecef;
+       border-radius: 4px;
+       overflow: hidden;
+       height: 20px;
+       margin: 20px 0;
+   }
+
+   .bulk-generate-progress-bar {
+       height: 100%;
+       width: 0%;
+       background-color: #28a745;
+       transition: width 0.5s ease;
+       line-height: 20px;
+       color: #fff;
+       text-align: center;
+       font-size: 12px;
+   }
+
+   .bulk-generate-message {
+       font-size: 14px;
+       font-weight: bold;
+       text-align: center;
+       color: #333;
+   }
+
+   .status-item {
+       display: flex;
+       margin: 10px 0;
+       padding: 10px;
+       border: 1px solid #ddd;
+       background: #fff;
+       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+   }
+
+   .thumbnail-container {
+       margin-right: 15px;
+       margin-bottom: 10px;
+   }
+
+   .thumbnail-preview {
+       max-width: 100px;
+       max-height: 100px;
+       display: block;
+   }
+
+   .attachment-thumbnail.size-thumbnail {
+       border: 1px solid #ccc;
+       padding: 3px;
+       background: #fff;
+       box-sizing: border-box;
+   }
+
+   .metadata-table {
+       width: 100%;
+       border-collapse: collapse;
+       border: 1px solid #ddd;
+   }
+
+   .metadata-table th,
+   .metadata-table td {
+       padding: 5px;
+       border: 1px solid #ddd;
+   }
+
+   .metadata-table th {
+       background-color: #f5f5f5;
+       font-weight: bold;
+   }
+
+   .metadata-container a {
+       color: #0073aa;
+       text-decoration: none;
+   }
+
+   .metadata-container a:hover {
+       text-decoration: underline;
+   }
+
+/* ==========================================================================
+   11.0 Loading Indicator for Table
+   ========================================================================== */
+
+.toplevel_page_oneclickcontent-images #image-metadata-table.loading {
+    opacity: 0.7;
+    position: relative;
+}
+
+.toplevel_page_oneclickcontent-images #image-metadata-table.loading::after {
+    content: 'Generating...';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    z-index: 1000;
+}
+
+/* ==========================================================================
+   12.0 Subscription Modal & Overlay (.occ- classes)
+   ========================================================================== */
 
 /* Modal Overlay */
 .occ-subscription-modal {
@@ -521,7 +522,8 @@
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 160001; /* Higher than the Media Library */
+    z-index: 160001;
+    /* Higher than the Media Library */
     background: rgba(0, 0, 0, 0.6);
     overflow: auto;
 }
@@ -545,7 +547,8 @@
     max-width: 600px;
     background: #fff;
     border-radius: 8px;
-    z-index: 160002; /* Ensure content is above the overlay */
+    z-index: 160002;
+    /* Above the overlay */
     text-align: center;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
@@ -558,7 +561,6 @@
     font-size: 20px;
     cursor: pointer;
 }
-
 
 /* Options Container */
 .occ-subscription-options {
@@ -589,6 +591,7 @@
     color: #333;
 }
 
+/* Buttons & Links */
 .occ-subscription-button {
     display: inline-block;
     padding: 10px 15px;
@@ -603,11 +606,11 @@
     background: #005f8d;
 }
 
-.occ-subscription-button a:active, a:hover {
+.occ-subscription-button a:active,
+.occ-subscription-button a:hover {
     color: #fff;
 }
 
-/* Modal Link */
 .occ-subscription-modal-link {
     display: block;
     margin-top: 20px;
@@ -620,8 +623,36 @@
     text-decoration: none;
 }
 
-#occ-subscription-modal .occ-subscription-tier a:active, #occ-subscription-modal .occ-subscription-tier a:hover {
+#occ-subscription-modal .occ-subscription-tier a:active,
+#occ-subscription-modal .occ-subscription-tier a:hover {
     color: #fff;
+}
+
+/* ==========================================================================
+   13.0 Spinner for Generate Button
+   ========================================================================== */
+
+.generate-spinner {
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #007cba;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+
+/* Spinner Animation */
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 .bulk-edit-license-warning.compact {
@@ -630,12 +661,14 @@
   justify-content: space-between;
   align-items: center;
   background: radial-gradient(circle at top left, #a1c4fd, #c2e9fb, #c2e9fb 70%);
-  color: #000;
+  color: #1e2a38;
   border-radius: 8px;
   padding: 20px;
   margin: 20px 0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
   animation: fadeIn 0.6s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .bulk-edit-license-warning.compact .cta-left {
@@ -646,12 +679,14 @@
 .bulk-edit-license-warning.compact .cta-left h2 {
   font-size: 1.5rem;
   margin-bottom: 10px;
+  color: #102a43;
 }
 
 .bulk-edit-license-warning.compact .cta-left p {
   font-size: 14px;
   line-height: 1.5;
   margin-bottom: 15px;
+  color: #1f2937;
 }
 
 .bulk-edit-license-warning.compact .benefits-list {
@@ -665,13 +700,14 @@
   padding-left: 22px;
   margin: 8px 0;
   font-size: 14px;
+  color: #1f2937;
 }
 
 .bulk-edit-license-warning.compact .benefits-list li::before {
   content: "✔";
   position: absolute;
   left: 0;
-  color: #b5f1ff;
+  color: #0077cc;
   font-weight: bold;
 }
 
@@ -682,8 +718,8 @@
 }
 
 .bulk-edit-license-warning.compact .btn-license {
-  background-color: #ffffff;
-  color: #007cba;
+  background-color: #0077cc;
+  color: #ffffff;
   padding: 10px 24px;
   font-size: 15px;
   font-weight: 600;
@@ -694,11 +730,56 @@
 }
 
 .bulk-edit-license-warning.compact .btn-license:hover {
-  background-color: #f1f1f1;
+  background-color: #005fa3;
   transform: scale(1.05);
 }
 
-.bulk-edit-license-warning.compact .cta-left h2,
-.bulk-edit-license-warning.compact .cta-left p {
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.modal-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+.modal-buttons {
+    margin-top: 20px;
+    text-align: right;
+}
+.modal-buttons .button {
+    margin-left: 10px;
+}
+.warning {
+    color: #d63638;
+    margin: 10px 0;
+}
+.generate-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    vertical-align: middle;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.dataTables_wrapper .dataTables_length select {
+    width: 65px;
 }

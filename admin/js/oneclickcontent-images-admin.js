@@ -52,7 +52,6 @@
                         // Log any error coming back from the metadata generation.
                         if (metadata.error) {
                             console.error('[Metadata] Metadata error:', metadata.error);
-                            // Use a substring check for usage limit errors.
                             if (
                                 metadata.error.includes('Usage limit reached') ||
                                 metadata.error.includes('Free trial limit reached')
@@ -75,8 +74,8 @@
 
                         // Handle successful metadata generation.
                         if (metadata.success) {
-                            console.log('[Metadata] Metadata generated successfully:', metadata.metadata);
-                            updateMetadataFields(metadata.metadata); // Update metadata fields in the UI.
+                            console.log('[Metadata] Metadata generated successfully:', metadata);
+                            updateMetadataFields(metadata.metadata); // Pass the nested metadata object
                         } else {
                             console.error('[Metadata] Metadata generation skipped or unexpected issue:', metadata);
                             showGeneralErrorModal('Metadata generation was skipped or an unexpected issue occurred.');
@@ -87,7 +86,7 @@
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.error('[Metadata] AJAX request error:', status, error);
+                    console.error('[Metadata] AJAX request error:', status, error, xhr.responseText);
                     showGeneralErrorModal('An error occurred while processing the request. Please try again.');
                 },
                 complete: function() {
@@ -98,8 +97,95 @@
         });
 
         /**
-         * Displays a subscription prompt modal for when usage limits are reached.
+         * Updates metadata fields in the UI.
+         *
+         * @param {Object} metadata The metadata object containing title, description, alt_text, and caption.
          */
+        function updateMetadataFields(metadata) {
+            console.log('[UpdateMetadataFields] Updating UI with metadata:', metadata);
+            try {
+                const selectedFields = oneclick_images_admin_vars.selected_fields || {
+                    alt_text: true,
+                    title: true,
+                    caption: true,
+                    description: true,
+                };
+
+                // Update the alt text field
+                const altInputLibrary = $('#attachment-details-two-column-alt-text');
+                const altInputSingle = $('#attachment-details-alt-text'); // Matches media edit screen
+                if (metadata.alt_text && selectedFields.alt_text) {
+                    if (altInputLibrary.length) {
+                        console.log('[UpdateMetadataFields] Alt Text (library) found, current value:', altInputLibrary.val());
+                        altInputLibrary.val(metadata.alt_text).trigger('change');
+                        console.log('[UpdateMetadataFields] Alt Text (library) updated to:', metadata.alt_text);
+                    }
+                    if (altInputSingle.length) {
+                        console.log('[UpdateMetadataFields] Alt Text (single) found, current value:', altInputSingle.val());
+                        altInputSingle.val(metadata.alt_text).trigger('change');
+                        console.log('[UpdateMetadataFields] Alt Text (single) updated to:', metadata.alt_text);
+                    }
+                }
+
+                // Update the title field
+                const titleInputLibrary = $('#attachment-details-two-column-title');
+                const titleInputSingle = $('#attachment-details-title'); // Matches media edit screen
+                if (metadata.title && selectedFields.title) {
+                    if (titleInputLibrary.length) {
+                        console.log('[UpdateMetadataFields] Title (library) found, current value:', titleInputLibrary.val());
+                        titleInputLibrary.val(metadata.title).trigger('change');
+                        console.log('[UpdateMetadataFields] Title (library) updated to:', metadata.title);
+                    }
+                    if (titleInputSingle.length) {
+                        console.log('[UpdateMetadataFields] Title (single) found, current value:', titleInputSingle.val());
+                        titleInputSingle.val(metadata.title).trigger('change');
+                        console.log('[UpdateMetadataFields] Title (single) updated to:', metadata.title);
+                    }
+                }
+
+                // Update the caption field
+                const captionInputLibrary = $('#attachment-details-two-column-caption');
+                const captionInputSingle = $('#attachment-details-caption'); // Matches media edit screen
+                if (metadata.caption && selectedFields.caption) {
+                    if (captionInputLibrary.length) {
+                        console.log('[UpdateMetadataFields] Caption (library) found, current value:', captionInputLibrary.val());
+                        captionInputLibrary.val(metadata.caption).trigger('change');
+                        console.log('[UpdateMetadataFields] Caption (library) updated to:', metadata.caption);
+                    }
+                    if (captionInputSingle.length) {
+                        console.log('[UpdateMetadataFields] Caption (single) found, current value:', captionInputSingle.val());
+                        captionInputSingle.val(metadata.caption).trigger('change');
+                        console.log('[UpdateMetadataFields] Caption (single) updated to:', metadata.caption);
+                    }
+                }
+
+                // Update the description field
+                const descriptionInputLibrary = $('#attachment-details-two-column-description');
+                const descriptionInputSingle = $('#attachment-details-description'); // Matches media edit screen
+                if (metadata.description && selectedFields.description) {
+                    if (descriptionInputLibrary.length) {
+                        console.log('[UpdateMetadataFields] Description (library) found, current value:', descriptionInputLibrary.val());
+                        descriptionInputLibrary.val(metadata.description).trigger('change');
+                        console.log('[UpdateMetadataFields] Description (library) updated to:', metadata.description);
+                    }
+                    if (descriptionInputSingle.length) {
+                        console.log('[UpdateMetadataFields] Description (single) found, current value:', descriptionInputSingle.val());
+                        descriptionInputSingle.val(metadata.description).trigger('change');
+                        console.log('[UpdateMetadataFields] Description (single) updated to:', metadata.description);
+                    }
+                }
+
+                // Trigger change and input events on all inputs and textareas
+                $('input, textarea').trigger('change').trigger('input');
+                console.log('[UpdateMetadataFields] Metadata fields updated successfully.');
+            } catch (err) {
+                console.error('[UpdateMetadataFields] Error updating metadata fields:', err);
+            }
+        }
+
+        // Expose the function globally in case other scripts need it
+        window.updateMetadataFields = updateMetadataFields;
+
         /**
          * Displays a subscription prompt modal for when usage limits are reached.
          */
@@ -168,26 +254,25 @@
                     </div>
                 </div>
             `;
-                    $('body').append(modalHtml);
-                    const modal = $('#occ-subscription-modal');
-                    const modalContent = modal.find('.occ-subscription-modal-content');
-                    modal.removeAttr('aria-hidden');
-                    modalContent.focus();
-                    modal.fadeIn();
-                    $('.occ-subscription-modal-close, .occ-subscription-modal-overlay').on('click', function() {
-                        modal.fadeOut(function() {
-                            $(this).remove();
-                        });
-                    });
-                    $(document).on('keydown', function(e) {
-                        if (e.key === 'Escape') {
-                            modal.fadeOut(function() {
-                                $(this).remove();
-                            });
-                        }
+            $('body').append(modalHtml);
+            const modal = $('#occ-subscription-modal');
+            const modalContent = modal.find('.occ-subscription-modal-content');
+            modal.removeAttr('aria-hidden');
+            modalContent.focus();
+            modal.fadeIn();
+            $('.occ-subscription-modal-close, .occ-subscription-modal-overlay').on('click', function() {
+                modal.fadeOut(function() {
+                    $(this).remove();
+                });
+            });
+            $(document).on('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    modal.fadeOut(function() {
+                        $(this).remove();
                     });
                 }
-
+            });
+        }
 
         /**
          * Display a saving message near the input label.
@@ -416,16 +501,13 @@
             });
         }
 
-        // Expose modal functions globally (not in new file)
+        // Expose modal functions globally
         window.showImageRejectionModal = showImageRejectionModal;
         window.showGeneralErrorModal = showGeneralErrorModal;
         window.showLimitPrompt = showLimitPrompt;
         window.showSubscriptionPrompt = showSubscriptionPrompt;
 
-        // Initialize license status fetching
-        // fetchLicenseStatus();
-
-        // Event listeners for settings changes (not in new file)
+        // Event listeners for settings changes
         $('#oneclick_images_settings_form input[type="checkbox"], #oneclick_images_settings_form select').on('change', function() {
             const element = this;
             promiseSaveSettings(element).catch((error) => {

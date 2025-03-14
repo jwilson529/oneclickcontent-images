@@ -345,7 +345,7 @@ class OneClickContent_Images_Admin_Settings {
 		$checked = get_option( 'oneclick_images_auto_add_details', false );
 		?>
 		<input type="checkbox" id="oneclick_images_auto_add_details" name="oneclick_images_auto_add_details" value="1" <?php checked( 1, $checked ); ?> />
-		<p class="description"><?php esc_html_e( 'Automatically generate and add metadata details when images are uploaded.', 'oneclickcontent-images' ); ?></p>
+		<p class="description"><?php esc_html_e( 'Automatically generate and add metadata details when images are added to the Media Library.', 'oneclickcontent-images' ); ?></p>
 		<?php
 	}
 

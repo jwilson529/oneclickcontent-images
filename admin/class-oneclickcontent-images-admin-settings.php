@@ -413,111 +413,124 @@ class OneClickContent_Images_Admin_Settings {
 	 * @return array|false The generated metadata on success, or false/an error array on failure.
 	 */
 	public function oneclick_images_generate_metadata( $image_id ) {
-		$api_key    = get_option( 'oneclick_images_license_key' );
-		$remote_url = empty( $api_key )
-			? 'https://oneclickcontent.com/wp-json/free-trial/v1/generate-meta'
-			: 'https://oneclickcontent.com/wp-json/subscriber/v1/generate-meta';
+	    $api_key    = get_option( 'oneclick_images_license_key' );
+	    $remote_url = empty( $api_key )
+	        ? 'https://oneclickcontent.com/wp-json/free-trial/v1/generate-meta'
+	        : 'https://oneclickcontent.com/wp-json/subscriber/v1/generate-meta';
 
-		$selected_fields   = get_option( 'oneclick_images_metadata_fields', array() );
-		$override_metadata = get_option( 'oneclick_images_override_metadata', false );
+	    $selected_fields   = get_option( 'oneclick_images_metadata_fields', array() );
+	    $override_metadata = get_option( 'oneclick_images_override_metadata', false );
 
-		$image_path = $this->get_custom_image_size_path( $image_id, 'one-click-image-api' );
-		if ( ! $image_path || ! file_exists( $image_path ) ) {
-			$image_path = get_attached_file( $image_id );
-		}
+	    $image_path = $this->get_custom_image_size_path( $image_id, 'one-click-image-api' );
+	    if ( ! $image_path || ! file_exists( $image_path ) ) {
+	        $image_path = get_attached_file( $image_id );
+	    }
 
-		if ( ! $image_path || ! file_exists( $image_path ) ) {
-			return false;
-		}
+	    if ( ! $image_path || ! file_exists( $image_path ) ) {
+	        return false;
+	    }
 
-		$generate_metadata = $this->determine_metadata_to_generate( $image_id, $selected_fields, $override_metadata );
-		if ( empty( $generate_metadata ) ) {
-			return array(
-				'success' => false,
-				'error'   => __( 'No metadata fields require generation, and "Override Metadata" is disabled.', 'oneclickcontent-images' ),
-			);
-		}
+	    $generate_metadata = $this->determine_metadata_to_generate( $image_id, $selected_fields, $override_metadata );
+	    if ( empty( $generate_metadata ) ) {
+	        return array(
+	            'success' => false,
+	            'error'   => __( 'No metadata fields require generation, and "Override Metadata" is disabled.', 'oneclickcontent-images' ),
+	        );
+	    }
 
-		$image_data = file_get_contents( $image_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+	    $image_data = file_get_contents( $image_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 
-		if ( false === $image_data ) {
-			return false;
-		}
-		// The following line encodes the image data to base64 for safe transmission.
-		// This usage is benign and intentional.
-		$image_base64 = base64_encode( $image_data );
-		$image_type   = wp_check_filetype( $image_path )['ext'];
+	    if ( false === $image_data ) {
+	        return false;
+	    }
+	    // The following line encodes the image data to base64 for safe transmission.
+	    // This usage is benign and intentional.
+	    $image_base64 = base64_encode( $image_data );
+	    $image_type   = wp_check_filetype( $image_path )['ext'];
 
-		$messages = $this->prepare_messages_payload( $image_base64, $image_type );
+	    $messages = $this->prepare_messages_payload( $image_base64, $image_type );
 
-		$body = array(
-			'messages'      => $messages,
-			'functions'     => array( $this->get_function_definition() ),
-			'function_call' => array( 'name' => 'generate_image_metadata' ),
-			'max_tokens'    => 500,
-			'origin_url'    => esc_url_raw( home_url() ),
-			'license_key'   => $api_key,
-			'product_slug'  => defined( 'OCC_IMAGES_PRODUCT_SLUG' ) ? OCC_IMAGES_PRODUCT_SLUG : 'demo',
-		);
+	    $body = array(
+	        'messages'      => $messages,
+	        'functions'     => array( $this->get_function_definition() ),
+	        'function_call' => array( 'name' => 'generate_image_metadata' ),
+	        'max_tokens'    => 500,
+	        'origin_url'    => esc_url_raw( home_url() ),
+	        'license_key'   => $api_key,
+	        'product_slug'  => defined( 'OCC_IMAGES_PRODUCT_SLUG' ) ? OCC_IMAGES_PRODUCT_SLUG : 'demo',
+	    );
 
-		$response = wp_remote_post(
-			$remote_url,
-			array(
-				'headers' => array(
-					'Content-Type' => 'application/json',
-					'api-key'      => $api_key,
-				),
-				'body'    => wp_json_encode( $body ),
-				'timeout' => 30, // Reduced from 120 to comply with performance standards.
-			)
-		);
+	    $response = wp_remote_post(
+	        $remote_url,
+	        array(
+	            'headers' => array(
+	                'Content-Type' => 'application/json',
+	                'api-key'      => $api_key,
+	            ),
+	            'body'    => wp_json_encode( $body ),
+	            'timeout' => 30, // Reduced from 120 to comply with performance standards.
+	        )
+	    );
 
-		error_log('response: ' . print_r($response, true));
+	    error_log('response: ' . print_r($response, true));
 
-		if ( is_wp_error( $response ) ) {
-			$error_message = $response->get_error_message();
-			return array(
-				'success' => false,
-				'error'   => __( 'Failed to communicate with the metadata service.', 'oneclickcontent-images' ),
-				'details' => $error_message,
-			);
-		}
+	    if ( is_wp_error( $response ) ) {
+	        $error_message = $response->get_error_message();
+	        return array(
+	            'success' => false,
+	            'error'   => __( 'Failed to communicate with the metadata service.', 'oneclickcontent-images' ),
+	            'details' => $error_message,
+	        );
+	    }
 
-		$response_body = wp_remote_retrieve_body( $response );
-		$data          = json_decode( $response_body, true );
-		if ( json_last_error() !== JSON_ERROR_NONE ) {
-			$json_error = json_last_error_msg();
-			return array(
-				'success' => false,
-				'error'   => __( 'Invalid response from metadata service.', 'oneclickcontent-images' ),
-				'details' => $json_error,
-			);
-		}
+	    $response_body = wp_remote_retrieve_body( $response );
+	    $data          = json_decode( $response_body, true );
+	    if ( json_last_error() !== JSON_ERROR_NONE ) {
+	        $json_error = json_last_error_msg();
+	        return array(
+	            'success' => false,
+	            'error'   => __( 'Invalid response from metadata service.', 'oneclickcontent-images' ),
+	            'details' => $json_error,
+	        );
+	    }
 
-		if ( isset( $data['error'] ) ) {
-			return array(
-				'success' => false,
-				'error'   => $data['error'],
-				'limit'   => $data['limit'] ?? null,
-				'message' => $data['message'] ?? '',
-				'ad_url'  => $data['ad_url'] ?? '',
-			);
-		}
+	    if ( isset( $data['error'] ) ) {
+	        return array(
+	            'success' => false,
+	            'error'   => $data['error'],
+	            'limit'   => $data['limit'] ?? null,
+	            'message' => $data['message'] ?? '',
+	            'ad_url'  => $data['ad_url'] ?? '',
+	        );
+	    }
 
-		$processed_metadata = $this->process_and_save_metadata( $image_id, $data, $generate_metadata );
-		if ( $processed_metadata ) {
-			return array(
-				'success'  => true,
-				'metadata' => $processed_metadata,
-			);
-		}
+	    $processed_metadata = $this->process_and_save_metadata( $image_id, $data, $generate_metadata );
+	    if ( $processed_metadata ) {
+	        return array(
+	            'success'  => true,
+	            'metadata' => $processed_metadata,
+	        );
+	    }
 
-		return array(
-			'success' => false,
-			'error'   => __( 'Metadata processing failed.', 'oneclickcontent-images' ),
-		);
+	    return array(
+	        'success' => false,
+	        'error'   => __( 'Metadata processing failed.', 'oneclickcontent-images' ),
+	    );
 	}
 
+	/**
+	 * AJAX handler for generating metadata.
+	 */
+	public function ajax_generate_metadata() {
+	    check_ajax_referer( 'oneclick_images_ajax_nonce', 'nonce' );
+
+	    $image_ids = isset( $_POST['image_ids'] ) ? json_decode( $_POST['image_ids'], true ) : (int) $_POST['image_id'];
+	    $image_ids = is_array( $image_ids ) ? array_map( 'intval', $image_ids ) : [ (int) $image_ids ];
+
+	    $result = $this->oneclick_images_generate_metadata( $image_ids );
+
+	    wp_send_json( $result );
+	}
 	/**
 	 * Determine which metadata fields need generation.
 	 *

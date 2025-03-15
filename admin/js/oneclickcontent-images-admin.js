@@ -10,27 +10,27 @@
  * @license    GPL-2.0+
  * @link       https://oneclickcontent.com
  */
-(function($) {
+(function( $ ) {
     'use strict';
 
-    $(document).ready(function($) {
-
+    $( document ).ready( function( $ ) {
         /**
          * Handles metadata generation for a specific image when the button is clicked.
          */
-        $(document).on('click', '#generate_metadata_button', function(e) {
+        $( document ).on( 'click', '#generate_metadata_button', function( e ) {
             e.preventDefault();
-            const button = $(this);
-            const imageId = button.data('image-id');
-            console.log('[Metadata] Generate button clicked for image ID:', imageId);
-            if (!imageId) {
-                console.error('[Metadata] No image ID found.');
+
+            const button  = $( this );
+            const imageId = button.data( 'image-id' );
+
+            if ( ! imageId ) {
+                showGeneralErrorModal( 'An unexpected error occurred. Please try again.' );
                 return;
             }
-            button.attr('disabled', true).text('Generating...');
-            console.log('[Metadata] Button disabled and loading state set.');
 
-            $.ajax({
+            button.attr( 'disabled', true ).text( 'Generating...' );
+
+            $.ajax( {
                 url: oneclick_images_admin_vars.ajax_url,
                 type: 'POST',
                 data: {
@@ -38,71 +38,59 @@
                     nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
                     image_id: imageId,
                 },
-                success: function(response) {
-                    console.log('[Metadata] AJAX request succeeded with response:', response);
-                    if (typeof response !== 'object') {
-                        console.error('[Metadata] Invalid response format:', response);
-                        showGeneralErrorModal('An unexpected error occurred. Please try again.');
+                success: function( response ) {
+                    if ( typeof response !== 'object' ) {
+                        showGeneralErrorModal( 'An unexpected error occurred. Please try again.' );
                         return;
                     }
 
-                    if (response.success && response.data && response.data.metadata) {
+                    if ( response.success && response.data && response.data.metadata ) {
                         const metadata = response.data.metadata;
 
-                        // Log any error coming back from the metadata generation.
-                        if (metadata.error) {
-                            console.error('[Metadata] Metadata error:', metadata.error);
+                        if ( metadata.error ) {
                             if (
-                                metadata.error.includes('Usage limit reached') ||
-                                metadata.error.includes('Free trial limit reached')
+                                metadata.error.includes( 'Usage limit reached' ) ||
+                                metadata.error.includes( 'Free trial limit reached' )
                             ) {
-                                console.log('[Metadata] Triggering subscription prompt due to usage limit.');
-                                showSubscriptionPrompt(metadata.error, metadata.message, metadata.ad_url);
+                                showSubscriptionPrompt( metadata.error, metadata.message, metadata.ad_url );
                                 return;
                             }
 
-                            if (metadata.error.startsWith('Image validation failed')) {
-                                showImageRejectionModal(metadata.error);
+                            if ( metadata.error.startsWith( 'Image validation failed' ) ) {
+                                showImageRejectionModal( metadata.error );
                                 return;
                             }
 
-                            if (metadata.error.startsWith('No metadata fields require generation')) {
-                                showGeneralErrorModal('The image already has all metadata fields filled, and "Override Metadata" is disabled.');
+                            if ( metadata.error.startsWith( 'No metadata fields require generation' ) ) {
+                                showGeneralErrorModal( 'The image already has all metadata fields filled, and "Override Metadata" is disabled.' );
                                 return;
                             }
                         }
 
-                        // Handle successful metadata generation.
-                        if (metadata.success) {
-                            console.log('[Metadata] Metadata generated successfully:', metadata);
-                            updateMetadataFields(metadata.metadata); // Pass the nested metadata object
+                        if ( metadata.success ) {
+                            updateMetadataFields( metadata.metadata );
                         } else {
-                            console.error('[Metadata] Metadata generation skipped or unexpected issue:', metadata);
-                            showGeneralErrorModal('Metadata generation was skipped or an unexpected issue occurred.');
+                            showGeneralErrorModal( 'Metadata generation was skipped or an unexpected issue occurred.' );
                         }
                     } else {
-                        console.error('[Metadata] Unexpected response structure:', response);
-                        showGeneralErrorModal('An unexpected error occurred.');
+                        showGeneralErrorModal( 'An unexpected error occurred.' );
                     }
                 },
-                error: function(xhr, status, error) {
-                    console.error('[Metadata] AJAX request error:', status, error, xhr.responseText);
-                    showGeneralErrorModal('An error occurred while processing the request. Please try again.');
+                error: function() {
+                    showGeneralErrorModal( 'An error occurred while processing the request. Please try again.' );
                 },
                 complete: function() {
-                    console.log('[Metadata] AJAX request complete. Re-enabling button.');
-                    button.attr('disabled', false).text('Generate Metadata');
+                    button.attr( 'disabled', false ).text( 'Generate Metadata' );
                 },
-            });
-        });
+            } );
+        } );
 
         /**
          * Updates metadata fields in the UI.
          *
          * @param {Object} metadata The metadata object containing title, description, alt_text, and caption.
          */
-        function updateMetadataFields(metadata) {
-            console.log('[UpdateMetadataFields] Updating UI with metadata:', metadata);
+        function updateMetadataFields( metadata ) {
             try {
                 const selectedFields = oneclick_images_admin_vars.selected_fields || {
                     alt_text: true,
@@ -111,90 +99,75 @@
                     description: true,
                 };
 
-                // Update the alt text field
-                const altInputLibrary = $('#attachment-details-two-column-alt-text');
-                const altInputSingle = $('#attachment-details-alt-text'); // Matches media edit screen
-                if (metadata.alt_text && selectedFields.alt_text) {
-                    if (altInputLibrary.length) {
-                        console.log('[UpdateMetadataFields] Alt Text (library) found, current value:', altInputLibrary.val());
-                        altInputLibrary.val(metadata.alt_text).trigger('change');
-                        console.log('[UpdateMetadataFields] Alt Text (library) updated to:', metadata.alt_text);
+                // Update alt text field.
+                const altInputLibrary = $( '#attachment-details-two-column-alt-text' );
+                const altInputSingle  = $( '#attachment-details-alt-text' );
+                if ( metadata.alt_text && selectedFields.alt_text ) {
+                    if ( altInputLibrary.length ) {
+                        altInputLibrary.val( metadata.alt_text ).trigger( 'change' );
                     }
-                    if (altInputSingle.length) {
-                        console.log('[UpdateMetadataFields] Alt Text (single) found, current value:', altInputSingle.val());
-                        altInputSingle.val(metadata.alt_text).trigger('change');
-                        console.log('[UpdateMetadataFields] Alt Text (single) updated to:', metadata.alt_text);
+                    if ( altInputSingle.length ) {
+                        altInputSingle.val( metadata.alt_text ).trigger( 'change' );
                     }
                 }
 
-                // Update the title field
-                const titleInputLibrary = $('#attachment-details-two-column-title');
-                const titleInputSingle = $('#attachment-details-title'); // Matches media edit screen
-                if (metadata.title && selectedFields.title) {
-                    if (titleInputLibrary.length) {
-                        console.log('[UpdateMetadataFields] Title (library) found, current value:', titleInputLibrary.val());
-                        titleInputLibrary.val(metadata.title).trigger('change');
-                        console.log('[UpdateMetadataFields] Title (library) updated to:', metadata.title);
+                // Update title field.
+                const titleInputLibrary = $( '#attachment-details-two-column-title' );
+                const titleInputSingle  = $( '#attachment-details-title' );
+                if ( metadata.title && selectedFields.title ) {
+                    if ( titleInputLibrary.length ) {
+                        titleInputLibrary.val( metadata.title ).trigger( 'change' );
                     }
-                    if (titleInputSingle.length) {
-                        console.log('[UpdateMetadataFields] Title (single) found, current value:', titleInputSingle.val());
-                        titleInputSingle.val(metadata.title).trigger('change');
-                        console.log('[UpdateMetadataFields] Title (single) updated to:', metadata.title);
+                    if ( titleInputSingle.length ) {
+                        titleInputSingle.val( metadata.title ).trigger( 'change' );
                     }
                 }
 
-                // Update the caption field
-                const captionInputLibrary = $('#attachment-details-two-column-caption');
-                const captionInputSingle = $('#attachment-details-caption'); // Matches media edit screen
-                if (metadata.caption && selectedFields.caption) {
-                    if (captionInputLibrary.length) {
-                        console.log('[UpdateMetadataFields] Caption (library) found, current value:', captionInputLibrary.val());
-                        captionInputLibrary.val(metadata.caption).trigger('change');
-                        console.log('[UpdateMetadataFields] Caption (library) updated to:', metadata.caption);
+                // Update caption field.
+                const captionInputLibrary = $( '#attachment-details-two-column-caption' );
+                const captionInputSingle  = $( '#attachment-details-caption' );
+                if ( metadata.caption && selectedFields.caption ) {
+                    if ( captionInputLibrary.length ) {
+                        captionInputLibrary.val( metadata.caption ).trigger( 'change' );
                     }
-                    if (captionInputSingle.length) {
-                        console.log('[UpdateMetadataFields] Caption (single) found, current value:', captionInputSingle.val());
-                        captionInputSingle.val(metadata.caption).trigger('change');
-                        console.log('[UpdateMetadataFields] Caption (single) updated to:', metadata.caption);
+                    if ( captionInputSingle.length ) {
+                        captionInputSingle.val( metadata.caption ).trigger( 'change' );
                     }
                 }
 
-                // Update the description field
-                const descriptionInputLibrary = $('#attachment-details-two-column-description');
-                const descriptionInputSingle = $('#attachment-details-description'); // Matches media edit screen
-                if (metadata.description && selectedFields.description) {
-                    if (descriptionInputLibrary.length) {
-                        console.log('[UpdateMetadataFields] Description (library) found, current value:', descriptionInputLibrary.val());
-                        descriptionInputLibrary.val(metadata.description).trigger('change');
-                        console.log('[UpdateMetadataFields] Description (library) updated to:', metadata.description);
+                // Update description field.
+                const descriptionInputLibrary = $( '#attachment-details-two-column-description' );
+                const descriptionInputSingle  = $( '#attachment-details-description' );
+                if ( metadata.description && selectedFields.description ) {
+                    if ( descriptionInputLibrary.length ) {
+                        descriptionInputLibrary.val( metadata.description ).trigger( 'change' );
                     }
-                    if (descriptionInputSingle.length) {
-                        console.log('[UpdateMetadataFields] Description (single) found, current value:', descriptionInputSingle.val());
-                        descriptionInputSingle.val(metadata.description).trigger('change');
-                        console.log('[UpdateMetadataFields] Description (single) updated to:', metadata.description);
+                    if ( descriptionInputSingle.length ) {
+                        descriptionInputSingle.val( metadata.description ).trigger( 'change' );
                     }
                 }
 
-                // Trigger change and input events on all inputs and textareas
-                $('input, textarea').trigger('change').trigger('input');
-                console.log('[UpdateMetadataFields] Metadata fields updated successfully.');
-            } catch (err) {
-                console.error('[UpdateMetadataFields] Error updating metadata fields:', err);
+                $( 'input, textarea' ).trigger( 'change' ).trigger( 'input' );
+            } catch ( err ) {
+                // Silent catch for robustness; errors are not displayed to user.
             }
         }
 
-        // Expose the function globally in case other scripts need it
+        // Expose updateMetadataFields globally.
         window.updateMetadataFields = updateMetadataFields;
 
         /**
-         * Displays a subscription prompt modal for when usage limits are reached.
+         * Displays a subscription prompt modal for usage limits.
+         *
+         * @param {string} error   The error message from the server.
+         * @param {string} message Additional message from the server.
+         * @param {string} url     The URL for subscription plans.
          */
-        function showSubscriptionPrompt(error, message, url) {
-            console.log('[Modal] Showing subscription prompt modal with error:', error, 'message:', message, 'url:', url);
-            const licenseStatus = oneclick_images_admin_vars.license_status;
+        function showSubscriptionPrompt( error, message, url ) {
+            const licenseStatus         = oneclick_images_admin_vars.license_status;
             let subscriptionOptionsHtml = '';
 
-            if (licenseStatus === 'active') {
+            if ( 'active' === licenseStatus ) {
                 subscriptionOptionsHtml = `
                     <div class="occ-subscription-extra">
                         <p>You've reached your image limit. Need more? Buy additional credits:</p>
@@ -254,24 +227,28 @@
                     </div>
                 </div>
             `;
-            $('body').append(modalHtml);
-            const modal = $('#occ-subscription-modal');
-            const modalContent = modal.find('.occ-subscription-modal-content');
-            modal.removeAttr('aria-hidden');
+
+            $( 'body' ).append( modalHtml );
+            const modal       = $( '#occ-subscription-modal' );
+            const modalContent = modal.find( '.occ-subscription-modal-content' );
+
+            modal.removeAttr( 'aria-hidden' );
             modalContent.focus();
             modal.fadeIn();
-            $('.occ-subscription-modal-close, .occ-subscription-modal-overlay').on('click', function() {
-                modal.fadeOut(function() {
-                    $(this).remove();
-                });
-            });
-            $(document).on('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    modal.fadeOut(function() {
-                        $(this).remove();
-                    });
+
+            $( '.occ-subscription-modal-close, .occ-subscription-modal-overlay' ).on( 'click', function() {
+                modal.fadeOut( function() {
+                    $( this ).remove();
+                } );
+            } );
+
+            $( document ).on( 'keydown', function( e ) {
+                if ( 'Escape' === e.key ) {
+                    modal.fadeOut( function() {
+                        $( this ).remove();
+                    } );
                 }
-            });
+            } );
         }
 
         /**
@@ -281,35 +258,35 @@
          * @param {string}      message The message to display.
          * @param {string}      type    The type of message ('success', 'error', or 'info').
          */
-        function showSavingMessage(element, message, type) {
+        function showSavingMessage( element, message, type ) {
             let $label = null;
 
-            if ($(element).hasClass('metadata-field-checkbox')) {
-                $label = $(element).next('label');
-            } else if ($(element).next('label').length) {
-                $label = $(element).next('label');
-            } else if ($(element).closest('tr').length) {
-                $label = $(element).closest('tr').find('th label');
-            } else if ($(element).closest('th').length) {
-                $label = $(element).closest('th').find('label');
-            } else if ($(element).attr('id')) {
-                $label = $(`label[for="${$(element).attr('id')}"]`);
+            if ( $( element ).hasClass( 'metadata-field-checkbox' ) ) {
+                $label = $( element ).next( 'label' );
+            } else if ( $( element ).next( 'label' ).length ) {
+                $label = $( element ).next( 'label' );
+            } else if ( $( element ).closest( 'tr' ).length ) {
+                $label = $( element ).closest( 'tr' ).find( 'th label' );
+            } else if ( $( element ).closest( 'th' ).length ) {
+                $label = $( element ).closest( 'th' ).find( 'label' );
+            } else if ( $( element ).attr( 'id' ) ) {
+                $label = $( `label[for="${$( element ).attr( 'id' )}"]` );
             }
 
-            if (!$label || !$label.length) {
+            if ( ! $label || ! $label.length ) {
                 return;
             }
 
-            const messageClass = type === 'success' ? 'saving-success' : 'saving-error';
-            $label.find('.saving-message').remove();
-            $label.append(`<span class="saving-message ${messageClass}">${message}</span>`);
+            const messageClass = 'success' === type ? 'saving-success' : 'saving-error';
+            $label.find( '.saving-message' ).remove();
+            $label.append( `<span class="saving-message ${messageClass}">${message}</span>` );
 
-            if (message !== 'Saving...') {
-                setTimeout(() => {
-                    $label.find('.saving-message').fadeOut(400, function() {
-                        $(this).remove();
-                    });
-                }, 2000);
+            if ( 'Saving...' !== message ) {
+                setTimeout( () => {
+                    $label.find( '.saving-message' ).fadeOut( 400, function() {
+                        $( this ).remove();
+                    } );
+                }, 2000 );
             }
         }
 
@@ -319,34 +296,35 @@
          * @param {HTMLElement} element The input element triggering the save.
          * @return {Promise} A Promise resolving on success or rejecting on failure.
          */
-        function promiseSaveSettings(element) {
-            return new Promise((resolve, reject) => {
-                const formData = $('#oneclick_images_settings_form').serialize();
-                showSavingMessage(element, 'Saving...', 'info');
+        function promiseSaveSettings( element ) {
+            return new Promise( ( resolve, reject ) => {
+                const formData = $( '#oneclick_images_settings_form' ).serialize();
 
-                $.ajax({
+                showSavingMessage( element, 'Saving...', 'info' );
+
+                $.ajax( {
                     url: oneclick_images_admin_vars.ajax_url,
                     type: 'POST',
                     data: {
                         action: 'oneclick_images_save_settings',
                         _ajax_nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
-                        settings: formData
+                        settings: formData,
                     },
-                    success: function(response) {
-                        if (response.success) {
-                            showSavingMessage(element, 'Saved!', 'success');
+                    success: function( response ) {
+                        if ( response.success ) {
+                            showSavingMessage( element, ' Saved!', 'success' );
                             resolve();
                         } else {
-                            showSavingMessage(element, 'Failed to Save!', 'error');
-                            reject(new Error('Failed to save settings'));
+                            showSavingMessage( element, 'Failed to Save!', 'error' );
+                            reject( new Error( 'Failed to save settings' ) );
                         }
                     },
-                    error: function(xhr, status, error) {
-                        showSavingMessage(element, 'Error occurred!', 'error');
-                        reject(error);
-                    }
-                });
-            });
+                    error: function() {
+                        showSavingMessage( element, 'Error occurred!', 'error' );
+                        reject( new Error( 'AJAX request failed' ) );
+                    },
+                } );
+            } );
         }
 
         /**
@@ -355,40 +333,41 @@
          * @param {string} status  The license status ('active', 'invalid', etc.).
          * @param {string} message The message to display.
          */
-        function updateLicenseStatusUI(status, message) {
-            console.log('[UI] Updating license status UI to', status, 'with message:', message);
-            const $statusLabel = $('#license_status_label');
-            const $statusMessage = $('#license_status_message');
-            const statusColor = status === 'active' ? 'green' : status === 'validating' ? 'orange' : 'red';
-            const statusText = status === 'active' ? 'Valid' : status === 'invalid' ? 'Invalid' : 'Checking...';
-            $statusLabel.text(statusText).css('color', statusColor);
-            $statusMessage.text(message).css('color', statusColor);
+        function updateLicenseStatusUI( status, message ) {
+            const $statusLabel   = $( '#license_status_label' );
+            const $statusMessage = $( '#license_status_message' );
+            const statusColor    = 'active' === status ? 'green' : 'validating' === status ? 'orange' : 'red';
+            const statusText     = 'active' === status ? 'Valid' : 'invalid' === status ? 'Invalid' : 'Checking...';
+
+            $statusLabel.text( statusText ).css( 'color', statusColor );
+            $statusMessage.text( message ).css( 'color', statusColor );
         }
 
         /**
          * Fetch the current license status via AJAX.
          */
         function fetchLicenseStatus() {
-            updateLicenseStatusUI('validating', 'Checking license status...');
-            $.ajax({
+            updateLicenseStatusUI( 'validating', 'Checking license status...' );
+
+            $.ajax( {
                 url: oneclick_images_admin_vars.ajax_url,
                 type: 'POST',
                 data: {
                     action: 'oneclick_images_get_license_status',
-                    nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce
+                    nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
                 },
-                success: function(response) {
-                    if (response.success) {
-                        const status = response.data.status === 'active' ? 'active' : 'invalid';
-                        updateLicenseStatusUI(status, response.data.message);
+                success: function( response ) {
+                    if ( response.success ) {
+                        const status = 'active' === response.data.status ? 'active' : 'invalid';
+                        updateLicenseStatusUI( status, response.data.message );
                     } else {
-                        updateLicenseStatusUI('invalid', response.data.message || 'Unable to fetch license status.');
+                        updateLicenseStatusUI( 'invalid', response.data.message || 'Unable to fetch license status.' );
                     }
                 },
                 error: function() {
-                    updateLicenseStatusUI('error', 'An error occurred while fetching the license status.');
-                }
-            });
+                    updateLicenseStatusUI( 'error', 'An error occurred while fetching the license status.' );
+                },
+            } );
         }
 
         /**
@@ -396,8 +375,7 @@
          *
          * @param {string} htmlContent The HTML content to display in the modal.
          */
-        function showLimitPrompt(htmlContent) {
-            console.log('[Modal] Showing limit prompt modal');
+        function showLimitPrompt( htmlContent ) {
             const modalHtml = `
                 <div id="occ-limit-modal" class="occ-modal" role="dialog" aria-labelledby="limit-modal-title">
                     <div class="occ-modal-overlay"></div>
@@ -407,25 +385,27 @@
                     </div>
                 </div>
             `;
-            $('body').append(modalHtml);
 
-            const modal = $('#occ-limit-modal');
-            modal.removeAttr('aria-hidden');
-            modal.find('.occ-modal-content').focus();
+            $( 'body' ).append( modalHtml );
+
+            const modal = $( '#occ-limit-modal' );
+            modal.removeAttr( 'aria-hidden' );
+            modal.find( '.occ-modal-content' ).focus();
             modal.fadeIn();
 
-            modal.find('.occ-modal-close, .occ-modal-overlay').on('click', function() {
-                modal.fadeOut(function() {
-                    $(this).remove();
-                });
-            });
-            $(document).on('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    modal.fadeOut(function() {
-                        $(this).remove();
-                    });
+            modal.find( '.occ-modal-close, .occ-modal-overlay' ).on( 'click', function() {
+                modal.fadeOut( function() {
+                    $( this ).remove();
+                } );
+            } );
+
+            $( document ).on( 'keydown', function( e ) {
+                if ( 'Escape' === e.key ) {
+                    modal.fadeOut( function() {
+                        $( this ).remove();
+                    } );
                 }
-            });
+            } );
         }
 
         /**
@@ -433,8 +413,7 @@
          *
          * @param {string} message The error message to display.
          */
-        function showImageRejectionModal(message) {
-            console.log('[Modal] Showing image rejection modal with message:', message);
+        function showImageRejectionModal( message ) {
             const modalHtml = `
                 <div id="occ-image-rejection-modal" class="occ-modal" role="dialog" aria-labelledby="image-rejection-modal-title">
                     <div class="occ-modal-overlay"></div>
@@ -446,23 +425,27 @@
                     </div>
                 </div>
             `;
-            $('body').append(modalHtml);
-            const modal = $('#occ-image-rejection-modal');
-            modal.removeAttr('aria-hidden');
-            modal.find('.occ-modal-content').focus();
+
+            $( 'body' ).append( modalHtml );
+            const modal = $( '#occ-image-rejection-modal' );
+
+            modal.removeAttr( 'aria-hidden' );
+            modal.find( '.occ-modal-content' ).focus();
             modal.fadeIn();
-            modal.find('.occ-modal-close, .occ-modal-overlay, .occ-close-modal').on('click', function() {
-                modal.fadeOut(function() {
-                    $(this).remove();
-                });
-            });
-            $(document).on('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    modal.fadeOut(function() {
-                        $(this).remove();
-                    });
+
+            modal.find( '.occ-modal-close, .occ-modal-overlay, .occ-close-modal' ).on( 'click', function() {
+                modal.fadeOut( function() {
+                    $( this ).remove();
+                } );
+            } );
+
+            $( document ).on( 'keydown', function( e ) {
+                if ( 'Escape' === e.key ) {
+                    modal.fadeOut( function() {
+                        $( this ).remove();
+                    } );
                 }
-            });
+            } );
         }
 
         /**
@@ -470,8 +453,7 @@
          *
          * @param {string} message The error message to display.
          */
-        function showGeneralErrorModal(message) {
-            console.log('[Modal] Showing general error modal with message:', message);
+        function showGeneralErrorModal( message ) {
             const modalHtml = `
                 <div id="occ-general-error-modal" class="occ-modal" role="dialog" aria-labelledby="general-error-modal-title">
                     <div class="occ-modal-overlay"></div>
@@ -488,54 +470,49 @@
                     </div>
                 </div>
             `;
-            $('body').append(modalHtml);
-            const modal = $('#occ-general-error-modal');
+
+            $( 'body' ).append( modalHtml );
+            const modal = $( '#occ-general-error-modal' );
+
             modal.fadeIn();
-            modal.find('.occ-modal-close, .occ-modal-overlay, .occ-close-modal').on('click', function() {
-                modal.fadeOut(() => modal.remove());
-            });
-            $(document).on('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    modal.fadeOut(() => modal.remove());
+
+            modal.find( '.occ-modal-close, .occ-modal-overlay, .occ-close-modal' ).on( 'click', function() {
+                modal.fadeOut( () => modal.remove() );
+            } );
+
+            $( document ).on( 'keydown', function( e ) {
+                if ( 'Escape' === e.key ) {
+                    modal.fadeOut( () => modal.remove() );
                 }
-            });
+            } );
         }
 
-        // Expose modal functions globally
+        // Expose modal functions globally.
         window.showImageRejectionModal = showImageRejectionModal;
-        window.showGeneralErrorModal = showGeneralErrorModal;
-        window.showLimitPrompt = showLimitPrompt;
-        window.showSubscriptionPrompt = showSubscriptionPrompt;
+        window.showGeneralErrorModal   = showGeneralErrorModal;
+        window.showLimitPrompt         = showLimitPrompt;
+        window.showSubscriptionPrompt  = showSubscriptionPrompt;
 
-        // Event listeners for settings changes
-        $('#oneclick_images_settings_form input[type="checkbox"], #oneclick_images_settings_form select').on('change', function() {
+        // Event listeners for settings changes.
+        $( '#oneclick_images_settings_form input, #oneclick_images_settings_form select' ).on( 'change', function() {
             const element = this;
-            promiseSaveSettings(element).catch((error) => {
-                console.error('[OneClickContent] Error during saveSettings:', error);
-            });
-        });
+            promiseSaveSettings( element ).catch( () => {
+                // Silent catch for robustness.
+            } );
+        } );
 
-        $('#oneclick_images_settings_form input, #oneclick_images_settings_form select').on('change', function() {
+        $( '#oneclick_images_license_key' ).on( 'keyup', function() {
             const element = this;
-            promiseSaveSettings(element).catch((error) => {
-                console.error('[OneClickContent] Error during saveSettings:', error);
-            });
-        });
+            promiseSaveSettings( element )
+                .then( () => fetchLicenseStatus() )
+                .catch( () => {
+                    // Silent catch for robustness.
+                } );
+        } );
 
-        $('#oneclick_images_license_key').on('keyup', function() {
-            const element = this;
-            promiseSaveSettings(element)
-                .then(() => fetchLicenseStatus())
-                .catch((error) => {
-                    console.error('[OneClickContent] Error during sequential execution:', error);
-                });
-        });
-
-        // Trigger license validation on button click
-        $('#validate_license_button').on('click', function() {
+        // Trigger license validation on button click.
+        $( '#validate_license_button' ).on( 'click', function() {
             fetchLicenseStatus();
-        });
-
-    });
-
-})(jQuery);
+        } );
+    } );
+})( jQuery );

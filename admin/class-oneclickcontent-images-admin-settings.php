@@ -98,10 +98,10 @@ class OneClickContent_Images_Admin_Settings {
 				'type'              => 'array',
 				'sanitize_callback' => array( $this, 'oneclick_images_sanitize_metadata_fields' ),
 				'default'           => array(
-					'title'       => false,
-					'description' => false,
-					'alt_text'    => false,
-					'caption'     => false,
+					'title'       => '0',
+					'description' => '0',
+					'alt_text'    => '0',
+					'caption'     => '0',
 				),
 			)
 		);
@@ -288,11 +288,9 @@ class OneClickContent_Images_Admin_Settings {
 		);
 
 		foreach ( $fields as $key => $label ) {
-			// Retrieve the output of checked() without escaping first.
-			$checked = isset( $options[ $key ] ) ? checked( 1, 1, false ) : '';
-			// Then explicitly escape it when outputting.
+			$checked = ( isset( $options[ $key ] ) && '1' === $options[ $key ] ) ? 'checked="checked"' : '';
 			printf(
-				'<input type="checkbox" class="metadata-field-checkbox" id="oneclick_images_metadata_fields_%s" name="oneclick_images_metadata_fields[%s]" value="1" %s />',
+				'<input type="checkbox" class="metadata-field-checkbox" id="oneclick_images_metadata_fields_%s" name="oneclick_images_metadata_fields[%s]" value="1" %s>',
 				esc_attr( $key ),
 				esc_attr( $key ),
 				esc_attr( $checked )
@@ -313,13 +311,11 @@ class OneClickContent_Images_Admin_Settings {
 	 * @return array $valid The sanitized fields array.
 	 */
 	public function oneclick_images_sanitize_metadata_fields( $input ) {
-		$valid  = array();
 		$fields = array( 'title', 'description', 'alt_text', 'caption' );
+		$valid  = array();
 
 		foreach ( $fields as $field ) {
-			if ( isset( $input[ $field ] ) ) {
-				$valid[ $field ] = 1;
-			}
+			$valid[ $field ] = isset( $input[ $field ] ) && '1' === $input[ $field ] ? '1' : '0';
 		}
 
 		return $valid;
@@ -375,7 +371,6 @@ class OneClickContent_Images_Admin_Settings {
 	 * @return void Responds with a JSON success or error message.
 	 */
 	public function oneclick_images_save_settings() {
-		// Sanitize and verify nonce.
 		$ajax_nonce = isset( $_POST['_ajax_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_ajax_nonce'] ) ) : '';
 		if ( ! $ajax_nonce || ! wp_verify_nonce( $ajax_nonce, 'oneclick_images_ajax_nonce' ) ) {
 			wp_send_json_error( __( 'Invalid nonce.', 'oneclickcontent-images' ) );
@@ -386,25 +381,33 @@ class OneClickContent_Images_Admin_Settings {
 			wp_send_json_error( __( 'Settings data missing.', 'oneclickcontent-images' ) );
 			return;
 		}
-
-		// Sanitize the settings input.
 		$settings_input = sanitize_text_field( wp_unslash( $_POST['settings'] ) );
 		parse_str( $settings_input, $settings );
 
-		// Sanitize and update options.
-		if ( isset( $settings['oneclick_images_metadata_fields'] ) && is_array( $settings['oneclick_images_metadata_fields'] ) ) {
-			$sanitized_fields = array_map( 'sanitize_text_field', $settings['oneclick_images_metadata_fields'] );
-			update_option( 'oneclick_images_metadata_fields', $sanitized_fields );
+		$fields          = array( 'title', 'description', 'alt_text', 'caption' );
+		$metadata_fields = array();
+
+		foreach ( $fields as $field ) {
+			$is_checked                = ( isset( $settings['oneclick_images_metadata_fields'][ $field ] ) && '1' === $settings['oneclick_images_metadata_fields'][ $field ] );
+			$metadata_fields[ $field ] = $is_checked ? '1' : '0';
 		}
 
-		update_option( 'oneclick_images_auto_add_details', isset( $settings['oneclick_images_auto_add_details'] ) ? 1 : 0 );
-		update_option( 'oneclick_images_override_metadata', isset( $settings['oneclick_images_override_metadata'] ) ? 1 : 0 );
-		update_option( 'oneclick_images_language', sanitize_text_field( $settings['oneclick_images_language'] ) );
-		update_option( 'oneclick_images_license_key', sanitize_text_field( $settings['oneclick_images_license_key'] ) );
+		update_option( 'oneclick_images_metadata_fields', $metadata_fields );
+
+		$auto_add = ( isset( $settings['oneclick_images_auto_add_details'] ) ) ? '1' : '0';
+		update_option( 'oneclick_images_auto_add_details', $auto_add );
+
+		$override = ( isset( $settings['oneclick_images_override_metadata'] ) ) ? '1' : '0';
+		update_option( 'oneclick_images_override_metadata', $override );
+
+		$language = ( isset( $settings['oneclick_images_language'] ) ) ? sanitize_text_field( $settings['oneclick_images_language'] ) : 'en';
+		update_option( 'oneclick_images_language', $language );
+
+		$license = ( isset( $settings['oneclick_images_license_key'] ) ) ? sanitize_text_field( $settings['oneclick_images_license_key'] ) : '';
+		update_option( 'oneclick_images_license_key', $license );
 
 		wp_send_json_success();
 	}
-
 	/**
 	 * Generate metadata for an image using the OneClickContent API.
 	 *

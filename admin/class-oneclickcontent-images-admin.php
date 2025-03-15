@@ -210,12 +210,12 @@ class OneClickContent_Images_Admin {
 	 */
 	public function enqueue_styles() {
 		$screen = get_current_screen();
-
 		if ( ! $screen instanceof WP_Screen ) {
 			return; // Exit early if screen is not available.
 		}
 
 		$allowed_screens = array( 'upload', 'post', 'post-new', 'toplevel_page_oneclickcontent-images' );
+
 		if ( in_array( $screen->base, $allowed_screens, true ) ) {
 			wp_enqueue_style(
 				$this->plugin_name,
@@ -225,21 +225,36 @@ class OneClickContent_Images_Admin {
 				'all'
 			);
 
-			// DataTables CSS for bulk edit tab, safely accessing $_GET['tab'].
-			$tab = filter_input( INPUT_GET, 'tab', FILTER_SANITIZE_STRING ) ?? '';
-			if ( 'toplevel_page_oneclickcontent-images' === $screen->id && ! empty( $tab ) && 'bulk-edit' === sanitize_key( $tab ) ) {
-				wp_enqueue_style(
-					$this->plugin_name . '-datatables',
-					plugin_dir_url( __FILE__ ) . 'css/jquery.dataTables.min.css',
-					array(),
-					'1.13.1'
-				);
-				wp_enqueue_style(
-					$this->plugin_name . '-datatables-buttons',
-					plugin_dir_url( __FILE__ ) . 'css/buttons.dataTables.min.css',
-					array( $this->plugin_name . '-datatables' ),
-					'2.4.2'
-				);
+			// Only proceed for the plugin's admin page.
+			if ( 'toplevel_page_oneclickcontent-images' === $screen->id ) {
+				// Safely get the current tab.
+				// Note: This is just a UI state parameter, not processing form submissions,
+				// so nonce verification is not necessary.
+				$tab = '';
+				if ( isset( $_GET['tab'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- UI state parameter only.
+					$tab = sanitize_key( wp_unslash( $_GET['tab'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- UI state parameter only.
+				}
+
+				// Default to 'general' tab if none specified.
+				if ( empty( $tab ) ) {
+					$tab = 'general';
+				}
+
+				// Only load DataTables CSS for bulk-edit tab.
+				if ( 'bulk-edit' === $tab ) {
+					wp_enqueue_style(
+						$this->plugin_name . '-datatables',
+						plugin_dir_url( __FILE__ ) . 'css/jquery.dataTables.min.css',
+						array(),
+						'1.13.1'
+					);
+					wp_enqueue_style(
+						$this->plugin_name . '-datatables-buttons',
+						plugin_dir_url( __FILE__ ) . 'css/buttons.dataTables.min.css',
+						array( $this->plugin_name . '-datatables' ),
+						'2.4.2'
+					);
+				}
 			}
 		}
 	}

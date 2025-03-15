@@ -1,211 +1,259 @@
-jQuery(document).ready(function($) {
+/**
+ * Bulk generation JavaScript functionality for OneClickContent Image Details plugin.
+ *
+ * @package    One_Click_Images
+ * @subpackage One_Click_Images/admin/js
+ * @author     OneClickContent <support@oneclickcontent.com>
+ * @since      1.0.0
+ * @copyright  2025 OneClickContent
+ * @license    GPL-2.0+
+ * @link       https://oneclickcontent.com
+ */
+jQuery( document ).ready( function( $ ) {
     'use strict';
-    var stopBulkGeneration = false;
 
-    // Click handler for both "Generate All Metadata" buttons
-    $('#generate-all-metadata-settings, #generate-all-metadata').on('click', function() {
-        var $button = $(this);
-        var isSettingsTab = $button.attr('id') === 'generate-all-metadata-settings';
-        var statusContainer = isSettingsTab ? '#bulk-generate-status-settings' : '#bulk-generate-status';
-        var stopButton = isSettingsTab ? '#stop-bulk-generation-settings' : '#stop-bulk-generation';
-        var progressBar = isSettingsTab ? '#bulk-generate-progress-bar-settings' : '#bulk-generate-progress-bar';
-        var messageContainer = isSettingsTab ? '#bulk-generate-message-settings' : '#bulk-generate-message';
+    let stopBulkGeneration = false;
 
-        // Show the modal
-        $('#bulk-generate-modal').show();
+    /**
+     * Handle click events for "Generate All Metadata" buttons.
+     */
+    $( '#generate-all-metadata-settings, #generate-all-metadata' ).on( 'click', function() {
+        const $button        = $( this );
+        const isSettingsTab  = 'generate-all-metadata-settings' === $button.attr( 'id' );
+        const statusContainer = isSettingsTab ? '#bulk-generate-status-settings' : '#bulk-generate-status';
+        const stopButton      = isSettingsTab ? '#stop-bulk-generation-settings' : '#stop-bulk-generation';
+        const progressBar     = isSettingsTab ? '#bulk-generate-progress-bar-settings' : '#bulk-generate-progress-bar';
+        const messageContainer = isSettingsTab ? '#bulk-generate-message-settings' : '#bulk-generate-message';
 
-        // Check the override_metadata option
-        $.ajax({
+        $( '#bulk-generate-modal' ).show();
+
+        // Check override_metadata option.
+        $.ajax( {
             url: oneclick_images_admin_vars.ajax_url,
             type: 'POST',
             data: {
                 action: 'oneclick_images_check_override_metadata',
-                nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce
+                nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
             },
-            success: function(response) {
-                if (response.success && (response.data.override === true || response.data.override === "1")) {
-                    $('#bulk-generate-warning').show();
+            success: function( response ) {
+                if ( response.success && ( true === response.data.override || '1' === response.data.override ) ) {
+                    $( '#bulk-generate-warning' ).show();
                 } else {
-                    $('#bulk-generate-warning').hide();
+                    $( '#bulk-generate-warning' ).hide();
                 }
             },
-            error: function(xhr, status, error) {
-                console.error('AJAX Error:', status, error, xhr.responseText);
-                $('#bulk-generate-warning').hide();
-            }
-        });
+            error: function() {
+                $( '#bulk-generate-warning' ).hide();
+            },
+        } );
 
-        // Handle modal buttons
-        $('#confirm-bulk-generate').off('click').on('click', function() {
-            $('#bulk-generate-modal').hide();
-            startBulkGeneration($button, statusContainer, stopButton, progressBar, messageContainer);
-        });
+        // Handle modal buttons.
+        $( '#confirm-bulk-generate' ).off( 'click' ).on( 'click', function() {
+            $( '#bulk-generate-modal' ).hide();
+            startBulkGeneration( $button, statusContainer, stopButton, progressBar, messageContainer );
+        } );
 
-        $('#cancel-bulk-generate').off('click').on('click', function() {
-            $('#bulk-generate-modal').hide();
-        });
-    });
+        $( '#cancel-bulk-generate' ).off( 'click' ).on( 'click', function() {
+            $( '#bulk-generate-modal' ).hide();
+        } );
+    } );
 
-    // Click handler for the Stop buttons
-    $('#stop-bulk-generation-settings, #stop-bulk-generation').on('click', function() {
+    /**
+     * Handle click events for "Stop" buttons.
+     */
+    $( '#stop-bulk-generation-settings, #stop-bulk-generation' ).on( 'click', function() {
         stopBulkGeneration = true;
-        var isSettingsTab = $(this).attr('id') === 'stop-bulk-generation-settings';
-        var messageContainer = isSettingsTab ? '#bulk-generate-message-settings' : '#bulk-generate-message';
-        var generateButton = isSettingsTab ? '#generate-all-metadata-settings' : '#generate-all-metadata';
-        
-        $(messageContainer).text('Generation stopped.');
-        $(this).hide();
-        $(generateButton).prop('disabled', false).text('Generate All Metadata');
-    });
+        const isSettingsTab   = 'stop-bulk-generation-settings' === $( this ).attr( 'id' );
+        const messageContainer = isSettingsTab ? '#bulk-generate-message-settings' : '#bulk-generate-message';
+        const generateButton  = isSettingsTab ? '#generate-all-metadata-settings' : '#generate-all-metadata';
 
-    function startBulkGeneration($button, statusContainer, stopButton, progressBar, messageContainer) {
+        $( messageContainer ).text( 'Generation stopped.' );
+        $( this ).hide();
+        $( generateButton ).prop( 'disabled', false ).text( 'Generate All Metadata' );
+    } );
+
+    /**
+     * Start the bulk metadata generation process.
+     *
+     * @param {jQuery} $button         The button element.
+     * @param {string} statusContainer The status container selector.
+     * @param {string} stopButton      The stop button selector.
+     * @param {string} progressBar     The progress bar selector.
+     * @param {string} messageContainer The message container selector.
+     */
+    function startBulkGeneration( $button, statusContainer, stopButton, progressBar, messageContainer ) {
         stopBulkGeneration = false;
-        $(stopButton).show();
-        $button.prop('disabled', true).html('<span class="generate-spinner"></span> Generating...');
-        $(statusContainer).show();
-        $(progressBar).css('width', '0%');
-        $(messageContainer).text('');
+        $( stopButton ).show();
+        $( $button ).prop( 'disabled', true ).html( '<span class="generate-spinner"></span> Generating...' );
+        $( statusContainer ).show();
+        $( progressBar ).css( 'width', '0%' );
+        $( messageContainer ).text( '' );
 
-        $.ajax({
+        $.ajax( {
             url: oneclick_images_admin_vars.ajax_url,
             type: 'POST',
             data: {
                 action: 'oneclick_images_get_all_media_ids',
-                nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce
+                nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
             },
-            success: function(response) {
-                if (response.success && response.data.ids.length > 0) {
-                    processBulkGeneration(response.data.ids, 0, $button, response.data.ids.length, statusContainer, stopButton, progressBar, messageContainer);
+            success: function( response ) {
+                if ( response.success && response.data.ids.length > 0 ) {
+                    processBulkGeneration( response.data.ids, 0, $button, response.data.ids.length, statusContainer, stopButton, progressBar, messageContainer );
                 } else {
-                    $(messageContainer).text('No media items found.');
-                    $button.prop('disabled', false).text('Generate All Metadata');
-                    $(stopButton).hide();
+                    $( messageContainer ).text( 'No media items found.' );
+                    $( $button ).prop( 'disabled', false ).text( 'Generate All Metadata' );
+                    $( stopButton ).hide();
                 }
             },
-            error: function(xhr) {
-                $(messageContainer).text('Error fetching media IDs: ' + xhr.responseText);
-                $button.prop('disabled', false).text('Generate All Metadata');
-                $(stopButton).hide();
-            }
-        });
+            error: function( xhr ) {
+                $( messageContainer ).text( 'Error fetching media IDs: ' + xhr.responseText );
+                $( $button ).prop( 'disabled', false ).text( 'Generate All Metadata' );
+                $( stopButton ).hide();
+            },
+        } );
     }
 
-    function processBulkGeneration(ids, index, $button, total, statusContainer, stopButton, progressBar, messageContainer) {
-        if (stopBulkGeneration) {
-            $(messageContainer).text('Generation stopped.');
-            $(stopButton).hide();
-            $button.prop('disabled', false).text('Generate All Metadata');
+    /**
+     * Process bulk metadata generation recursively.
+     *
+     * @param {Array}  ids             Array of media IDs.
+     * @param {number} index           Current index in the array.
+     * @param {jQuery} $button         The button element.
+     * @param {number} total           Total number of items.
+     * @param {string} statusContainer The status container selector.
+     * @param {string} stopButton      The stop button selector.
+     * @param {string} progressBar     The progress bar selector.
+     * @param {string} messageContainer The message container selector.
+     */
+    function processBulkGeneration( ids, index, $button, total, statusContainer, stopButton, progressBar, messageContainer ) {
+        if ( stopBulkGeneration ) {
+            $( messageContainer ).text( 'Generation stopped.' );
+            $( stopButton ).hide();
+            $( $button ).prop( 'disabled', false ).text( 'Generate All Metadata' );
             return;
         }
 
-        if (index >= ids.length) {
-            $(messageContainer).text('All metadata generation complete!');
-            $(progressBar).css('width', '100%');
-            $button.prop('disabled', false).text('Generate All Metadata');
-            $(stopButton).hide();
+        if ( index >= ids.length ) {
+            $( messageContainer ).text( 'All metadata generation complete!' );
+            $( progressBar ).css( 'width', '100%' );
+            $( $button ).prop( 'disabled', false ).text( 'Generate All Metadata' );
+            $( stopButton ).hide();
             fetchUsageStatus();
             return;
         }
 
-        var imageId = ids[index];
-        var percent = Math.round(((index + 1) / total) * 100);
-        $(messageContainer).text(`Processing image ${index + 1} of ${total} (ID: ${imageId})`);
-        $(progressBar).css('width', percent + '%');
+        const imageId = ids[ index ];
+        const percent = Math.round( ( ( index + 1 ) / total ) * 100 );
+        $( messageContainer ).text( `Processing image ${index + 1} of ${total} (ID: ${imageId})` );
+        $( progressBar ).css( 'width', percent + '%' );
 
-        $.ajax({
+        $.ajax( {
             url: oneclick_images_admin_vars.ajax_url,
             type: 'POST',
             data: {
                 action: 'oneclick_images_generate_metadata',
                 nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
-                image_id: imageId
+                image_id: imageId,
             },
-            success: function(response) {
-                if (response.success && response.data && response.data.metadata) {
-                    renderMetadataUI(imageId, response.data.metadata, statusContainer);
+            success: function( response ) {
+                if ( response.success && response.data && response.data.metadata ) {
+                    renderMetadataUI( imageId, response.data.metadata, statusContainer );
                 }
                 fetchUsageStatus();
-                processBulkGeneration(ids, index + 1, $button, total, statusContainer, stopButton, progressBar, messageContainer);
+                processBulkGeneration( ids, index + 1, $button, total, statusContainer, stopButton, progressBar, messageContainer );
             },
-            error: function(xhr) {
-                $(messageContainer).text(`Image ${imageId} - AJAX error: ${xhr.responseText}`);
+            error: function( xhr ) {
+                $( messageContainer ).text( `Image ${imageId} - AJAX error: ${xhr.responseText}` );
                 fetchUsageStatus();
-                processBulkGeneration(ids, index + 1, $button, total, statusContainer, stopButton, progressBar, messageContainer);
-            }
-        });
+                processBulkGeneration( ids, index + 1, $button, total, statusContainer, stopButton, progressBar, messageContainer );
+            },
+        } );
     }
 
-    function renderMetadataUI(imageId, metadata, statusContainer) {
-        var mediaLibraryUrl = `/wp-admin/post.php?post=${imageId}&action=edit`;
+    /**
+     * Render metadata UI for a processed image.
+     *
+     * @param {number} imageId        The image ID.
+     * @param {Object} metadata       The metadata object.
+     * @param {string} statusContainer The status container selector.
+     */
+    function renderMetadataUI( imageId, metadata, statusContainer ) {
+        const mediaLibraryUrl = `/wp-admin/post.php?post=${imageId}&action=edit`;
 
-        $.ajax({
+        $.ajax( {
             url: oneclick_images_admin_vars.ajax_url,
             type: 'GET',
             data: {
                 action: 'get_thumbnail',
                 image_id: imageId,
-                oneclick_images_ajax_nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce
+                oneclick_images_ajax_nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
             },
-            success: function(thumbnailResponse) {
-                console.log('Thumbnail Response:', thumbnailResponse);
+            success: function( thumbnailResponse ) {
                 const thumbnailUrl = thumbnailResponse.success && thumbnailResponse.data?.thumbnail ?
                     thumbnailResponse.data.thumbnail :
                     oneclick_images_admin_vars.fallback_image_url;
-                buildMetadataDisplay(mediaLibraryUrl, thumbnailUrl, metadata, imageId, statusContainer);
+                buildMetadataDisplay( mediaLibraryUrl, thumbnailUrl, metadata, imageId, statusContainer );
             },
-            error: function(xhr, status, error) {
-                console.error('Thumbnail Fetch Error:', status, error, xhr.responseText);
+            error: function() {
                 const thumbnailUrl = oneclick_images_admin_vars.fallback_image_url;
-                buildMetadataDisplay(mediaLibraryUrl, thumbnailUrl, metadata, imageId, statusContainer);
-            }
-        });
+                buildMetadataDisplay( mediaLibraryUrl, thumbnailUrl, metadata, imageId, statusContainer );
+            },
+        } );
     }
 
-    function buildMetadataDisplay(mediaLibraryUrl, thumbnailUrl, metadata, imageId, statusContainer) {
-        const safeThumbnailUrl = $('<div/>').text(thumbnailUrl).html();
-        const safeMediaLibraryUrl = $('<div/>').text(mediaLibraryUrl).html();
-        const safeImageId = parseInt(imageId, 10);
+    /**
+     * Build and append metadata display HTML.
+     *
+     * @param {string} mediaLibraryUrl The media library URL.
+     * @param {string} thumbnailUrl   The thumbnail URL.
+     * @param {Object} metadata       The metadata object.
+     * @param {number} imageId        The image ID.
+     * @param {string} statusContainer The status container selector.
+     */
+    function buildMetadataDisplay( mediaLibraryUrl, thumbnailUrl, metadata, imageId, statusContainer ) {
+        const safeThumbnailUrl    = $( '<div/>' ).text( thumbnailUrl ).html();
+        const safeMediaLibraryUrl = $( '<div/>' ).text( mediaLibraryUrl ).html();
+        const safeImageId         = parseInt( imageId, 10 );
 
         let displayMetadata = metadata;
-        if (metadata && typeof metadata === 'object' && metadata.metadata && typeof metadata.metadata === 'string') {
+        if ( metadata && typeof metadata === 'object' && metadata.metadata && typeof metadata.metadata === 'string' ) {
             try {
-                displayMetadata = JSON.parse(metadata.metadata);
-            } catch (e) {
-                console.error(`[Bulk Metadata] Failed to parse metadata string for ID ${imageId}:`, e);
+                displayMetadata = JSON.parse( metadata.metadata );
+            } catch ( e ) {
                 displayMetadata = {};
             }
-        } else if (metadata && typeof metadata === 'object' && metadata.metadata && typeof metadata.metadata === 'object') {
+        } else if ( metadata && typeof metadata === 'object' && metadata.metadata && typeof metadata.metadata === 'object' ) {
             displayMetadata = metadata.metadata;
         }
 
         let metadataRows = '<tr><td colspan="2">No metadata available</td></tr>';
-        if (displayMetadata && typeof displayMetadata === 'object' && !Array.isArray(displayMetadata) && Object.keys(displayMetadata).length > 0) {
-            metadataRows = Object.entries(displayMetadata)
-                .map(([key, value]) => {
-                    let displayKey = key;
+        if ( displayMetadata && typeof displayMetadata === 'object' && ! Array.isArray( displayMetadata ) && Object.keys( displayMetadata ).length > 0 ) {
+            metadataRows = Object.entries( displayMetadata )
+                .map( ( [ key, value ] ) => {
+                    let displayKey   = key;
                     let displayValue = value;
 
-                    if (key === 'alt_text') {
+                    if ( 'alt_text' === key ) {
                         displayKey = 'Alt Tag';
                     } else {
-                        displayKey = key.charAt(0).toUpperCase() + key.slice(1);
+                        displayKey = key.charAt( 0 ).toUpperCase() + key.slice( 1 );
                     }
 
-                    if (value === null || value === undefined) {
+                    if ( null === value || undefined === value ) {
                         displayValue = '';
-                    } else if (typeof value === 'object') {
-                        displayValue = JSON.stringify(value);
+                    } else if ( typeof value === 'object' ) {
+                        displayValue = JSON.stringify( value );
                     }
 
-                    if (key === 'title') {
-                        displayValue = `<a href="${safeMediaLibraryUrl}" target="_blank">${$('<div/>').text(displayValue).html()} <span class="dashicons dashicons-external"></span></a>`;
+                    if ( 'title' === key ) {
+                        displayValue = `<a href="${safeMediaLibraryUrl}" target="_blank">${$( '<div/>' ).text( displayValue ).html()} <span class="dashicons dashicons-external"></span></a>`;
                     } else {
-                        displayValue = $('<div/>').text(displayValue).html();
+                        displayValue = $( '<div/>' ).text( displayValue ).html();
                     }
 
                     return `<tr><td>${displayKey}</td><td>${displayValue}</td></tr>`;
-                })
-                .join('');
+                } )
+                .join( '' );
         }
 
         const content = `
@@ -226,58 +274,71 @@ jQuery(document).ready(function($) {
             </div>
         `;
 
-        $(statusContainer).append(content);
+        $( statusContainer ).append( content );
     }
 
-    function fetchUsageStatus(retryCount = 3) {
-        $.ajax({
+    /**
+     * Fetch usage status from the server with retry logic.
+     *
+     * @param {number} retryCount Number of retries remaining.
+     */
+    function fetchUsageStatus( retryCount = 3 ) {
+        $.ajax( {
             url: oneclick_images_admin_vars.ajax_url,
             type: 'POST',
             data: {
                 action: 'oneclick_images_check_usage',
-                nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce
+                nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
             },
-            success: function(response) {
-                if (response.success) {
+            success: function( response ) {
+                if ( response.success ) {
                     const { used_count, usage_limit, addon_count, remaining_count } = response.data;
-                    const totalAllowed = parseInt(usage_limit, 10) + parseInt(addon_count || 0, 10);
-                    updateUsageStatusUI(used_count, totalAllowed, remaining_count);
-                } else if (retryCount > 0) {
-                    setTimeout(() => fetchUsageStatus(retryCount - 1), 1000);
+                    const totalAllowed = parseInt( usage_limit, 10 ) + parseInt( addon_count || 0, 10 );
+                    updateUsageStatusUI( used_count, totalAllowed, remaining_count );
+                } else if ( retryCount > 0 ) {
+                    setTimeout( () => fetchUsageStatus( retryCount - 1 ), 1000 );
                 } else {
-                    $('#usage_count').html('Error: Unable to fetch usage information.');
-                    $('#usage_progress').css('width', '0%').text('0%');
+                    $( '#usage_count' ).html( 'Error: Unable to fetch usage information.' );
+                    $( '#usage_progress' ).css( 'width', '0%' ).text( '0%' );
                 }
             },
             error: function() {
-                if (retryCount > 0) {
-                    setTimeout(() => fetchUsageStatus(retryCount - 1), 1000);
+                if ( retryCount > 0 ) {
+                    setTimeout( () => fetchUsageStatus( retryCount - 1 ), 1000 );
                 } else {
-                    $('#usage_count').html('Error: An error occurred.');
-                    $('#usage_progress').css('width', '0%').text('0%');
+                    $( '#usage_count' ).html( 'Error: An error occurred.' );
+                    $( '#usage_progress' ).css( 'width', '0%' ).text( '0%' );
                 }
-            }
-        });
+            },
+        } );
     }
 
-    function updateUsageStatusUI(usedCount, totalAllowed, remainingCount) {
-        const percentageUsed = totalAllowed > 0 ? (usedCount / totalAllowed) * 100 : 0;
-        $('#usage_count').html(
+    /**
+     * Update the usage status UI.
+     *
+     * @param {number} usedCount     Number of used items.
+     * @param {number} totalAllowed  Total allowed items.
+     * @param {number} remainingCount Number of remaining items.
+     */
+    function updateUsageStatusUI( usedCount, totalAllowed, remainingCount ) {
+        const percentageUsed = totalAllowed > 0 ? ( usedCount / totalAllowed ) * 100 : 0;
+        $( '#usage_count' ).html(
             `Used: ${usedCount} of ${totalAllowed} images (${remainingCount} remaining)`
         );
-        $('#usage_progress')
-            .css('width', `${Math.min(percentageUsed, 100)}%`)
-            .attr('aria-valuenow', Math.min(percentageUsed, 100))
-            .text(`${Math.round(percentageUsed)}% Used`);
+        $( '#usage_progress' )
+            .css( 'width', `${Math.min( percentageUsed, 100 )}%` )
+            .attr( 'aria-valuenow', Math.min( percentageUsed, 100 ) )
+            .text( `${Math.round( percentageUsed )}% Used` );
 
-        if (percentageUsed >= 90) {
-            $('#usage_progress').removeClass('bg-success bg-warning').addClass('bg-danger');
-        } else if (percentageUsed >= 70) {
-            $('#usage_progress').removeClass('bg-success bg-danger').addClass('bg-warning');
+        if ( percentageUsed >= 90 ) {
+            $( '#usage_progress' ).removeClass( 'bg-success bg-warning' ).addClass( 'bg-danger' );
+        } else if ( percentageUsed >= 70 ) {
+            $( '#usage_progress' ).removeClass( 'bg-success bg-danger' ).addClass( 'bg-warning' );
         } else {
-            $('#usage_progress').removeClass('bg-warning bg-danger').addClass('bg-success');
+            $( '#usage_progress' ).removeClass( 'bg-warning bg-danger' ).addClass( 'bg-success' );
         }
     }
 
+    // Initial fetch of usage status.
     fetchUsageStatus();
-});
+} );

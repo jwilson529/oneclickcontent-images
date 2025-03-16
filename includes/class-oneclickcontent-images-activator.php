@@ -31,5 +31,8 @@ class OneClickContent_Images_Activator {
 	 */
 	public static function activate() {
 		add_option( 'oneclick_images_activation_redirect', true );
+		if ( false === get_option( 'oneclick_images_first_time' ) ) {
+			add_option( 'oneclick_images_first_time', true );
+		}
 	}
 }

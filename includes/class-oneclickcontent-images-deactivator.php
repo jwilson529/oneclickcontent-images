@@ -30,6 +30,6 @@ class OneClickContent_Images_Deactivator {
 	 * @return void
 	 */
 	public static function deactivate() {
-		// Add deactivation logic here if needed.
+		delete_option( 'oneclick_images_first_time' );
 	}
 }

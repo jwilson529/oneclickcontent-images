@@ -94,6 +94,8 @@ class OneClickContent_Images_Admin {
 		$plugin_bulk_edit      = new OneClickContent_Images_Bulk_Edit(); // Temporary; ideally injected.
 		$license_status        = get_option( 'oneclick_images_license_status', 'unknown' );
 		$header_image_url      = plugin_dir_url( __FILE__ ) . 'assets/header-image.webp';
+		$first_time_key        = 'oneclick_images_first_time';
+		$is_first_time         = get_option( $first_time_key, true );
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'OneClickContent Images', 'oneclickcontent-images' ); ?></h1>
@@ -107,29 +109,25 @@ class OneClickContent_Images_Admin {
 			</h2>
 
 			<?php if ( 'settings' === $tab ) : ?>
+				<!-- All settings output is encapsulated within #oneclick_images -->
 				<div id="oneclick_images" class="wrap">
-
 					<?php if ( 'active' === $license_status ) : ?>
-						<!-- Usage Counter & Bulk Generation (for licensed users) -->
+						<!-- License Active: Display usage info and bulk generation options -->
 						<div class="usage-info-section">
 							<h2><?php esc_html_e( 'Your Usage', 'oneclickcontent-images' ); ?></h2>
 							<div id="usage_status" class="usage-summary">
 								<strong id="usage_count"><?php esc_html_e( 'Loading usage data...', 'oneclickcontent-images' ); ?></strong>
 								<div class="progress">
-									<div 
-										id="usage_progress" 
-										class="progress-bar bg-success" 
-										role="progressbar" 
-										aria-valuenow="0" 
-										aria-valuemin="0" 
-										aria-valuemax="100" 
-										style="width: 0%;"
-									>
+									<div id="usage_progress" class="progress-bar bg-success"
+										role="progressbar"
+										aria-valuenow="0"
+										aria-valuemin="0"
+										aria-valuemax="100"
+										style="width: 0%;">
 										0%
 									</div>
 								</div>
 							</div>
-
 							<div class="bulk-edit-header">
 								<button id="generate-all-metadata-settings" class="button button-primary button-hero">
 									<?php esc_html_e( 'Generate All Metadata', 'oneclickcontent-images' ); ?>
@@ -137,11 +135,12 @@ class OneClickContent_Images_Admin {
 								<button id="stop-bulk-generation-settings" class="button button-secondary" style="display:none;">
 									<?php esc_html_e( 'Stop Generation', 'oneclickcontent-images' ); ?>
 								</button>
-								<p class="description"><?php esc_html_e( 'Click to generate metadata for all your images.', 'oneclickcontent-images' ); ?></p>
+								<p class="description">
+									<?php esc_html_e( 'Click to generate metadata for all your images.', 'oneclickcontent-images' ); ?>
+								</p>
 							</div>
-
 							<div id="bulk-generate-status-settings" class="bulk-generate-status" style="display: none;">
-								<h3>Bulk Generation Progress</h3>
+								<h3><?php esc_html_e( 'Bulk Generation Progress', 'oneclickcontent-images' ); ?></h3>
 								<div id="bulk-generate-progress-container-settings" class="bulk-generate-progress-container">
 									<div id="bulk-generate-progress-bar-settings" class="bulk-generate-progress-bar"></div>
 								</div>
@@ -149,13 +148,12 @@ class OneClickContent_Images_Admin {
 							</div>
 						</div>
 					<?php else : ?>
-						<!-- CTA for unlicensed users -->
+						<!-- License Inactive: Display license warning -->
 						<div class="bulk-edit-license-warning compact">
 							<div class="cta-left">
+								<img src="<?php echo esc_url( plugin_dir_url( __FILE__ ) . 'assets/icon.png' ); ?>" alt="One Click Content Icon" style="float: left; margin-right: 10px; width: 50px; height: auto;">
 								<h2><?php esc_html_e( 'Never Forget an Alt Tag Again!', 'oneclickcontent-images' ); ?></h2>
-								<p>
-									<?php esc_html_e( 'Upgrade now to automatically generate metadata for your images. Save time and boost your site’s SEO, accessibility, and image searchability.', 'oneclickcontent-images' ); ?>
-								</p>
+								<p><?php esc_html_e( 'Upgrade now to automatically generate metadata for your images. Save time and boost your site’s SEO, accessibility, and image searchability.', 'oneclickcontent-images' ); ?></p>
 								<ul class="benefits-list">
 									<li><?php esc_html_e( 'Save time with automated metadata generation', 'oneclickcontent-images' ); ?></li>
 									<li><?php esc_html_e( 'Ensure every image has a descriptive alt tag', 'oneclickcontent-images' ); ?></li>
@@ -170,7 +168,7 @@ class OneClickContent_Images_Admin {
 						</div>
 					<?php endif; ?>
 
-					<!-- Settings Form -->
+					<!-- Settings Form: Always inside #oneclick_images -->
 					<form method="post" action="options.php" id="oneclick_images_settings_form">
 						<?php
 						settings_fields( 'oneclick_images_settings' );
@@ -178,26 +176,114 @@ class OneClickContent_Images_Admin {
 						submit_button();
 						?>
 					</form>
-					<!-- Modal for Bulk Generation Confirmation -->
+
+					<!-- Bulk Generate Modal (within the same container) -->
 					<div id="bulk-generate-modal" class="modal" style="display:none;">
 						<div class="modal-content">
 							<h2><?php esc_html_e( 'Confirm Bulk Metadata Generation', 'oneclickcontent-images' ); ?></h2>
 							<p><?php esc_html_e( 'Generate metadata for all images in your library? This may take some time.', 'oneclickcontent-images' ); ?></p>
 							<div id="bulk-generate-warning" class="warning" style="display:none;">
-								<p><strong><?php esc_html_e( 'Warning:', 'oneclickcontent-images' ); ?></strong> <?php esc_html_e( 'This will overwrite any existing image metadata.', 'oneclickcontent-images' ); ?></p>
+								<p><strong><?php esc_html_e( 'Warning:', 'oneclickcontent-images' ); ?></strong>
+									<?php esc_html_e( 'This will overwrite any existing image metadata.', 'oneclickcontent-images' ); ?>
+								</p>
 							</div>
 							<div class="modal-buttons">
-								<button id="confirm-bulk-generate" class="button button-primary"><?php esc_html_e( 'Yes, Generate', 'oneclickcontent-images' ); ?></button>
-								<button id="cancel-bulk-generate" class="button button-secondary"><?php esc_html_e( 'Cancel', 'oneclickcontent-images' ); ?></button>
+								<button id="confirm-bulk-generate" class="button button-primary">
+									<?php esc_html_e( 'Yes, Generate', 'oneclickcontent-images' ); ?>
+								</button>
+								<button id="cancel-bulk-generate" class="button button-secondary">
+									<?php esc_html_e( 'Cancel', 'oneclickcontent-images' ); ?>
+								</button>
 							</div>
 						</div>
 					</div>
-				</div>
+				</div><!-- End #oneclick_images -->
 			<?php elseif ( 'bulk-edit' === $tab ) : ?>
 				<?php $plugin_bulk_edit->render_bulk_edit_tab(); ?>
 			<?php endif; ?>
 		</div>
-		<?php
+
+		<?php if ( $is_first_time ) : ?>
+			<?php $fallback_image_url = plugin_dir_url( __FILE__ ) . 'assets/icon.png'; ?>
+			<div id="oneclick-images-first-time-modal" class="modal" style="display:block;">
+				<div class="modal-content">
+					<div class="modal-header" style="display: flex; align-items: center; gap: 15px;">
+						<img src="<?php echo esc_url( $fallback_image_url ); ?>" alt="Plugin Icon" style="width: 50px; height: 50px;">
+						<h2 style="margin: 0;"><?php esc_html_e( 'Welcome to OneClickContent Image Detail Generator!', 'oneclickcontent-images' ); ?></h2>
+					</div>
+					<p><?php esc_html_e( 'This plugin helps you effortlessly manage image metadata — including alt text, titles, captions, and descriptions — so your site looks great, loads better, and ranks higher.', 'oneclickcontent-images' ); ?></p>
+					<p>
+						<strong><?php esc_html_e( 'No license? No problem.', 'oneclickcontent-images' ); ?></strong><br>
+						<?php esc_html_e( 'You can still use the Bulk Edit tab to search and edit all your images in a beautiful, lightning-fast table. It’s perfect for cleanup, audits, or just staying on top of things.', 'oneclickcontent-images' ); ?>
+					</p>
+					<p>
+						<strong><?php esc_html_e( 'Free Trial Included!', 'oneclickcontent-images' ); ?></strong><br>
+						<?php esc_html_e( 'Try it out right now with 10 free image detail generations — no license required. You can test the full automation experience risk-free.', 'oneclickcontent-images' ); ?>
+					</p>
+					<p>
+						<strong><?php esc_html_e( 'Want to save even more time?', 'oneclickcontent-images' ); ?></strong><br>
+						<?php esc_html_e( 'With a license, the plugin automatically generates metadata for every new image you upload — no more manual editing. Set it once and forget it.', 'oneclickcontent-images' ); ?>
+					</p>
+					<p><?php esc_html_e( 'Here’s how to get started:', 'oneclickcontent-images' ); ?></p>
+					<ol>
+						<li>
+							<strong><?php esc_html_e( 'Settings Tab:', 'oneclickcontent-images' ); ?></strong>
+							<?php esc_html_e( 'Choose which fields to automatically generate. Alt text, titles, captions, descriptions — your choice.', 'oneclickcontent-images' ); ?>
+						</li>
+						<li>
+							<strong><?php esc_html_e( 'Bulk Edit Tab:', 'oneclickcontent-images' ); ?></strong>
+							<?php esc_html_e( 'Instantly view and update all your images in one place. Edit any field inline and it saves automatically.', 'oneclickcontent-images' ); ?>
+						</li>
+						<li>
+							<strong><?php esc_html_e( 'Automatic Generation:', 'oneclickcontent-images' ); ?></strong>
+							<?php esc_html_e( 'Activate a license to generate metadata for every new image as it’s uploaded — no clicks needed.', 'oneclickcontent-images' ); ?>
+						</li>
+					</ol>
+					<p>
+						<strong><?php esc_html_e( 'Your images deserve better.', 'oneclickcontent-images' ); ?></strong><br>
+						<?php esc_html_e( 'Give your media library the attention it deserves — for better SEO, accessibility, and user experience.', 'oneclickcontent-images' ); ?>
+					</p>
+					<div class="modal-buttons" style="margin-top: 20px; text-align: right;">
+						<a href="https://oneclickcontent.com/image-detail-generator/" target="_blank" class="button button-secondary">
+							<?php esc_html_e( 'Upgrade to Pro', 'oneclickcontent-images' ); ?>
+						</a>
+						<button id="close-first-time-modal" class="button button-primary">
+							<?php esc_html_e( 'Let’s Get Started', 'oneclickcontent-images' ); ?>
+						</button>
+					</div>
+				</div>
+			</div>
+
+			<style>
+				.modal {
+					display: none;
+					position: fixed;
+					z-index: 1000;
+					left: 0;
+					top: 0;
+					width: 100%;
+					height: 100%;
+					overflow: auto;
+					background-color: rgba(0,0,0,0.5);
+				}
+				.modal-content {
+					background-color: #fff;
+					margin: 10% auto;
+					padding: 30px;
+					border-radius: 8px;
+					width: 90%;
+					max-width: 600px;
+					box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+				}
+				.modal-content h2 {
+					margin-top: 0;
+				}
+				.modal-buttons .button + .button {
+					margin-left: 10px;
+				}
+			</style>
+			<?php
+		endif;
 	}
 
 	/**
@@ -324,9 +410,10 @@ class OneClickContent_Images_Admin {
 				'license_status'             => sanitize_text_field( $license_status ),
 				'upload_base_url'            => wp_upload_dir()['baseurl'],
 				'fallback_image_url'         => plugin_dir_url( __FILE__ ) . 'assets/icon.png',
+				'dismiss_first_time_nonce'   => wp_create_nonce( 'oneclick_images_dismiss_first_time' ),
 			);
-
 			wp_localize_script( $this->plugin_name, 'oneclick_images_admin_vars', $admin_vars );
+
 			wp_localize_script(
 				$this->plugin_name . '-error-check',
 				'oneclick_images_error_vars',
@@ -432,14 +519,81 @@ class OneClickContent_Images_Admin {
 			return $form_fields;
 		}
 
+		$license_key      = get_option( 'oneclick_images_license_key', '' );
+		$origin_url       = home_url();
+		$product_slug     = 'oneclickcontent-images';
+		$is_valid_license = false;
+		$is_trial         = empty( $license_key );
+		$trial_expired    = get_option( 'oneclick_images_trial_expired', false );
+		$trial_limit      = 10;
+		$trial_usage      = (int) get_option( 'oneclick_images_trial_usage', 0 );
+		$usage_data       = array(
+			'used_count'      => $is_trial ? $trial_usage : 0,
+			'total_allowed'   => $is_trial ? $trial_limit : 100,
+			'remaining_count' => $is_trial ? max( $trial_limit - $trial_usage, 0 ) : 0,
+		);
+
+		if ( ! empty( $license_key ) ) {
+			$usage_response = wp_remote_post(
+				rest_url( 'subscriber/v1/check-usage' ),
+				array(
+					'body'    => wp_json_encode(
+						array(
+							'license_key'  => $license_key,
+							'origin_url'   => $origin_url,
+							'product_slug' => $product_slug,
+						)
+					),
+					'headers' => array( 'Content-Type' => 'application/json' ),
+					'timeout' => 10,
+				)
+			);
+
+			if ( ! is_wp_error( $usage_response ) ) {
+				$body = json_decode( wp_remote_retrieve_body( $usage_response ), true );
+				if ( isset( $body['success'] ) && $body['success'] ) {
+					$is_valid_license              = true;
+					$is_trial                      = false;
+					$usage_data['used_count']      = $body['used_count'] ?? 0;
+					$usage_data['total_allowed']   = ( $body['usage_limit'] ?? 0 ) + ( $body['addon_count'] ?? 0 );
+					$usage_data['remaining_count'] = $body['remaining_count'] ?? 0;
+				}
+			}
+		} elseif ( $is_trial && $trial_usage >= $trial_limit ) {
+			$trial_expired = true;
+			update_option( 'oneclick_images_trial_expired', true );
+		}
+
+		$is_disabled  = $trial_expired || ( $is_valid_license && $usage_data['remaining_count'] <= 0 );
+		$button_text  = esc_html__( 'Generate Metadata', 'oneclickcontent-images' );
+		$settings_url = admin_url( 'admin.php?page=oneclickcontent-images' );
+
 		$form_fields['generate_metadata'] = array(
 			'label' => __( 'Generate Metadata', 'oneclickcontent-images' ),
 			'input' => 'html',
 			'html'  => sprintf(
-				'<button type="button" class="button" id="generate_metadata_button" data-image-id="%s">%s</button>',
+				'<button type="button" class="button" id="generate_metadata_button" data-image-id="%s" %s>%s</button>' .
+				( $is_disabled ? ' <a href="%s" class="button">%s</a>' : '' ),
 				esc_attr( $post->ID ),
-				esc_html__( 'Generate Metadata', 'oneclickcontent-images' )
+				$is_disabled ? 'disabled' : '',
+				$button_text,
+				esc_url( $settings_url ),
+				esc_html__( 'Enter License Key', 'oneclickcontent-images' )
 			),
+		);
+
+		wp_localize_script(
+			'oneclickcontent-images-admin',
+			'oneclick_images_admin_vars',
+			array(
+				'ajax_url'                   => admin_url( 'admin-ajax.php' ),
+				'oneclick_images_ajax_nonce' => wp_create_nonce( 'oneclick_images_ajax_nonce' ),
+				'is_valid_license'           => $is_valid_license,
+				'is_trial'                   => $is_trial,
+				'trial_expired'              => $trial_expired,
+				'usage'                      => $usage_data,
+				'settings_url'               => $settings_url,
+			)
 		);
 
 		return $form_fields;
@@ -615,5 +769,33 @@ class OneClickContent_Images_Admin {
 
 		$override = get_option( 'oneclick_images_override_metadata', false );
 		wp_send_json_success( array( 'override' => $override ) );
+	}
+
+	/**
+	 * Dismiss the first time modal via AJAX.
+	 *
+	 * This function updates the 'oneclick_images_first_time' option to false,
+	 * effectively dismissing the first time modal. It first verifies the AJAX nonce,
+	 * then attempts to update the option. If updating fails, it adds the option.
+	 * Finally, it returns a JSON success response.
+	 *
+	 * @since 1.0.0
+	 * @return void JSON response indicating success or failure.
+	 */
+	public function dismiss_first_time() {
+		// Verify the nonce for security.
+		if ( ! check_ajax_referer( 'oneclick_images_dismiss_first_time', 'dismiss_first_time_nonce', false ) ) {
+			wp_send_json_error( array( 'message' => 'Security check failed.' ) );
+			return;
+		}
+
+		// Attempt to update the option to dismiss the first time modal.
+		$updated = update_option( 'oneclick_images_first_time', false );
+		if ( false === $updated ) {
+			// If update_option fails, try adding the option.
+			$added = add_option( 'oneclick_images_first_time', false );
+		}
+
+		wp_send_json_success();
 	}
 }

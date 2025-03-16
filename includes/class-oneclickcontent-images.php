@@ -165,6 +165,7 @@ class OneClickContent_Images {
 		// Register top-level menu (single callback).
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'register_admin_menu' );
 		$this->loader->add_action( 'wp_ajax_oneclick_images_check_override_metadata', $plugin_admin, 'check_override_metadata' );
+		$this->loader->add_action( 'wp_ajax_oneclick_images_dismiss_first_time', $plugin_admin, 'dismiss_first_time' );
 
 		// Register settings for the Settings tab.
 		$this->loader->add_action( 'admin_init', $plugin_admin_settings, 'oneclick_images_register_settings' );

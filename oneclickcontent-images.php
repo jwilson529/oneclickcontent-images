@@ -15,9 +15,9 @@
  */
 
 /**
- * Plugin Name:       OneClickContent - Image Meta Generator
+ * Plugin Name:       OneClickContent - Image Detail Generator
  * Plugin URI:        https://oneclickcontent.com
- * Description:       Uploads images to OneClickContent AI to auto generate titles, descriptions, captions, and alt text.
+ * Description:       Boost images with OneClickContent AI: auto titles, descs, captions & alt text!
  * Version:           1.1.8
  * Author:            James Wilson
  * Author URI:        https://oneclickcontent.com/

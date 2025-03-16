@@ -381,33 +381,47 @@ class OneClickContent_Images_Admin_Settings {
 			wp_send_json_error( __( 'Settings data missing.', 'oneclickcontent-images' ) );
 			return;
 		}
-		$settings_input = sanitize_text_field( wp_unslash( $_POST['settings'] ) );
+
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Form data needs to be parsed before sanitization
+		$settings_input = wp_unslash( $_POST['settings'] );
 		parse_str( $settings_input, $settings );
 
+		// Handle metadata fields explicitly.
 		$fields          = array( 'title', 'description', 'alt_text', 'caption' );
 		$metadata_fields = array();
 
+		// Set all metadata fields to unchecked (0) by default.
 		foreach ( $fields as $field ) {
-			$is_checked                = ( isset( $settings['oneclick_images_metadata_fields'][ $field ] ) && '1' === $settings['oneclick_images_metadata_fields'][ $field ] );
-			$metadata_fields[ $field ] = $is_checked ? '1' : '0';
+			$metadata_fields[ $field ] = '0';
+		}
+
+		// Override with any checked fields from the form.
+		if ( isset( $settings['oneclick_images_metadata_fields'] ) && is_array( $settings['oneclick_images_metadata_fields'] ) ) {
+			foreach ( $settings['oneclick_images_metadata_fields'] as $field => $value ) {
+				if ( in_array( $field, $fields, true ) ) {
+					$metadata_fields[ $field ] = '1';
+				}
+			}
 		}
 
 		update_option( 'oneclick_images_metadata_fields', $metadata_fields );
 
-		$auto_add = ( isset( $settings['oneclick_images_auto_add_details'] ) ) ? '1' : '0';
+		// Update other options.
+		$auto_add = isset( $settings['oneclick_images_auto_add_details'] ) ? '1' : '0';
 		update_option( 'oneclick_images_auto_add_details', $auto_add );
 
-		$override = ( isset( $settings['oneclick_images_override_metadata'] ) ) ? '1' : '0';
+		$override = isset( $settings['oneclick_images_override_metadata'] ) ? '1' : '0';
 		update_option( 'oneclick_images_override_metadata', $override );
 
-		$language = ( isset( $settings['oneclick_images_language'] ) ) ? sanitize_text_field( $settings['oneclick_images_language'] ) : 'en';
+		$language = isset( $settings['oneclick_images_language'] ) ? sanitize_text_field( $settings['oneclick_images_language'] ) : 'en';
 		update_option( 'oneclick_images_language', $language );
 
-		$license = ( isset( $settings['oneclick_images_license_key'] ) ) ? sanitize_text_field( $settings['oneclick_images_license_key'] ) : '';
+		$license = isset( $settings['oneclick_images_license_key'] ) ? sanitize_text_field( $settings['oneclick_images_license_key'] ) : '';
 		update_option( 'oneclick_images_license_key', $license );
 
 		wp_send_json_success();
 	}
+
 	/**
 	 * Generate metadata for an image using the OneClickContent API.
 	 *

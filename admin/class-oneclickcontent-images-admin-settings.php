@@ -360,7 +360,7 @@ class OneClickContent_Images_Admin_Settings {
 		</button>
 		<span id="license_status_label" style="margin-left: 10px; font-weight: bold;"></span>
 		<div id="license_status_message" style="margin-top: 10px;"></div>
-		<p class="description"><?php echo wp_kses_post( __( 'Get your OneClickContent License Key <a href="https://oneclickcontent.com/" target="_blank">here</a>.', 'oneclickcontent-images' ) ); ?></p>
+		<p class="description"><?php echo wp_kses_post( __( 'Get your OneClickContent License Key <a href="https://oneclickcontent.com/" target="_blank">here</a>.', 'oneclickcontent-image-detail-generator' ) ); ?></p>
 		<?php
 	}
 
@@ -451,7 +451,7 @@ class OneClickContent_Images_Admin_Settings {
 		if ( empty( $generate_metadata ) ) {
 			return array(
 				'success' => false,
-				'error'   => __( 'No metadata fields require generation, and "Override Metadata" is disabled.', 'oneclickcontent-images' ),
+				'error'   => __( 'No metadata fields require generation, and "Override Metadata" is disabled.', 'oneclickcontent-image-detail-generator' ),
 			);
 		}
 

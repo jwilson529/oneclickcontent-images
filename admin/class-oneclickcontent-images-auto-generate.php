@@ -88,7 +88,7 @@ class OneClickContent_Images_Auto_Generate {
 		check_ajax_referer( 'oneclick_images_ajax_nonce', 'nonce' );
 
 		if ( ! current_user_can( 'upload_files' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'oneclickcontent-images' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'oneclickcontent-image-detail-generator' ) ) );
 			return;
 		}
 
@@ -97,7 +97,7 @@ class OneClickContent_Images_Auto_Generate {
 		if ( $error_data ) {
 			wp_send_json_success( $error_data );
 		} else {
-			wp_send_json_error( array( 'message' => __( 'No error data found.', 'oneclickcontent-images' ) ) );
+			wp_send_json_error( array( 'message' => __( 'No error data found.', 'oneclickcontent-image-detail-generator' ) ) );
 		}
 	}
 
@@ -113,13 +113,13 @@ class OneClickContent_Images_Auto_Generate {
 		check_ajax_referer( 'oneclick_images_ajax_nonce', 'nonce' );
 
 		if ( ! current_user_can( 'upload_files' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'oneclickcontent-images' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'oneclickcontent-image-detail-generator' ) ) );
 			return;
 		}
 
 		delete_transient( 'oneclick_image_error' );
 
-		wp_send_json_success( array( 'message' => __( 'Transient removed successfully.', 'oneclickcontent-images' ) ) );
+		wp_send_json_success( array( 'message' => __( 'Transient removed successfully.', 'oneclickcontent-image-detail-generator' ) ) );
 	}
 
 	/**
@@ -134,7 +134,7 @@ class OneClickContent_Images_Auto_Generate {
 		check_ajax_referer( 'oneclick_images_ajax_nonce', 'nonce' );
 
 		if ( ! current_user_can( 'upload_files' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'oneclickcontent-images' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'oneclickcontent-image-detail-generator' ) ) );
 			return;
 		}
 

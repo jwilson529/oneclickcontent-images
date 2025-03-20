@@ -40,16 +40,16 @@ class OneClickContent_Images_Bulk_Edit {
 		$license_cta_html   = '<div class="bulk-edit-license-warning compact">
 	        <div class="cta-left">
 	            <img src="' . esc_url( $fallback_image_url ) . '" alt="One Click Content Icon" style="float: left; margin-right: 10px; width: 50px; height: auto;">
-	            <h2>' . esc_html__( 'Never Forget an Alt Tag Again!', 'oneclickcontent-images' ) . '</h2>
-	            <p>' . esc_html__( 'Upgrade now to automatically generate metadata for your images. Save time and boost your site’s SEO, accessibility, and image searchability.', 'oneclickcontent-images' ) . '</p>
+	            <h2>' . esc_html__( 'Never Forget an Alt Tag Again!', 'oneclickcontent-image-detail-generator' ) . '</h2>
+	            <p>' . esc_html__( 'Upgrade now to automatically generate metadata for your images. Save time and boost your site’s SEO, accessibility, and image searchability.', 'oneclickcontent-image-detail-generator' ) . '</p>
 	            <ul class="benefits-list">
-	                <li>' . esc_html__( 'Save time with automated metadata generation', 'oneclickcontent-images' ) . '</li>
-	                <li>' . esc_html__( 'Ensure every image has a descriptive alt tag', 'oneclickcontent-images' ) . '</li>
-	                <li>' . esc_html__( 'Improve SEO, ADA compliance, and user experience', 'oneclickcontent-images' ) . '</li>
+	                <li>' . esc_html__( 'Save time with automated metadata generation', 'oneclickcontent-image-detail-generator' ) . '</li>
+	                <li>' . esc_html__( 'Ensure every image has a descriptive alt tag', 'oneclickcontent-image-detail-generator' ) . '</li>
+	                <li>' . esc_html__( 'Improve SEO, ADA compliance, and user experience', 'oneclickcontent-image-detail-generator' ) . '</li>
 	            </ul>
 	        </div>
 	        <div class="cta-right">
-	            <a href="https://oneclickcontent.com/image-detail-generator/" target="_blank" class="btn-license">' . esc_html__( 'Activate License Now', 'oneclickcontent-images' ) . '</a>
+	            <a href="https://oneclickcontent.com/image-detail-generator/" target="_blank" class="btn-license">' . esc_html__( 'Activate License Now', 'oneclickcontent-image-detail-generator' ) . '</a>
 	        </div>
 	    </div>';
 
@@ -73,13 +73,13 @@ class OneClickContent_Images_Bulk_Edit {
 		);
 		?>
 		<div id="oneclick_images_bulk_edit" class="wrap">
-			<h2><?php esc_html_e( 'Bulk Edit Image Metadata', 'oneclickcontent-images' ); ?></h2>
+			<h2><?php esc_html_e( 'Bulk Edit Image Metadata', 'oneclickcontent-image-detail-generator' ); ?></h2>
 			
 			<div class="usage-info-section">
-				<h2><?php esc_html_e( 'Your Usage', 'oneclickcontent-images' ); ?></h2>
+				<h2><?php esc_html_e( 'Your Usage', 'oneclickcontent-image-detail-generator' ); ?></h2>
 				<div id="usage_status" class="usage-summary">
 					<?php if ( $is_valid_license ) : ?>
-						<strong id="usage_count"><?php esc_html_e( 'Loading usage data...', 'oneclickcontent-images' ); ?></strong>
+						<strong id="usage_count"><?php esc_html_e( 'Loading usage data...', 'oneclickcontent-image-detail-generator' ); ?></strong>
 						<div class="progress">
 							<div 
 								id="usage_progress" 
@@ -100,16 +100,16 @@ class OneClickContent_Images_Bulk_Edit {
 
 				<div class="bulk-edit-header">
 					<button id="generate-all-metadata" class="button button-primary button-hero" <?php echo $is_valid_license ? '' : 'disabled'; ?>>
-						<?php esc_html_e( 'Generate All Metadata', 'oneclickcontent-images' ); ?>
+						<?php esc_html_e( 'Generate All Metadata', 'oneclickcontent-image-detail-generator' ); ?>
 					</button>
 					<button id="stop-bulk-generation" class="button button-secondary" style="display:none;">
-						<?php esc_html_e( 'Stop Generation', 'oneclickcontent-images' ); ?>
+						<?php esc_html_e( 'Stop Generation', 'oneclickcontent-image-detail-generator' ); ?>
 					</button>
-					<p class="description"><?php esc_html_e( 'Click to generate metadata for all your images.', 'oneclickcontent-images' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Click to generate metadata for all your images.', 'oneclickcontent-image-detail-generator' ); ?></p>
 				</div>
 
 				<div id="bulk-generate-status" class="bulk-generate-status" style="display: none;">
-					<h3><?php esc_html_e( 'Bulk Generation Progress', 'oneclickcontent-images' ); ?></h3>
+					<h3><?php esc_html_e( 'Bulk Generation Progress', 'oneclickcontent-image-detail-generator' ); ?></h3>
 					<div id="bulk-generate-progress-container" class="bulk-generate-progress-container">
 						<div id="bulk-generate-progress-bar" class="bulk-generate-progress-bar"></div>
 					</div>
@@ -119,19 +119,19 @@ class OneClickContent_Images_Bulk_Edit {
 
 			<div id="bulk-generate-modal" class="modal" style="display:none;">
 				<div class="modal-content">
-					<h2><?php esc_html_e( 'Confirm Bulk Metadata Generation', 'oneclickcontent-images' ); ?></h2>
-					<p><?php esc_html_e( 'Generate metadata for all images in your library? This may take some time.', 'oneclickcontent-images' ); ?></p>
+					<h2><?php esc_html_e( 'Confirm Bulk Metadata Generation', 'oneclickcontent-image-detail-generator' ); ?></h2>
+					<p><?php esc_html_e( 'Generate metadata for all images in your library? This may take some time.', 'oneclickcontent-image-detail-generator' ); ?></p>
 					<div id="bulk-generate-warning" class="warning" style="display:none;">
-						<p><strong><?php esc_html_e( 'Warning:', 'oneclickcontent-images' ); ?></strong> 
-							<?php esc_html_e( 'This will overwrite any existing image metadata.', 'oneclickcontent-images' ); ?>
+						<p><strong><?php esc_html_e( 'Warning:', 'oneclickcontent-image-detail-generator' ); ?></strong> 
+							<?php esc_html_e( 'This will overwrite any existing image metadata.', 'oneclickcontent-image-detail-generator' ); ?>
 						</p>
 					</div>
 					<div class="modal-buttons">
 						<button id="confirm-bulk-generate" class="button button-primary">
-							<?php esc_html_e( 'Yes, Generate', 'oneclickcontent-images' ); ?>
+							<?php esc_html_e( 'Yes, Generate', 'oneclickcontent-image-detail-generator' ); ?>
 						</button>
 						<button id="cancel-bulk-generate" class="button button-secondary">
-							<?php esc_html_e( 'Cancel', 'oneclickcontent-images' ); ?>
+							<?php esc_html_e( 'Cancel', 'oneclickcontent-image-detail-generator' ); ?>
 						</button>
 					</div>
 				</div>
@@ -140,12 +140,12 @@ class OneClickContent_Images_Bulk_Edit {
 			<table id="image-metadata-table" class="wp-list-table widefat fixed striped">
 				<thead>
 					<tr>
-						<th><?php esc_html_e( 'Thumbnail', 'oneclickcontent-images' ); ?></th>
-						<th><?php esc_html_e( 'Title', 'oneclickcontent-images' ); ?></th>
-						<th><?php esc_html_e( 'Alt Text', 'oneclickcontent-images' ); ?></th>
-						<th><?php esc_html_e( 'Description', 'oneclickcontent-images' ); ?></th>
-						<th><?php esc_html_e( 'Caption', 'oneclickcontent-images' ); ?></th>
-						<th><?php esc_html_e( 'Actions', 'oneclickcontent-images' ); ?></th>
+						<th><?php esc_html_e( 'Thumbnail', 'oneclickcontent-image-detail-generator' ); ?></th>
+						<th><?php esc_html_e( 'Title', 'oneclickcontent-image-detail-generator' ); ?></th>
+						<th><?php esc_html_e( 'Alt Text', 'oneclickcontent-image-detail-generator' ); ?></th>
+						<th><?php esc_html_e( 'Description', 'oneclickcontent-image-detail-generator' ); ?></th>
+						<th><?php esc_html_e( 'Caption', 'oneclickcontent-image-detail-generator' ); ?></th>
+						<th><?php esc_html_e( 'Actions', 'oneclickcontent-image-detail-generator' ); ?></th>
 					</tr>
 				</thead>
 				<tbody></tbody>

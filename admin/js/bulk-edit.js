@@ -231,44 +231,8 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 if (response.success && response.data && response.data.metadata) {
-                    let metadata = response.data.metadata;
-                    if (typeof metadata === 'object' && metadata.metadata) {
-                        metadata = metadata.metadata;
-                    }
-
-                    if (metadata.success === false) {
-                        if (metadata.error.includes('limit reached')) {
-                            window.showSubscriptionPrompt(
-                                metadata.error.includes('Free trial') ? 'Free Trial Limit Reached' : 'Usage Limit Reached',
-                                metadata.message || metadata.error || 'You’ve reached your limit. Please subscribe to continue.',
-                                metadata.ad_url || oneclick_images_bulk_vars.settings_url || 'https://oneclickcontent.com/image-detail-generator/'
-                            );
-                            if (metadata.error.includes('Free trial')) {
-                                oneclick_images_bulk_vars.trial_expired = true;
-                            }
-                            oneclick_images_bulk_vars.usage.remaining_count = 0;
-                            $('.generate-metadata').prop('disabled', true).attr('title', 'Out of credits');
-                            $('#generate-all-metadata').prop('disabled', true);
-                        } else if (metadata.error.includes('Image validation failed')) {
-                            window.showImageRejectionModal(metadata.error);
-                        } else if (metadata.error.includes('Metadata processing failed') && !oneclick_images_bulk_vars.is_valid_license) {
-                            window.showSubscriptionPrompt(
-                                'Invalid License',
-                                'Your license appears to be invalid. Please enter a valid license key or subscribe to continue.',
-                                oneclick_images_bulk_vars.settings_url || 'https://oneclickcontent.com/image-detail-generator/'
-                            );
-                        } else if (metadata.error.includes('license')) {
-                            window.showSubscriptionPrompt(
-                                'Invalid License',
-                                metadata.error || 'Please enter a valid license key to continue.',
-                                oneclick_images_bulk_vars.settings_url || 'https://oneclickcontent.com/image-detail-generator/'
-                            );
-                        } else {
-                            window.showGeneralErrorModal(metadata.error || 'An unexpected error occurred.');
-                        }
-                        $button.prop('disabled', false).text('Generate');
-                        return;
-                    }
+                    // Successful metadata generation
+                    const metadata = response.data.metadata;
 
                     const rowData = table.row(rowIndex).data();
                     if (rowData) {
@@ -300,12 +264,48 @@ jQuery(document).ready(function($) {
                     } else {
                         table.ajax.reload(null, false);
                     }
+                } else if (!response.success && response.data && response.data.error) {
+                    // Error handling
+                    const error = response.data.error;
+                    if (error.includes('Free trial limit reached')) {
+                        window.showSubscriptionPrompt(
+                            'Free Trial Limit Reached',
+                            response.data.message || 'Upgrade your subscription to access unlimited features.',
+                            response.data.ad_url || oneclick_images_bulk_vars.settings_url || 'https://oneclickcontent.com/image-detail-generator/'
+                        );
+                        oneclick_images_bulk_vars.trial_expired = true;
+                        $('.generate-metadata').prop('disabled', true).attr('title', 'Trial expired');
+                        $('#generate-all-metadata').prop('disabled', true);
+                    } else if (error.includes('Usage limit reached')) {
+                        const htmlContent = `
+                            <p><strong>Error:</strong> ${$( '<div/>' ).text(error).html()}</p>
+                            <p>${$( '<div/>' ).text(response.data.message || 'Purchase additional image credits to continue.').html()}</p>
+                            <p><a href="${$( '<div/>' ).text(response.data.ad_url || oneclick_images_bulk_vars.settings_url || 'https://oneclickcontent.com/image-detail-generator/').html()}" target="_blank">Purchase more credits</a> to continue generating metadata.</p>
+                        `;
+                        window.showLimitPrompt(htmlContent);
+                        oneclick_images_bulk_vars.usage.remaining_count = 0;
+                        $('.generate-metadata').prop('disabled', true).attr('title', 'Out of credits');
+                        $('#generate-all-metadata').prop('disabled', true);
+                    } else if (error.includes('Image validation failed')) {
+                        window.showImageRejectionModal(error);
+                    } else if (error.includes('license')) {
+                        window.showSubscriptionPrompt(
+                            'Invalid License',
+                            error || 'Please enter a valid license key to continue.',
+                            oneclick_images_bulk_vars.settings_url || 'https://oneclickcontent.com/image-detail-generator/'
+                        );
+                    } else {
+                        window.showGeneralErrorModal(error || 'An unexpected error occurred.');
+                    }
+                    $button.prop('disabled', false).text('Generate');
+                    $status.text('Error: ' + error).addClass('action-status-error').fadeIn();
+                    setTimeout(() => $status.fadeOut(), 2000);
                 } else {
-                    $status.text('Error: ' + (response.message || response.error || 'Failed'))
-                        .addClass('action-status-error').fadeIn();
+                    // Unexpected response format
+                    $status.text('Error: Failed').addClass('action-status-error').fadeIn();
                     $button.prop('disabled', false).text('Generate');
                     setTimeout(() => $status.fadeOut(), 2000);
-                    window.showGeneralErrorModal(response.message || response.error || 'An unexpected error occurred.');
+                    window.showGeneralErrorModal('Unexpected response format from server.');
                 }
             },
             error: function(xhr) {
@@ -316,7 +316,6 @@ jQuery(document).ready(function($) {
             },
         });
     });
-
     // Field Saving and Focus Management
     // ---------------------------------
 

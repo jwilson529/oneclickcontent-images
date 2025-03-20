@@ -818,18 +818,25 @@ class OneClickContent_Images_Admin_Settings {
 		}
 
 		$metadata = $this->oneclick_images_generate_metadata( $image_id );
-		if ( $metadata ) {
-			wp_send_json_success(
-				array(
-					'message'  => __( 'Metadata generated successfully.', 'oneclickcontent-image-detail-generator' ),
-					'metadata' => $metadata,
-				)
-			);
+
+		// Check if $metadata is an array and has a 'success' key.
+		if ( is_array( $metadata ) && isset( $metadata['success'] ) ) {
+			if ( $metadata['success'] ) {
+				wp_send_json_success(
+					array(
+						'message'  => __( 'Metadata generated successfully.', 'oneclickcontent-image-detail-generator' ),
+						'metadata' => $metadata,
+					)
+				);
+			} else {
+				// Pass through the error details from the REST response.
+				wp_send_json_error( $metadata );
+			}
 		} else {
+			// Handle unexpected cases (e.g., $metadata is null or not an array).
 			wp_send_json_error( __( 'Failed to generate metadata.', 'oneclickcontent-image-detail-generator' ) );
 		}
 	}
-
 	/**
 	 * AJAX handler to refresh the nonce.
 	 *

@@ -44,12 +44,24 @@
                 return;
             }
 
+            // Base UTM parameters for tracking
+            const utmBase = {
+                utm_source: 'oneclick_images_plugin',
+                utm_medium: 'modal',
+                utm_campaign: 'single_image_generation'
+            };
+            const addUTMParams = (baseUrl) => {
+                const params = new URLSearchParams(utmBase);
+                return `${baseUrl}?${params.toString()}`;
+            };
+            const baseSubscriptionUrl = "https://oneclickcontent.com/image-detail-generator/";
+
             // Check trial/license status upfront
             if (oneclick_images_admin_vars.trial_expired) {
                 showSubscriptionPrompt(
                     'Free Trial Expired',
                     'Your free trial has ended. Enter a license key to continue generating metadata.',
-                    "https://oneclickcontent.com/image-detail-generator/"
+                    addUTMParams(baseSubscriptionUrl)
                 );
                 button.attr('disabled', false).text('Generate Metadata');
                 return;
@@ -58,7 +70,7 @@
                 showSubscriptionPrompt(
                     'Usage Limit Reached',
                     'You’ve used all your credits. Purchase more or enter a new license key.',
-                    "https://oneclickcontent.com/image-detail-generator/"
+                    addUTMParams(baseSubscriptionUrl)
                 );
                 button.attr('disabled', false).text('Generate Metadata');
                 return;
@@ -83,57 +95,54 @@
                     }
 
                     if (response.success && response.data && response.data.metadata) {
+                        // Successful metadata generation
                         const metadata = response.data.metadata;
+                        updateMetadataFields(metadata);
 
-                        if (metadata.error) {
-                            // Handle usage or trial limits
-                            if (metadata.error.includes('Usage limit reached') || metadata.error.includes('Free trial limit reached')) {
-                                showSubscriptionPrompt(
-                                    metadata.error.includes('Free trial') ? 'Free Trial Limit Reached' : 'Usage Limit Reached',
-                                    metadata.message || metadata.error,
-                                    "https://oneclickcontent.com/image-detail-generator/"
-                                );
-                                // If it's a trial issue, mark it and keep the button disabled.
-                                if (metadata.error.includes('Free trial')) {
-                                    oneclick_images_admin_vars.trial_expired = true;
-                                } else {
-                                    // Otherwise, allow retrying.
-                                    button.attr('disabled', false).text('Generate Metadata');
-                                }
-                                return;
-                            }
-
-                            // Handle image validation error
-                            if (metadata.error.startsWith('Image validation failed')) {
-                                showImageRejectionModal(metadata.error);
-                                button.attr('disabled', false).text('Generate Metadata');
-                                return;
-                            }
-
-                            // Handle case when no metadata fields require generation
-                            if (metadata.error.startsWith('No metadata fields require generation')) {
-                                showGeneralErrorModal('The image already has all metadata fields filled, and "Override Metadata" is disabled.');
-                                button.attr('disabled', false).text('Generate Metadata');
+                        // Update trial usage locally for non-licensed users
+                        if (!oneclick_images_admin_vars.is_valid_license) {
+                            oneclick_images_admin_vars.usage.used_count += 1;
+                            oneclick_images_admin_vars.usage.remaining_count -= 1;
+                            if (oneclick_images_admin_vars.usage.remaining_count <= 0) {
+                                oneclick_images_admin_vars.trial_expired = true;
+                                // Button stays disabled when trial expires
                                 return;
                             }
                         }
-
-                        if (metadata.success) {
-                            updateMetadataFields(metadata.metadata);
-                            // Update trial usage locally for non-licensed users
-                            if (!oneclick_images_admin_vars.is_valid_license) {
-                                oneclick_images_admin_vars.usage.used_count += 1;
-                                oneclick_images_admin_vars.usage.remaining_count -= 1;
-                                if (oneclick_images_admin_vars.usage.remaining_count <= 0) {
-                                    oneclick_images_admin_vars.trial_expired = true;
-                                    // Button stays disabled when trial expires.
-                                    return;
-                                }
-                            }
-                            // Re-enable the button after a successful update
+                        button.attr('disabled', false).text('Generate Metadata');
+                    } else if (!response.success && response.data && response.data.error) {
+                        // Handle errors
+                        const error = response.data.error;
+                        if (error.includes('Free trial limit reached')) {
+                            showSubscriptionPrompt(
+                                'Free Trial Limit Reached',
+                                response.data.message || 'Upgrade your subscription to access unlimited features.',
+                                response.data.ad_url ? addUTMParams(response.data.ad_url) : addUTMParams(baseSubscriptionUrl)
+                            );
+                            oneclick_images_admin_vars.trial_expired = true;
+                            // Button stays disabled when trial expires
+                        } else if (error.includes('Usage limit reached')) {
+                            showSubscriptionPrompt(
+                                'Usage Limit Reached',
+                                response.data.message || 'Purchase more credits or enter a new license key.',
+                                response.data.ad_url ? addUTMParams(response.data.ad_url) : addUTMParams(baseSubscriptionUrl)
+                            );
+                            button.attr('disabled', false).text('Generate Metadata');
+                        } else if (error.startsWith('Image validation failed')) {
+                            showImageRejectionModal(error);
+                            button.attr('disabled', false).text('Generate Metadata');
+                        } else if (error.startsWith('No metadata fields require generation')) {
+                            showGeneralErrorModal('The image already has all metadata fields filled, and "Override Metadata" is disabled.');
+                            button.attr('disabled', false).text('Generate Metadata');
+                        } else if (error.includes('license')) {
+                            showSubscriptionPrompt(
+                                'Invalid License',
+                                error || 'Please enter a valid license key to continue.',
+                                addUTMParams(baseSubscriptionUrl)
+                            );
                             button.attr('disabled', false).text('Generate Metadata');
                         } else {
-                            showGeneralErrorModal('Metadata generation was skipped or an unexpected issue occurred.');
+                            showGeneralErrorModal(error || 'An unexpected error occurred.');
                             button.attr('disabled', false).text('Generate Metadata');
                         }
                     } else {
@@ -219,29 +228,39 @@
         // Expose updateMetadataFields globally.
         window.updateMetadataFields = updateMetadataFields;
 
+
         /**
          * Displays a subscription prompt modal for usage limits.
          *
          * @param {string} error   The error message from the server.
          * @param {string} message Additional message from the server.
-         * @param {string} url     The URL for subscription plans.
-         */
-        /**
-         * Displays a subscription prompt modal for usage limits.
-         *
-         * @param {string} error   The error message from the server.
-         * @param {string} message Additional message from the server.
-         * @param {string} url     The URL for subscription plans.
+         * @param {string} url     The base URL for subscription plans.
          */
         function showSubscriptionPrompt(error, message, url) {
             const licenseStatus = oneclick_images_admin_vars.license_status;
             let subscriptionOptionsHtml = '';
 
+            // Base UTM parameters
+            const utmBase = {
+                utm_source: 'oneclick_images_plugin',
+                utm_medium: 'modal',
+                utm_campaign: error.includes('Free trial') ? 'free_trial_limit' : 'usage_limit'
+            };
+
+            // Build URL with UTM parameters
+            const addUTMParams = (baseUrl, plan) => {
+                const params = new URLSearchParams({
+                    ...utmBase,
+                    utm_content: plan ? `${plan}_plan` : 'additional_credits'
+                });
+                return `${baseUrl}?${params.toString()}`;
+            };
+
             if ('active' === licenseStatus) {
                 subscriptionOptionsHtml = `
                     <div class="occ-subscription-extra">
                         <p>You've reached your image limit. Need more? Buy additional credits:</p>
-                        <a href="https://oneclickcontent.com/buy-more-image-credits/?credits=100" target="_blank" class="occ-subscription-button">Get 100 More Images for $6.99</a>
+                        <a href="${addUTMParams('https://oneclickcontent.com/buy-more-image-credits/', '100_credits')}" target="_blank" class="occ-subscription-button">Get 100 More Images for $6.99</a>
                     </div>
                 `;
             } else {
@@ -252,35 +271,35 @@
                             <p>100 Images</p>
                             <p class="plan-description">Suitable for small projects and blogs.</p>
                             <strong>$4.99/month</strong>
-                            <a href="${url}?plan=growth" target="_blank" class="occ-subscription-button">Choose Growth</a>
+                            <a href="${addUTMParams(url, 'growth')}" target="_blank" class="occ-subscription-button">Choose Growth</a>
                         </div>
                         <div class="occ-subscription-tier">
                             <h3>Business Plan</h3>
                             <p>500 Images</p>
                             <p class="plan-description">Ideal for small to medium businesses.</p>
                             <strong>$19.99/month</strong>
-                            <a href="${url}?plan=business" target="_blank" class="occ-subscription-button">Choose Business</a>
+                            <a href="${addUTMParams(url, 'business')}" target="_blank" class="occ-subscription-button">Choose Business</a>
                         </div>
                         <div class="occ-subscription-tier most-popular">
                             <h3>Pro Plan <span class="badge">Most Popular</span></h3>
                             <p>1,000 Images</p>
                             <p class="plan-description">Most popular choice for professionals.</p>
                             <strong>$29.99/month</strong>
-                            <a href="${url}?plan=pro" target="_blank" class="occ-subscription-button primary">Choose Pro</a>
+                            <a href="${addUTMParams(url, 'pro')}" target="_blank" class="occ-subscription-button primary">Choose Pro</a>
                         </div>
                         <div class="occ-subscription-tier">
                             <h3>Premium Plan</h3>
                             <p>3,000 Images</p>
                             <p class="plan-description">High-volume users and agencies.</p>
                             <strong>$89.99/month</strong>
-                            <a href="${url}?plan=premium" target="_blank" class="occ-subscription-button">Choose Premium</a>
+                            <a href="${addUTMParams(url, 'premium')}" target="_blank" class="occ-subscription-button">Choose Premium</a>
                         </div>
                         <div class="occ-subscription-tier">
                             <h3>Elite Plan</h3>
                             <p>5,000 Images</p>
                             <p class="plan-description">Enterprise-level usage.</p>
                             <strong>$129.00/month</strong>
-                            <a href="${url}?plan=elite" target="_blank" class="occ-subscription-button">Choose Elite</a>
+                            <a href="${addUTMParams(url, 'elite')}" target="_blank" class="occ-subscription-button">Choose Elite</a>
                         </div>
                     </div>
                 `;
@@ -291,8 +310,8 @@
                     <div class="occ-subscription-modal-overlay"></div>
                     <div class="occ-subscription-modal-content" tabindex="0">
                         <span class="occ-subscription-modal-close dashicons dashicons-no" aria-label="Close"></span>
-                        <h2 id="subscription-modal-title"><span class="dashicons dashicons-lock"></span> Your Free Trial Has Ended</h2>
-                        <p>Thank you for trying our service! To continue generating metadata for your images, please choose a subscription plan that suits your needs.</p>
+                        <h2 id="subscription-modal-title"><span class="dashicons dashicons-lock"></span> ${error.includes('Free trial') ? 'Your Free Trial Has Ended' : 'Usage Limit Reached'}</h2>
+                        <p>${$( '<div/>' ).text(message).html()}</p>
                         ${subscriptionOptionsHtml}
                     </div>
                 </div>

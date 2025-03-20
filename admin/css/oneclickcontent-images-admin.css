@@ -734,7 +734,7 @@
   transform: scale(1.05);
 }
 
-.modal {
+.toplevel_page_oneclickcontent-images .modal {
     position: fixed;
     top: 0;
     left: 0;
@@ -746,7 +746,7 @@
     justify-content: center;
     align-items: center;
 }
-.modal-content {
+.toplevel_page_oneclickcontent-images .modal-content {
     background: #fff;
     padding: 20px;
     border-radius: 5px;
@@ -754,18 +754,20 @@
     width: 90%;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
-.modal-buttons {
+.toplevel_page_oneclickcontent-images .modal-buttons {
     margin-top: 20px;
     text-align: right;
 }
-.modal-buttons .button {
+.toplevel_page_oneclickcontent-images .modal-buttons .button {
     margin-left: 10px;
 }
-.warning {
+
+#bulk-generate-warning.warning {
     color: #d63638;
     margin: 10px 0;
 }
-.generate-spinner {
+
+#bulk-generate-warning .generate-spinner {
     display: inline-block;
     width: 20px;
     height: 20px;
@@ -775,6 +777,7 @@
     animation: spin 1s linear infinite;
     vertical-align: middle;
 }
+
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
@@ -800,7 +803,7 @@
 }
 
 /* Modal Box */
-.modal-content {
+#occ-subscription-modal .modal-content {
     background: #fff;
     border-radius: 12px;
     box-shadow: 0 15px 45px rgba(0, 0, 0, 0.2);
@@ -826,52 +829,52 @@
 }
 
 /* Header */
-.modal-content .modal-header {
+#occ-subscription-modal .modal-content .modal-header {
     margin-bottom: 20px;
 }
 
-.modal-content .modal-header img {
+#occ-subscription-modal .modal-content .modal-header img {
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* Headline */
-.modal-content h2 {
+#occ-subscription-modal .modal-content h2 {
     font-size: 1.75rem;
     color: #111;
 }
 
 /* Paragraphs */
-.modal-content p {
+#occ-subscription-modal .modal-content p {
     font-size: 1rem;
     line-height: 1.6;
     margin-bottom: 1em;
 }
 
-.modal-content p strong {
+#occ-subscription-modal .modal-content p strong {
     color: #0073aa;
 }
 
 /* List Styling */
-.modal-content ol {
+#occ-subscription-modal .modal-content ol {
     margin-left: 1.25em;
     padding-left: 0;
 }
 
-.modal-content ol li {
+#occ-subscription-modal .modal-content ol li {
     margin-bottom: 0.75em;
     line-height: 1.5;
 }
 
 /* Buttons */
-.modal-buttons {
+#occ-subscription-modal .modal-buttons {
     margin-top: 30px;
     display: flex;
     justify-content: flex-end;
     gap: 10px;
 }
 
-.modal-buttons .button {
+#occ-subscription-modal .modal-buttons .button {
     padding: 10px 20px;
     font-size: 1rem;
     border-radius: 6px;
@@ -879,37 +882,37 @@
     transition: background 0.3s ease, transform 0.2s ease;
 }
 
-.modal-buttons .button:hover {
+#occ-subscription-modal .modal-buttons .button:hover {
     transform: translateY(-1px);
 }
 
-.modal-buttons .button-primary {
+#occ-subscription-modal .modal-buttons .button-primary {
     background-color: #0073aa;
     border-color: #0073aa;
     color: #fff;
 }
 
-.modal-buttons .button-primary:hover {
+#occ-subscription-modal .modal-buttons .button-primary:hover {
     background-color: #005d8f;
     border-color: #005d8f;
 }
 
-.modal-buttons .button-secondary {
+#occ-subscription-modal .modal-buttons .button-secondary {
     background-color: #f3f4f5;
     border-color: #dcdcde;
     color: #1d2327;
 }
 
-.modal-buttons .button-secondary:hover {
+#occ-subscription-modal .modal-buttons .button-secondary:hover {
     background-color: #e2e4e6;
     border-color: #d7d8da;
 }
 
-.modal-content p strong {
+#occ-subscription-modal .modal-content p strong {
     color: #0073aa;
 }
 
-.modal-content p:nth-of-type(3) {
+#occ-subscription-modal .modal-content p:nth-of-type(3) {
     background: #f0f8ff;
     padding: 12px 16px;
     border-left: 4px solid #0073aa;

@@ -125,29 +125,29 @@ jQuery( document ).ready( function( $ ) {
      * @param {string} progressBar     The progress bar selector.
      * @param {string} messageContainer The message container selector.
      */
-    function processBulkGeneration( ids, index, $button, total, statusContainer, stopButton, progressBar, messageContainer ) {
-        if ( stopBulkGeneration ) {
-            $( messageContainer ).text( 'Generation stopped.' );
-            $( stopButton ).hide();
+    function processBulkGeneration(ids, index, $button, total, statusContainer, stopButton, progressBar, messageContainer) {
+        if (stopBulkGeneration) {
+            $(messageContainer).text('Generation stopped.');
+            $(stopButton).hide();
             $( $button ).prop( 'disabled', false ).text( 'Generate All Metadata' );
             return;
         }
 
-        if ( index >= ids.length ) {
-            $( messageContainer ).text( 'All metadata generation complete!' );
-            $( progressBar ).css( 'width', '100%' );
+        if (index >= ids.length) {
+            $(messageContainer).text('All metadata generation complete!');
+            $(progressBar).css('width', '100%');
             $( $button ).prop( 'disabled', false ).text( 'Generate All Metadata' );
-            $( stopButton ).hide();
+            $(stopButton).hide();
             fetchUsageStatus();
             return;
         }
 
-        const imageId = ids[ index ];
-        const percent = Math.round( ( ( index + 1 ) / total ) * 100 );
-        $( messageContainer ).text( `Processing image ${index + 1} of ${total} (ID: ${imageId})` );
-        $( progressBar ).css( 'width', percent + '%' );
+        const imageId = ids[index];
+        const percent = Math.round(((index + 1) / total) * 100);
+        $(messageContainer).text(`Processing image ${index + 1} of ${total} (ID: ${imageId})`);
+        $(progressBar).css('width', percent + '%');
 
-        $.ajax( {
+        $.ajax({
             url: oneclick_images_admin_vars.ajax_url,
             type: 'POST',
             data: {
@@ -155,19 +155,64 @@ jQuery( document ).ready( function( $ ) {
                 nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
                 image_id: imageId,
             },
-            success: function( response ) {
-                if ( response.success && response.data && response.data.metadata ) {
-                    renderMetadataUI( imageId, response.data.metadata, statusContainer );
+            success: function(response) {
+                // Log the raw response to debug its structure
+                console.log('Raw response:', response);
+
+                // Handle potential nested response (e.g., WP REST API)
+                const data = response.data && typeof response.data === 'object' ? response.data : response;
+
+                if (data.success === true && data.data && data.data.metadata) {
+                    // Success case: metadata generated
+                    renderMetadataUI(imageId, data.data.metadata, statusContainer);
+                    fetchUsageStatus();
+                    processBulkGeneration(ids, index + 1, $button, total, statusContainer, stopButton, progressBar, messageContainer);
+                } else if (data.success === false && data.error) {
+                    if (data.error.includes('Free trial limit reached')) {
+                        // Free trial limit reached
+                        $(messageContainer).text(data.error);
+                        $(stopButton).hide();
+                        $( $button ).prop( 'disabled', false ).text( 'Generate All Metadata' );
+                        showSubscriptionPrompt(
+                            data.error,
+                            data.message || 'Upgrade your subscription to access unlimited features.',
+                            data.ad_url || 'https://oneclickcontent.com/image-detail-generator/'
+                        );
+                        // Explicitly stop recursion
+                        return;
+                    } else if (data.error.includes('Usage limit reached')) {
+                        // Subscription usage limit reached
+                        $(messageContainer).text(data.error);
+                        $(stopButton).hide();
+                        $( $button ).prop( 'disabled', false ).text( 'Generate All Metadata' );
+                        const htmlContent = `
+                            <p><strong>Error:</strong> ${$( '<div/>' ).text(data.error).html()}</p>
+                            <p>${$( '<div/>' ).text(data.message).html()}</p>
+                            <p><a href="${$( '<div/>' ).text(data.ad_url).html()}" target="_blank">Purchase more credits</a> to continue generating metadata.</p>
+                        `;
+                        showLimitPrompt(htmlContent);
+                        // Explicitly stop recursion
+                        return;
+                    } else {
+                        // Other error case
+                        $(messageContainer).text(`Image ${imageId} - Error: ${data.error || 'Unknown error'}`);
+                        fetchUsageStatus();
+                        processBulkGeneration(ids, index + 1, $button, total, statusContainer, stopButton, progressBar, messageContainer);
+                    }
+                } else {
+                    // Unexpected response format
+                    $(messageContainer).text(`Image ${imageId} - Unexpected response format`);
+                    console.error('Unexpected response:', data);
+                    fetchUsageStatus();
+                    processBulkGeneration(ids, index + 1, $button, total, statusContainer, stopButton, progressBar, messageContainer);
                 }
-                fetchUsageStatus();
-                processBulkGeneration( ids, index + 1, $button, total, statusContainer, stopButton, progressBar, messageContainer );
             },
-            error: function( xhr ) {
-                $( messageContainer ).text( `Image ${imageId} - AJAX error: ${xhr.responseText}` );
+            error: function(xhr) {
+                $(messageContainer).text(`Image ${imageId} - AJAX error: ${xhr.responseText}`);
                 fetchUsageStatus();
-                processBulkGeneration( ids, index + 1, $button, total, statusContainer, stopButton, progressBar, messageContainer );
+                processBulkGeneration(ids, index + 1, $button, total, statusContainer, stopButton, progressBar, messageContainer);
             },
-        } );
+        });
     }
 
     /**

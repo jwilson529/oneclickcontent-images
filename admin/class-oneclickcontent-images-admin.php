@@ -209,7 +209,7 @@ class OneClickContent_Images_Admin {
 				<div class="modal-content">
 					<div class="modal-header" style="display: flex; align-items: center; gap: 15px;">
 						<img src="<?php echo esc_url( $fallback_image_url ); ?>" alt="Plugin Icon" style="width: 50px; height: 50px;">
-						<h2 style="margin: 0;"><?php esc_html_e( 'Welcome to OneClickContent Image Detail Generator!', 'oneclickcontent-images' ); ?></h2>
+						<h3 style="margin: 0;"><?php esc_html_e( 'Welcome to OneClickContent Image Detail Generator!', 'oneclickcontent-images' ); ?></h3>
 					</div>
 					<p><?php esc_html_e( 'This plugin helps you effortlessly manage image metadata — including alt text, titles, captions, and descriptions — so your site looks great, loads better, and ranks higher.', 'oneclickcontent-images' ); ?></p>
 					<p>
@@ -514,6 +514,16 @@ class OneClickContent_Images_Admin {
 	 * @param WP_Post $post        The attachment post object.
 	 * @return array Modified form fields with the custom button.
 	 */
+	/**
+	 * Add a "Generate Metadata" button to the Media Library attachment details.
+	 *
+	 * Modifies the Media Library form to include a button for generating metadata.
+	 *
+	 * @since 1.0.0
+	 * @param array   $form_fields An array of attachment form fields.
+	 * @param WP_Post $post        The attachment post object.
+	 * @return array Modified form fields with the custom button.
+	 */
 	public function add_generate_metadata_button( $form_fields, $post ) {
 		if ( ! preg_match( '/^image\//', $post->post_mime_type ) ) {
 			return $form_fields;
@@ -557,6 +567,11 @@ class OneClickContent_Images_Admin {
 					$usage_data['used_count']      = $body['used_count'] ?? 0;
 					$usage_data['total_allowed']   = ( $body['usage_limit'] ?? 0 ) + ( $body['addon_count'] ?? 0 );
 					$usage_data['remaining_count'] = $body['remaining_count'] ?? 0;
+
+					if ( $trial_expired ) {
+						update_option( 'oneclick_images_trial_expired', false );
+						$trial_expired = false;
+					}
 				}
 			}
 		} elseif ( $is_trial && $trial_usage >= $trial_limit ) {

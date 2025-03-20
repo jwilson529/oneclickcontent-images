@@ -18,7 +18,7 @@
  * Plugin Name:       OneClickContent - Image Detail Generator
  * Plugin URI:        https://oneclickcontent.com
  * Description:       Boost images with OneClickContent AI: auto titles, descs, captions & alt text!
- * Version:           1.1.8
+ * Version:           1.1.9
  * Author:            James Wilson
  * Author URI:        https://oneclickcontent.com/
  * License:           GPL-2.0+
@@ -45,7 +45,7 @@ if ( ! defined( 'WPINC' ) ) {
  *
  * @since 1.0.0
  */
-define( 'OCC_IMAGES_VERSION', '1.1.8' );
+define( 'OCC_IMAGES_VERSION', '1.1.9' );
 define( 'OCC_IMAGES_PRODUCT_SLUG', 'oneclickcontent-image-meta-generator' );
 
 /**

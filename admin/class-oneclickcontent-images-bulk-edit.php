@@ -33,48 +33,11 @@ class OneClickContent_Images_Bulk_Edit {
 	 * @return void
 	 */
 	public function render_bulk_edit_tab() {
-		$license_key      = get_option( 'oneclick_images_license_key', '' );
-		$origin_url       = home_url();
-		$product_slug     = 'oneclickcontent-images';
-		$is_valid_license = false;
-		$usage_data       = array(
-			'used_count'      => 0,
-			'total_allowed'   => 100,
-			'remaining_count' => 100,
-			'cta_html'        => '',
-		);
+		$license_status   = get_option( 'oneclick_images_license_status', 'unknown' );
+		$is_valid_license = ( 'active' === $license_status );
 
-		if ( ! empty( $license_key ) ) {
-			$usage_response = wp_remote_post(
-				rest_url( 'subscriber/v1/check-usage' ),
-				array(
-					'body'    => wp_json_encode(
-						array(
-							'license_key'  => $license_key,
-							'origin_url'   => $origin_url,
-							'product_slug' => $product_slug,
-						)
-					),
-					'headers' => array( 'Content-Type' => 'application/json' ),
-					'timeout' => 10,
-				)
-			);
-
-			if ( ! is_wp_error( $usage_response ) ) {
-				$body = json_decode( wp_remote_retrieve_body( $usage_response ), true );
-				if ( isset( $body['success'] ) && $body['success'] ) {
-					$is_valid_license              = true;
-					$usage_data['used_count']      = $body['used_count'] ?? 0;
-					$usage_data['total_allowed']   = ( $body['usage_limit'] ?? 0 ) + ( $body['addon_count'] ?? 0 );
-					$usage_data['remaining_count'] = $body['remaining_count'] ?? 0;
-					$usage_data['cta_html']        = $body['cta_html'] ?? '';
-				}
-			}
-		}
-
-		$fallback_image_url = plugin_dir_url( __FILE__ ) . 'assets/icon.png'; // Get the image URL.
-
-		$license_cta_html = '<div class="bulk-edit-license-warning compact">
+		$fallback_image_url = plugin_dir_url( __FILE__ ) . 'assets/icon.png';
+		$license_cta_html   = '<div class="bulk-edit-license-warning compact">
 	        <div class="cta-left">
 	            <img src="' . esc_url( $fallback_image_url ) . '" alt="One Click Content Icon" style="float: left; margin-right: 10px; width: 50px; height: auto;">
 	            <h2>' . esc_html__( 'Never Forget an Alt Tag Again!', 'oneclickcontent-images' ) . '</h2>
@@ -90,15 +53,22 @@ class OneClickContent_Images_Bulk_Edit {
 	        </div>
 	    </div>';
 
+		$usage_data = array(
+			'used_count'      => 0,
+			'total_allowed'   => 10,
+			'remaining_count' => 10,
+			'cta_html'        => '',
+		);
+
 		wp_localize_script(
 			'oneclickcontent-images-bulk-edit',
 			'oneclick_images_bulk_vars',
 			array(
 				'ajax_url'         => admin_url( 'admin-ajax.php' ),
 				'nonce'            => wp_create_nonce( 'oneclick_images_bulk_edit' ),
-				'usage'            => $usage_data,
 				'is_valid_license' => $is_valid_license,
 				'license_cta_html' => $license_cta_html,
+				'usage'            => $usage_data,
 			)
 		);
 		?>
@@ -109,24 +79,18 @@ class OneClickContent_Images_Bulk_Edit {
 				<h2><?php esc_html_e( 'Your Usage', 'oneclickcontent-images' ); ?></h2>
 				<div id="usage_status" class="usage-summary">
 					<?php if ( $is_valid_license ) : ?>
-						<strong id="usage_count">
-							<?php
-							$used_count    = intval( $usage_data['used_count'] );
-							$total_allowed = intval( $usage_data['total_allowed'] );
-							echo esc_html( "Used $used_count of $total_allowed credits" );
-							?>
-						</strong>
+						<strong id="usage_count"><?php esc_html_e( 'Loading usage data...', 'oneclickcontent-images' ); ?></strong>
 						<div class="progress">
 							<div 
 								id="usage_progress" 
 								class="progress-bar bg-success" 
 								role="progressbar" 
-								aria-valuenow="<?php echo esc_attr( $used_count ); ?>" 
+								aria-valuenow="0" 
 								aria-valuemin="0" 
-								aria-valuemax="<?php echo esc_attr( $total_allowed ); ?>" 
-								style="width: <?php echo esc_attr( ( $total_allowed > 0 ) ? ( $used_count / $total_allowed * 100 ) : 0 ); ?>%;"
+								aria-valuemax="100" 
+								style="width: 0%;"
 							>
-								<?php echo esc_html( ( $total_allowed > 0 ) ? round( $used_count / $total_allowed * 100 ) : 0 ); ?>%
+								0%
 							</div>
 						</div>
 					<?php else : ?>
@@ -135,7 +99,7 @@ class OneClickContent_Images_Bulk_Edit {
 				</div>
 
 				<div class="bulk-edit-header">
-					<button id="generate-all-metadata" class="button button-primary button-hero" <?php echo ! $is_valid_license || $usage_data['remaining_count'] <= 0 ? 'disabled' : ''; ?>>
+					<button id="generate-all-metadata" class="button button-primary button-hero" <?php echo $is_valid_license ? '' : 'disabled'; ?>>
 						<?php esc_html_e( 'Generate All Metadata', 'oneclickcontent-images' ); ?>
 					</button>
 					<button id="stop-bulk-generation" class="button button-secondary" style="display:none;">
@@ -158,7 +122,9 @@ class OneClickContent_Images_Bulk_Edit {
 					<h2><?php esc_html_e( 'Confirm Bulk Metadata Generation', 'oneclickcontent-images' ); ?></h2>
 					<p><?php esc_html_e( 'Generate metadata for all images in your library? This may take some time.', 'oneclickcontent-images' ); ?></p>
 					<div id="bulk-generate-warning" class="warning" style="display:none;">
-						<p><strong><?php esc_html_e( 'Warning:', 'oneclickcontent-images' ); ?></strong> <?php esc_html_e( 'This will overwrite any existing image metadata.', 'oneclickcontent-images' ); ?></p>
+						<p><strong><?php esc_html_e( 'Warning:', 'oneclickcontent-images' ); ?></strong> 
+							<?php esc_html_e( 'This will overwrite any existing image metadata.', 'oneclickcontent-images' ); ?>
+						</p>
 					</div>
 					<div class="modal-buttons"></div>
 				</div>

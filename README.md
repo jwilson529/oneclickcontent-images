@@ -6,7 +6,7 @@
 **Requires at least**: 5.0  
 **Tested up to**: 6.7  
 **Requires PHP**: 7.2  
-**Stable tag**: 1.1.8  
+**Stable tag**: 1.1.9  
 **License**: GPLv2 or later  
 **License URI**: [GPLv2](https://www.gnu.org/licenses/gpl-2.0.html)  
 
@@ -114,6 +114,9 @@ If enabled, the plugin will automatically generate details for any images you up
 ---
 
 ## Changelog
+
+### 1.1.9
+- Better Settings and Bulk Edit screen handling.
 
 ### 1.1.8
 - Enhanced security with improved nonce verification across AJAX and form handling.

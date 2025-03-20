@@ -24,7 +24,6 @@
                     dismiss_first_time_nonce: oneclick_images_admin_vars.dismiss_first_time_nonce
                 },
                 success: function(response) {
-                    console.log('[OneClick Images] Dismissed modal:', response);
                     $('#oneclick-images-first-time-modal').fadeOut();
                 }
             });
@@ -369,24 +368,18 @@
          */
         function promiseSaveSettings(element) {
             return new Promise((resolve, reject) => {
-                console.log('[OneClickContent] Starting save settings process');
-                
-                // Create an array of all form inputs
-                console.log('[OneClickContent] Form data before serialization:', $('#oneclick_images_settings_form').serializeArray());
-                
+
                 // Special handling for checkboxes
                 const checkboxStatus = {};
                 $('.metadata-field-checkbox').each(function() {
                     const name = $(this).attr('name');
                     const checked = $(this).is(':checked');
                     checkboxStatus[name] = checked;
-                    console.log('[OneClickContent] Checkbox status:', name, checked);
                 });
                 
                 const formData = $('#oneclick_images_settings_form').serialize();
-                console.log('[OneClickContent] Serialized form data:', formData);
                 
-                showSavingMessage(element, 'Saving...', 'info');
+                showSavingMessage(element, ' Saving...', 'info');
                 
                 $.ajax({
                     url: oneclick_images_admin_vars.ajax_url,
@@ -397,7 +390,6 @@
                         settings: formData
                     },
                     success: function(response) {
-                        console.log('[OneClickContent] AJAX response:', response);
                         if (response.success) {
                             showSavingMessage(element, ' Saved!', 'success');
                             resolve();

@@ -201,14 +201,8 @@ jQuery(document).ready(function($) {
         const $row = $button.closest('tr');
         const rowIndex = table.row($row).index();
 
-        console.log('Button clicked - Image ID:', imageId);
-        console.log('Trial expired:', oneclick_images_bulk_vars.trial_expired);
-        console.log('License valid:', oneclick_images_bulk_vars.is_valid_license);
-        console.log('Remaining count:', oneclick_images_bulk_vars.usage.remaining_count);
-
         // Check usage limits before proceeding
         if (oneclick_images_bulk_vars.trial_expired) {
-            console.log('Showing trial expired subscription prompt');
             window.showSubscriptionPrompt(
                 'Free Trial Expired',
                 'Your free trial has ended. Subscribe to continue generating metadata.',
@@ -217,7 +211,6 @@ jQuery(document).ready(function($) {
             return;
         }
         if (oneclick_images_bulk_vars.is_valid_license && oneclick_images_bulk_vars.usage.remaining_count <= 0) {
-            console.log('Showing out of credits subscription prompt');
             window.showSubscriptionPrompt(
                 'Usage Limit Reached',
                 'You’ve used all your credits. Purchase more to continue.',
@@ -237,7 +230,6 @@ jQuery(document).ready(function($) {
                 image_id: imageId,
             },
             success: function(response) {
-                console.log('AJAX success response:', response);
                 if (response.success && response.data && response.data.metadata) {
                     let metadata = response.data.metadata;
                     if (typeof metadata === 'object' && metadata.metadata) {
@@ -245,9 +237,7 @@ jQuery(document).ready(function($) {
                     }
 
                     if (metadata.success === false) {
-                        console.log('Metadata generation failed:', metadata.error);
                         if (metadata.error.includes('limit reached')) {
-                            console.log('Showing limit reached subscription prompt');
                             window.showSubscriptionPrompt(
                                 metadata.error.includes('Free trial') ? 'Free Trial Limit Reached' : 'Usage Limit Reached',
                                 metadata.message || metadata.error || 'You’ve reached your limit. Please subscribe to continue.',
@@ -260,24 +250,20 @@ jQuery(document).ready(function($) {
                             $('.generate-metadata').prop('disabled', true).attr('title', 'Out of credits');
                             $('#generate-all-metadata').prop('disabled', true);
                         } else if (metadata.error.includes('Image validation failed')) {
-                            console.log('Showing image rejection modal');
                             window.showImageRejectionModal(metadata.error);
                         } else if (metadata.error.includes('Metadata processing failed') && !oneclick_images_bulk_vars.is_valid_license) {
-                            console.log('Showing invalid license subscription prompt');
                             window.showSubscriptionPrompt(
                                 'Invalid License',
                                 'Your license appears to be invalid. Please enter a valid license key or subscribe to continue.',
                                 oneclick_images_bulk_vars.settings_url || 'https://oneclickcontent.com/image-detail-generator/'
                             );
                         } else if (metadata.error.includes('license')) {
-                            console.log('Showing explicit license error subscription prompt');
                             window.showSubscriptionPrompt(
                                 'Invalid License',
                                 metadata.error || 'Please enter a valid license key to continue.',
                                 oneclick_images_bulk_vars.settings_url || 'https://oneclickcontent.com/image-detail-generator/'
                             );
                         } else {
-                            console.log('Showing general error modal');
                             window.showGeneralErrorModal(metadata.error || 'An unexpected error occurred.');
                         }
                         $button.prop('disabled', false).text('Generate');
@@ -286,7 +272,6 @@ jQuery(document).ready(function($) {
 
                     const rowData = table.row(rowIndex).data();
                     if (rowData) {
-                        console.log('Updating row data with metadata:', metadata);
                         rowData.title = metadata.title || rowData.title;
                         rowData.alt_text = metadata.alt_text || rowData.alt_text;
                         rowData.description = metadata.description || rowData.description;
@@ -313,11 +298,9 @@ jQuery(document).ready(function($) {
                         }
                         updateUsageDisplay();
                     } else {
-                        console.log('Reloading table due to missing rowData');
                         table.ajax.reload(null, false);
                     }
                 } else {
-                    console.log('AJAX success but invalid response format');
                     $status.text('Error: ' + (response.message || response.error || 'Failed'))
                         .addClass('action-status-error').fadeIn();
                     $button.prop('disabled', false).text('Generate');
@@ -326,7 +309,6 @@ jQuery(document).ready(function($) {
                 }
             },
             error: function(xhr) {
-                console.log('AJAX error:', xhr.responseText);
                 $status.text('Error: ' + xhr.responseText).addClass('action-status-error').fadeIn();
                 $button.prop('disabled', false).text('Generate');
                 setTimeout(() => $status.fadeOut(), 2000);
@@ -353,10 +335,6 @@ jQuery(document).ready(function($) {
         const $row = $input.closest('tr');
         const rowData = table.row($row).data();
 
-        console.log('saveField called - Image ID:', imageId, 'Field:', field);
-        console.log('New value:', newValue, 'Original value:', originalValue);
-        console.log('Status element found:', $status.length > 0, 'Selector:', $input.closest('.input-wrapper').find('.save-status').length);
-
         // Store current active element details for focus restoration
         window.activeElementInfo = {
             field: document.activeElement.getAttribute('data-field'),
@@ -367,7 +345,6 @@ jQuery(document).ready(function($) {
         };
 
         if (!rowData) {
-            console.log('No row data found, reloading table');
             if ($status.length === 0) console.error('Status element not found in DOM');
             $status.text('Error: Row data lost').addClass('save-status-error').fadeIn();
             table.ajax.reload(function() {
@@ -380,7 +357,6 @@ jQuery(document).ready(function($) {
         }
 
         if (newValue === originalValue) {
-            console.log('No changes detected');
             if ($status.length === 0) console.error('Status element not found in DOM');
             $status.text('No changes').addClass('save-status-nochange').fadeIn();
             setTimeout(() => $status.fadeOut(), 2000);
@@ -388,9 +364,8 @@ jQuery(document).ready(function($) {
             return;
         }
 
-        console.log('Attempting to show saving indicator');
         if ($status.length === 0) console.error('Status element not found in DOM');
-        $status.text('Saving...').addClass('save-status-saving').css('display', 'inline-block'); // Force display
+        $status.text(' Saving...').addClass('save-status-saving').css('display', 'inline-block'); // Force display
 
         const allFields = {
             title: $row.find('input[data-field="title"]').val() || rowData.title || '',
@@ -413,7 +388,6 @@ jQuery(document).ready(function($) {
                 updated_field: field,
             },
             success: function(response) {
-                console.log('AJAX success response:', response);
                 if (response.success && response.data) {
                     if ($status.length === 0) console.error('Status element not found in DOM');
                     $status.text('Saved!').removeClass('save-status-saving').addClass('save-status-saved').fadeIn();
@@ -441,7 +415,6 @@ jQuery(document).ready(function($) {
                 }
             },
             error: function(xhr) {
-                console.log('AJAX error:', xhr.responseText);
                 if ($status.length === 0) console.error('Status element not found in DOM');
                 $status.text('Error: ' + xhr.responseText)
                     .removeClass('save-status-saving').addClass('save-status-error').fadeIn();

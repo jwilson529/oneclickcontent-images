@@ -112,7 +112,7 @@ class OneClickContent_Images_Admin {
 				<!-- All settings output is encapsulated within #oneclick_images -->
 				<div id="oneclick_images" class="wrap">
 					<?php if ( 'active' === $license_status ) : ?>
-						<!-- License Active: Display usage info and bulk generation options -->
+						<!-- License Active: Display usage info -->
 						<div class="usage-info-section">
 							<h2><?php esc_html_e( 'Your Usage', 'oneclickcontent-images' ); ?></h2>
 							<div id="usage_status" class="usage-summary">
@@ -127,24 +127,6 @@ class OneClickContent_Images_Admin {
 										0%
 									</div>
 								</div>
-							</div>
-							<div class="bulk-edit-header">
-								<button id="generate-all-metadata-settings" class="button button-primary button-hero">
-									<?php esc_html_e( 'Generate All Metadata', 'oneclickcontent-images' ); ?>
-								</button>
-								<button id="stop-bulk-generation-settings" class="button button-secondary" style="display:none;">
-									<?php esc_html_e( 'Stop Generation', 'oneclickcontent-images' ); ?>
-								</button>
-								<p class="description">
-									<?php esc_html_e( 'Click to generate metadata for all your images.', 'oneclickcontent-images' ); ?>
-								</p>
-							</div>
-							<div id="bulk-generate-status-settings" class="bulk-generate-status" style="display: none;">
-								<h3><?php esc_html_e( 'Bulk Generation Progress', 'oneclickcontent-images' ); ?></h3>
-								<div id="bulk-generate-progress-container-settings" class="bulk-generate-progress-container">
-									<div id="bulk-generate-progress-bar-settings" class="bulk-generate-progress-bar"></div>
-								</div>
-								<div id="bulk-generate-message-settings" class="bulk-generate-message"></div>
 							</div>
 						</div>
 					<?php else : ?>
@@ -167,6 +149,26 @@ class OneClickContent_Images_Admin {
 							</div>
 						</div>
 					<?php endif; ?>
+
+					<!-- Bulk generation options (shown regardless of license status) -->
+					<div class="bulk-edit-header">
+						<button id="generate-all-metadata-settings" class="button button-primary button-hero">
+							<?php esc_html_e( 'Generate All Metadata', 'oneclickcontent-images' ); ?>
+						</button>
+						<button id="stop-bulk-generation-settings" class="button button-secondary" style="display:none;">
+							<?php esc_html_e( 'Stop Generation', 'oneclickcontent-images' ); ?>
+						</button>
+						<p class="description">
+							<?php esc_html_e( 'Click to generate metadata for all your images. Free trial users get 10 generations!', 'oneclickcontent-images' ); ?>
+						</p>
+					</div>
+					<div id="bulk-generate-status-settings" class="bulk-generate-status" style="display: none;">
+						<h3><?php esc_html_e( 'Bulk Generation Progress', 'oneclickcontent-images' ); ?></h3>
+						<div id="bulk-generate-progress-container-settings" class="bulk-generate-progress-container">
+							<div id="bulk-generate-progress-bar-settings" class="bulk-generate-progress-bar"></div>
+						</div>
+						<div id="bulk-generate-message-settings" class="bulk-generate-message"></div>
+					</div>
 
 					<!-- Settings Form: Always inside #oneclick_images -->
 					<form method="post" action="options.php" id="oneclick_images_settings_form">

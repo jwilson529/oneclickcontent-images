@@ -126,7 +126,14 @@ class OneClickContent_Images_Bulk_Edit {
 							<?php esc_html_e( 'This will overwrite any existing image metadata.', 'oneclickcontent-images' ); ?>
 						</p>
 					</div>
-					<div class="modal-buttons"></div>
+					<div class="modal-buttons">
+						<button id="confirm-bulk-generate" class="button button-primary">
+							<?php esc_html_e( 'Yes, Generate', 'oneclickcontent-images' ); ?>
+						</button>
+						<button id="cancel-bulk-generate" class="button button-secondary">
+							<?php esc_html_e( 'Cancel', 'oneclickcontent-images' ); ?>
+						</button>
+					</div>
 				</div>
 			</div>
 

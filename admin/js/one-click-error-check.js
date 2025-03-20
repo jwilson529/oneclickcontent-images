@@ -37,18 +37,8 @@
                 url: oneclick_images_admin_vars.ajax_url,
                 method: 'POST',
                 data: {
-                    action: 'oneclick_remove_image_error_transient', // Corrected action name to match PHP handler.
+                    action: 'oneclick_remove_image_error_transient',
                     nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce
-                },
-                success: function(response) {
-                    if (response.success) {
-                        // eslint-disable-next-line no-console
-                        console.log('Transient removed successfully.');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    // eslint-disable-next-line no-console
-                    console.error('Error removing transient:', error);
                 }
             });
         }

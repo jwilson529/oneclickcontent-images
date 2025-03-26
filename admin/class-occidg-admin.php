@@ -19,14 +19,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class OneClickContent_Images_Admin
+ * Class Occidg_Admin
  *
  * Handles admin-specific functionality for the OneClickContent Image Details plugin,
  * including enqueuing scripts/styles and adding Media Library enhancements.
  *
  * @since 1.0.0
  */
-class OneClickContent_Images_Admin {
+class Occidg_Admin {
 
 	/**
 	 * The name of the plugin.
@@ -69,7 +69,7 @@ class OneClickContent_Images_Admin {
 			__( 'OneClickContent Image Metadata', 'oneclickcontent-image-detail-generator' ), // Page title (detailed for context).
 			__( 'Image Metadata', 'oneclickcontent-image-detail-generator' ),         // Menu title (shortened to avoid wrapping).
 			'edit_posts',                                             // Capability (minimum for bulk edit; settings will check manage_options).
-			'oneclickcontent-images',                                 // Menu slug.
+			'occidg',                                 // Menu slug.
 			array( $this, 'render_admin_page' ),                      // Callback.
 			'dashicons-images-alt2',                                  // Icon.
 			25                                                        // Position.
@@ -85,33 +85,33 @@ class OneClickContent_Images_Admin {
 	public function render_admin_page() {
 		// Verify nonce for settings form submission.
 		$nonce = isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '';
-		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'] && ! wp_verify_nonce( $nonce, 'oneclick_images_settings-options' ) ) {
+		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'] && ! wp_verify_nonce( $nonce, 'occidg_settings-options' ) ) {
 			wp_die( esc_html__( 'Security check failed.', 'oneclickcontent-image-detail-generator' ) );
 		}
 
 		$tab                   = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'settings';
-		$plugin_admin_settings = new OneClickContent_Images_Admin_Settings(); // Temporary; ideally injected.
-		$plugin_bulk_edit      = new OneClickContent_Images_Bulk_Edit(); // Temporary; ideally injected.
-		$license_status        = get_option( 'oneclick_images_license_status', 'unknown' );
+		$plugin_admin_settings = new Occidg_Admin_Settings(); // Temporary; ideally injected.
+		$plugin_bulk_edit      = new Occidg_Bulk_Edit(); // Temporary; ideally injected.
+		$license_status        = get_option( 'occidg_license_status', 'unknown' );
 		$header_image_url      = plugin_dir_url( __FILE__ ) . 'assets/header-image.webp';
-		$first_time_key        = 'oneclick_images_first_time';
+		$first_time_key        = 'occidg_first_time';
 		$is_first_time         = get_option( $first_time_key, true );
 		$tab_nonce             = wp_create_nonce( 'oneclickcontent_tab_switch' );
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'OneClickContent Images', 'oneclickcontent-image-detail-generator' ); ?></h1>
 			<h2 class="nav-tab-wrapper">
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=oneclickcontent-images&tab=settings&_wpnonce=' . $tab_nonce ) ); ?>" class="nav-tab <?php echo 'settings' === $tab ? 'nav-tab-active' : ''; ?>">
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=occidg&tab=settings&_wpnonce=' . $tab_nonce ) ); ?>" class="nav-tab <?php echo 'settings' === $tab ? 'nav-tab-active' : ''; ?>">
 					<?php esc_html_e( 'Settings', 'oneclickcontent-image-detail-generator' ); ?>
 				</a>
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=oneclickcontent-images&tab=bulk-edit&_wpnonce=' . $tab_nonce ) ); ?>" class="nav-tab <?php echo 'bulk-edit' === $tab ? 'nav-tab-active' : ''; ?>">
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=occidg&tab=bulk-edit&_wpnonce=' . $tab_nonce ) ); ?>" class="nav-tab <?php echo 'bulk-edit' === $tab ? 'nav-tab-active' : ''; ?>">
 					<?php esc_html_e( 'Bulk Edit', 'oneclickcontent-image-detail-generator' ); ?>
 				</a>
 			</h2>
 
 			<?php if ( 'settings' === $tab ) : ?>
-				<!-- All settings output is encapsulated within #oneclick_images -->
-				<div id="oneclick_images" class="wrap">
+				<!-- All settings output is encapsulated within #occidg_images -->
+				<div id="occidg_images" class="wrap">
 					<?php if ( 'active' === $license_status ) : ?>
 						<!-- License Active: Display usage info -->
 						<div class="usage-info-section">
@@ -171,11 +171,11 @@ class OneClickContent_Images_Admin {
 						<div id="bulk-generate-message-settings" class="bulk-generate-message"></div>
 					</div>
 
-					<!-- Settings Form: Always inside #oneclick_images -->
-					<form method="post" action="options.php" id="oneclick_images_settings_form">
+					<!-- Settings Form: Always inside #occidg_images -->
+					<form method="post" action="options.php" id="occidg_settings_form">
 						<?php
-						settings_fields( 'oneclick_images_settings' );
-						do_settings_sections( 'oneclick_images_settings' );
+						settings_fields( 'occidg_settings' );
+						do_settings_sections( 'occidg_settings' );
 						submit_button();
 						?>
 					</form>
@@ -200,7 +200,7 @@ class OneClickContent_Images_Admin {
 							</div>
 						</div>
 					</div>
-				</div><!-- End #oneclick_images -->
+				</div><!-- End #occidg_images -->
 			<?php elseif ( 'bulk-edit' === $tab ) : ?>
 				<?php $plugin_bulk_edit->render_bulk_edit_tab(); ?>
 			<?php endif; ?>
@@ -274,19 +274,19 @@ class OneClickContent_Images_Admin {
 			return; // Exit early if screen is not available.
 		}
 
-		$allowed_screens = array( 'upload', 'post', 'post-new', 'toplevel_page_oneclickcontent-images' );
+		$allowed_screens = array( 'upload', 'post', 'post-new', 'toplevel_page_occidg' );
 
 		if ( in_array( $screen->base, $allowed_screens, true ) ) {
 			wp_enqueue_style(
 				$this->plugin_name,
-				plugin_dir_url( __FILE__ ) . 'css/oneclickcontent-images-admin.css',
+				plugin_dir_url( __FILE__ ) . 'css/occidg-admin.css',
 				array(),
 				$this->version,
 				'all'
 			);
 
 			// Only proceed for the plugin's admin page.
-			if ( 'toplevel_page_oneclickcontent-images' === $screen->id ) {
+			if ( 'toplevel_page_occidg' === $screen->id ) {
 				$tab   = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'general';
 				$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
 
@@ -328,17 +328,17 @@ class OneClickContent_Images_Admin {
 
 		// Verify nonce for any POST data processing if applicable.
 		$nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) : '';
-		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'] && ! wp_verify_nonce( $nonce, 'oneclick_images_bulk_edit' ) ) {
+		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'] && ! wp_verify_nonce( $nonce, 'occidg_bulk_edit' ) ) {
 			return; // Silently exit instead of wp_die to avoid breaking script loading.
 		}
 
-		$allowed_screens = array( 'upload', 'post', 'post-new', 'toplevel_page_oneclickcontent-images' );
+		$allowed_screens = array( 'upload', 'post', 'post-new', 'toplevel_page_occidg' );
 
 		if ( in_array( $screen->base, $allowed_screens, true ) ) {
 			// Core admin script.
 			wp_enqueue_script(
 				$this->plugin_name,
-				plugin_dir_url( __FILE__ ) . 'js/oneclickcontent-images-admin.js',
+				plugin_dir_url( __FILE__ ) . 'js/occidg-admin.js',
 				array( 'jquery' ),
 				$this->version,
 				true
@@ -355,7 +355,7 @@ class OneClickContent_Images_Admin {
 			wp_enqueue_media();
 
 			$selected_fields = wp_parse_args(
-				get_option( 'oneclick_images_metadata_fields', array() ),
+				get_option( 'occidg_metadata_fields', array() ),
 				array(
 					'title'       => false,
 					'description' => false,
@@ -364,30 +364,30 @@ class OneClickContent_Images_Admin {
 				)
 			);
 
-			$license_status = get_option( 'oneclick_images_license_status', 'unknown' );
+			$license_status = get_option( 'occidg_license_status', 'unknown' );
 
 			$admin_vars = array(
-				'ajax_url'                   => admin_url( 'admin-ajax.php' ),
-				'oneclick_images_ajax_nonce' => wp_create_nonce( 'oneclick_images_ajax_nonce' ),
-				'selected_fields'            => $selected_fields,
-				'license_status'             => sanitize_text_field( $license_status ),
-				'upload_base_url'            => wp_upload_dir()['baseurl'],
-				'fallback_image_url'         => plugin_dir_url( __FILE__ ) . 'assets/icon.png',
-				'dismiss_first_time_nonce'   => wp_create_nonce( 'oneclick_images_dismiss_first_time' ),
+				'ajax_url'                 => admin_url( 'admin-ajax.php' ),
+				'occidg_ajax_nonce'        => wp_create_nonce( 'occidg_ajax_nonce' ),
+				'selected_fields'          => $selected_fields,
+				'license_status'           => sanitize_text_field( $license_status ),
+				'upload_base_url'          => wp_upload_dir()['baseurl'],
+				'fallback_image_url'       => plugin_dir_url( __FILE__ ) . 'assets/icon.png',
+				'dismiss_first_time_nonce' => wp_create_nonce( 'occidg_dismiss_first_time' ),
 			);
-			wp_localize_script( $this->plugin_name, 'oneclick_images_admin_vars', $admin_vars );
+			wp_localize_script( $this->plugin_name, 'occidg_admin_vars', $admin_vars );
 
 			wp_localize_script(
 				$this->plugin_name . '-error-check',
-				'oneclick_images_error_vars',
+				'occidg_error_vars',
 				array(
-					'ajax_url'                   => $admin_vars['ajax_url'],
-					'oneclick_images_ajax_nonce' => $admin_vars['oneclick_images_ajax_nonce'],
+					'ajax_url'          => $admin_vars['ajax_url'],
+					'occidg_ajax_nonce' => $admin_vars['occidg_ajax_nonce'],
 				)
 			);
 
 			// Load settings-bulk-generate.js on both settings and bulk edit tabs.
-			if ( 'toplevel_page_oneclickcontent-images' === $screen->id ) {
+			if ( 'toplevel_page_occidg' === $screen->id ) {
 				wp_enqueue_script(
 					$this->plugin_name . '-settings',
 					plugin_dir_url( __FILE__ ) . 'js/settings-bulk-generate.js',
@@ -397,16 +397,16 @@ class OneClickContent_Images_Admin {
 				);
 				wp_localize_script(
 					$this->plugin_name . '-settings',
-					'oneclick_images_bulk_vars',
+					'occidg_bulk_vars',
 					array(
 						'ajax_url' => admin_url( 'admin-ajax.php' ),
-						'nonce'    => wp_create_nonce( 'oneclick_images_bulk_edit' ),
+						'nonce'    => wp_create_nonce( 'occidg_bulk_edit' ),
 					)
 				);
 			}
 
 			// Bulk edit tab specific scripts.
-			if ( 'toplevel_page_oneclickcontent-images' === $screen->id &&
+			if ( 'toplevel_page_occidg' === $screen->id &&
 				isset( $_GET['tab'] ) && 'bulk-edit' === sanitize_key( $_GET['tab'] ) ) {
 				wp_enqueue_script(
 					$this->plugin_name . '-datatables',
@@ -427,10 +427,10 @@ class OneClickContent_Images_Admin {
 				);
 				wp_localize_script(
 					$this->plugin_name . '-bulk-edit',
-					'oneclick_images_bulk_vars',
+					'occidg_bulk_vars',
 					array(
 						'ajax_url' => admin_url( 'admin-ajax.php' ),
-						'nonce'    => wp_create_nonce( 'oneclick_images_bulk_edit' ),
+						'nonce'    => wp_create_nonce( 'occidg_bulk_edit' ),
 					)
 				);
 			}
@@ -446,10 +446,10 @@ class OneClickContent_Images_Admin {
 				);
 				wp_localize_script(
 					$this->plugin_name . '-settings',
-					'oneclick_images_bulk_vars',
+					'occidg_bulk_vars',
 					array(
 						'ajax_url' => admin_url( 'admin-ajax.php' ),
-						'nonce'    => wp_create_nonce( 'oneclick_images_bulk_edit' ),
+						'nonce'    => wp_create_nonce( 'occidg_bulk_edit' ),
 					)
 				);
 			}
@@ -480,14 +480,14 @@ class OneClickContent_Images_Admin {
 			return $form_fields;
 		}
 
-		$license_key      = get_option( 'oneclick_images_license_key', '' );
+		$license_key      = get_option( 'occidg_license_key', '' );
 		$origin_url       = home_url();
-		$product_slug     = 'oneclickcontent-images';
+		$product_slug     = 'occidg';
 		$is_valid_license = false;
 		$is_trial         = empty( $license_key );
-		$trial_expired    = get_option( 'oneclick_images_trial_expired', false );
+		$trial_expired    = get_option( 'occidg_trial_expired', false );
 		$trial_limit      = 10;
-		$trial_usage      = (int) get_option( 'oneclick_images_trial_usage', 0 );
+		$trial_usage      = (int) get_option( 'occidg_trial_usage', 0 );
 		$usage_data       = array(
 			'used_count'      => $is_trial ? $trial_usage : 0,
 			'total_allowed'   => $is_trial ? $trial_limit : 100,
@@ -520,19 +520,19 @@ class OneClickContent_Images_Admin {
 					$usage_data['remaining_count'] = $body['remaining_count'] ?? 0;
 
 					if ( $trial_expired ) {
-						update_option( 'oneclick_images_trial_expired', false );
+						update_option( 'occidg_trial_expired', false );
 						$trial_expired = false;
 					}
 				}
 			}
 		} elseif ( $is_trial && $trial_usage >= $trial_limit ) {
 			$trial_expired = true;
-			update_option( 'oneclick_images_trial_expired', true );
+			update_option( 'occidg_trial_expired', true );
 		}
 
 		$is_disabled  = $trial_expired || ( $is_valid_license && $usage_data['remaining_count'] <= 0 );
 		$button_text  = esc_html__( 'Generate Metadata', 'oneclickcontent-image-detail-generator' );
-		$settings_url = admin_url( 'admin.php?page=oneclickcontent-images' );
+		$settings_url = admin_url( 'admin.php?page=occidg' );
 
 		$form_fields['generate_metadata'] = array(
 			'label' => __( 'Generate Metadata', 'oneclickcontent-image-detail-generator' ),
@@ -549,16 +549,16 @@ class OneClickContent_Images_Admin {
 		);
 
 		wp_localize_script(
-			'oneclickcontent-images-admin',
-			'oneclick_images_admin_vars',
+			'occidg-admin',
+			'occidg_admin_vars',
 			array(
-				'ajax_url'                   => admin_url( 'admin-ajax.php' ),
-				'oneclick_images_ajax_nonce' => wp_create_nonce( 'oneclick_images_ajax_nonce' ),
-				'is_valid_license'           => $is_valid_license,
-				'is_trial'                   => $is_trial,
-				'trial_expired'              => $trial_expired,
-				'usage'                      => $usage_data,
-				'settings_url'               => $settings_url,
+				'ajax_url'          => admin_url( 'admin-ajax.php' ),
+				'occidg_ajax_nonce' => wp_create_nonce( 'occidg_ajax_nonce' ),
+				'is_valid_license'  => $is_valid_license,
+				'is_trial'          => $is_trial,
+				'trial_expired'     => $trial_expired,
+				'usage'             => $usage_data,
+				'settings_url'      => $settings_url,
 			)
 		);
 
@@ -598,14 +598,14 @@ class OneClickContent_Images_Admin {
 			wp_die( esc_html__( 'Security check failed.', 'oneclickcontent-image-detail-generator' ) );
 		}
 
-		if ( ! class_exists( 'OneClickContent_Images_Admin_Settings' ) ) {
+		if ( ! class_exists( 'Occidg_Admin_Settings' ) ) {
 			return $redirect_to;
 		}
 
-		$admin_settings = new OneClickContent_Images_Admin_Settings();
+		$admin_settings = new Occidg_Admin_Settings();
 
 		foreach ( $post_ids as $post_id ) {
-			$admin_settings->oneclick_images_generate_metadata( intval( $post_id ) );
+			$admin_settings->occidg_generate_metadata( intval( $post_id ) );
 		}
 
 		$generated_details_nonce = wp_create_nonce( 'generated_details_nonce' );
@@ -654,7 +654,7 @@ class OneClickContent_Images_Admin {
 	 * @since 1.0.0
 	 * @return void
 	 */
-	public function oneclick_register_custom_image_size() {
+	public function occidg_register_custom_image_size() {
 		add_image_size( 'one-click-image-api', 500, 500, true );
 	}
 
@@ -667,7 +667,7 @@ class OneClickContent_Images_Admin {
 	 * @param array $sizes Existing image sizes.
 	 * @return array Modified list of image sizes.
 	 */
-	public function oneclick_add_custom_image_sizes( $sizes ) {
+	public function occidg_add_custom_image_sizes( $sizes ) {
 		return array_merge(
 			$sizes,
 			array(
@@ -683,8 +683,8 @@ class OneClickContent_Images_Admin {
 	 * @return void Outputs JSON response with the thumbnail URL or an error message.
 	 */
 	public function get_thumbnail() {
-		$nonce = isset( $_GET['oneclick_images_ajax_nonce'] ) ? sanitize_text_field( wp_unslash( $_GET['oneclick_images_ajax_nonce'] ) ) : '';
-		if ( ! wp_verify_nonce( $nonce, 'oneclick_images_ajax_nonce' ) ) {
+		$nonce = isset( $_GET['occidg_ajax_nonce'] ) ? sanitize_text_field( wp_unslash( $_GET['occidg_ajax_nonce'] ) ) : '';
+		if ( ! wp_verify_nonce( $nonce, 'occidg_ajax_nonce' ) ) {
 			wp_send_json_error( array( 'message' => __( 'Security check failed.', 'oneclickcontent-image-detail-generator' ) ) );
 			return;
 		}
@@ -711,15 +711,15 @@ class OneClickContent_Images_Admin {
 	 * @return void
 	 */
 	public function activation_redirect() {
-		if ( ! get_option( 'oneclick_images_activation_redirect', false ) ) {
+		if ( ! get_option( 'occidg_activation_redirect', false ) ) {
 			return;
 		}
 
-		delete_option( 'oneclick_images_activation_redirect' );
+		delete_option( 'occidg_activation_redirect' );
 
 		// Use Yoda conditions for clarity and consistency.
 		if ( is_network_admin() !== true && wp_doing_ajax() !== true && wp_doing_cron() !== true && ! defined( 'REST_REQUEST' ) ) {
-			wp_safe_redirect( admin_url( 'admin.php?page=oneclickcontent-images' ) ); // Updated to match menu slug.
+			wp_safe_redirect( admin_url( 'admin.php?page=occidg' ) ); // Updated to match menu slug.
 			exit;
 		}
 	}
@@ -731,16 +731,16 @@ class OneClickContent_Images_Admin {
 	 * @return void Outputs JSON response with override status.
 	 */
 	public function check_override_metadata() {
-		check_ajax_referer( 'oneclick_images_ajax_nonce', 'nonce' );
+		check_ajax_referer( 'occidg_ajax_nonce', 'nonce' );
 
-		$override = get_option( 'oneclick_images_override_metadata', false );
+		$override = get_option( 'occidg_override_metadata', false );
 		wp_send_json_success( array( 'override' => $override ) );
 	}
 
 	/**
 	 * Dismiss the first time modal via AJAX.
 	 *
-	 * This function updates the 'oneclick_images_first_time' option to false,
+	 * This function updates the 'occidg_first_time' option to false,
 	 * effectively dismissing the first time modal. It first verifies the AJAX nonce,
 	 * then attempts to update the option. If updating fails, it adds the option.
 	 * Finally, it returns a JSON success response.
@@ -750,16 +750,16 @@ class OneClickContent_Images_Admin {
 	 */
 	public function dismiss_first_time() {
 		// Verify the nonce for security.
-		if ( ! check_ajax_referer( 'oneclick_images_dismiss_first_time', 'dismiss_first_time_nonce', false ) ) {
+		if ( ! check_ajax_referer( 'occidg_dismiss_first_time', 'dismiss_first_time_nonce', false ) ) {
 			wp_send_json_error( array( 'message' => 'Security check failed.' ) );
 			return;
 		}
 
 		// Attempt to update the option to dismiss the first time modal.
-		$updated = update_option( 'oneclick_images_first_time', false );
+		$updated = update_option( 'occidg_first_time', false );
 		if ( false === $updated ) {
 			// If update_option fails, try adding the option.
-			$added = add_option( 'oneclick_images_first_time', false );
+			$added = add_option( 'occidg_first_time', false );
 		}
 
 		wp_send_json_success();

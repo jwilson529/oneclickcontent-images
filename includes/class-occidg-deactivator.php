@@ -5,8 +5,8 @@
  * @link       https://oneclickcontent.com
  * @since      1.0.0
  *
- * @package    OneClickContent_Images
- * @subpackage OneClickContent_Images/includes
+ * @package    Occidg
+ * @subpackage Occidg/includes
  */
 
 /**
@@ -15,11 +15,11 @@
  * This class defines all code necessary to run during the plugin's deactivation.
  *
  * @since      1.0.0
- * @package    OneClickContent_Images
- * @subpackage OneClickContent_Images/includes
+ * @package    Occidg
+ * @subpackage Occidg/includes
  * @author     James Wilson <james@oneclickcontent.com>
  */
-class OneClickContent_Images_Deactivator {
+class Occidg_Deactivator {
 
 	/**
 	 * Fired during plugin deactivation.
@@ -30,6 +30,6 @@ class OneClickContent_Images_Deactivator {
 	 * @return void
 	 */
 	public static function deactivate() {
-		delete_option( 'oneclick_images_first_time' );
+		delete_option( 'occidg_first_time' );
 	}
 }

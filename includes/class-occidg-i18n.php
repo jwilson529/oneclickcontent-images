@@ -8,8 +8,8 @@
  * @link       https://oneclickcontent.com
  * @since      1.0.0
  *
- * @package    OneClickContent_Images
- * @subpackage OneClickContent_Images/includes
+ * @package    Occidg
+ * @subpackage Occidg/includes
  */
 
 /**
@@ -19,11 +19,11 @@
  * so that it is ready for translation.
  *
  * @since      1.0.0
- * @package    OneClickContent_Images
- * @subpackage OneClickContent_Images/includes
+ * @package    Occidg
+ * @subpackage Occidg/includes
  * @author     James Wilson <james@oneclickcontent.com>
  */
-class OneClickContent_Images_I18n {
+class Occidg_I18n {
 
 	/**
 	 * Load the plugin text domain for translation.
@@ -33,7 +33,7 @@ class OneClickContent_Images_I18n {
 	 */
 	public function load_plugin_textdomain() {
 		load_plugin_textdomain(
-			'oneclickcontent-images',
+			'occidg',
 			false,
 			dirname( dirname( plugin_basename( __FILE__ ) ) ) . '/languages/'
 		);

@@ -1,8 +1,8 @@
 {
-    "name": "jameswilson/oneclickcontent-images",
+    "name": "jameswilson/occidg",
     "autoload": {
         "psr-4": {
-            "Jameswilson\\oneclickcontent-images\\": "src/"
+            "Jameswilson\\occidg\\": "src/"
         }
     },
     "authors": [

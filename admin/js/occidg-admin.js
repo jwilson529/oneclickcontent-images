@@ -17,11 +17,11 @@
 
         $('#close-first-time-modal').on('click', function() {
             $.ajax({
-                url: oneclick_images_admin_vars.ajax_url,
+                url: occidg_admin_vars.ajax_url,
                 type: 'POST',
                 data: {
-                    action: 'oneclick_images_dismiss_first_time',
-                    dismiss_first_time_nonce: oneclick_images_admin_vars.dismiss_first_time_nonce
+                    action: 'occidg_dismiss_first_time',
+                    dismiss_first_time_nonce: occidg_admin_vars.dismiss_first_time_nonce
                 },
                 success: function(response) {
                     $('#oneclick-images-first-time-modal').fadeOut();
@@ -46,7 +46,7 @@
 
             // Base UTM parameters for tracking
             const utmBase = {
-                utm_source: 'oneclick_images_plugin',
+                utm_source: 'occidg_plugin',
                 utm_medium: 'modal',
                 utm_campaign: 'single_image_generation'
             };
@@ -57,7 +57,7 @@
             const baseSubscriptionUrl = "https://oneclickcontent.com/image-detail-generator/";
 
             // Check trial/license status upfront
-            if (oneclick_images_admin_vars.trial_expired) {
+            if (occidg_admin_vars.trial_expired) {
                 showSubscriptionPrompt(
                     'Free Trial Expired',
                     'Your free trial has ended. Enter a license key to continue generating metadata.',
@@ -66,7 +66,7 @@
                 button.attr('disabled', false).text('Generate Metadata');
                 return;
             }
-            if (oneclick_images_admin_vars.is_valid_license && oneclick_images_admin_vars.usage.remaining_count <= 0) {
+            if (occidg_admin_vars.is_valid_license && occidg_admin_vars.usage.remaining_count <= 0) {
                 showSubscriptionPrompt(
                     'Usage Limit Reached',
                     'You’ve used all your credits. Purchase more or enter a new license key.',
@@ -80,11 +80,11 @@
             button.attr('disabled', true).text('Generating...');
 
             $.ajax({
-                url: oneclick_images_admin_vars.ajax_url,
+                url: occidg_admin_vars.ajax_url,
                 type: 'POST',
                 data: {
-                    action: 'oneclick_images_generate_metadata',
-                    nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
+                    action: 'occidg_generate_metadata',
+                    nonce: occidg_admin_vars.occidg_ajax_nonce,
                     image_id: imageId,
                 },
                 success: function (response) {
@@ -100,11 +100,11 @@
                         updateMetadataFields(metadata);
 
                         // Update trial usage locally for non-licensed users
-                        if (!oneclick_images_admin_vars.is_valid_license) {
-                            oneclick_images_admin_vars.usage.used_count += 1;
-                            oneclick_images_admin_vars.usage.remaining_count -= 1;
-                            if (oneclick_images_admin_vars.usage.remaining_count <= 0) {
-                                oneclick_images_admin_vars.trial_expired = true;
+                        if (!occidg_admin_vars.is_valid_license) {
+                            occidg_admin_vars.usage.used_count += 1;
+                            occidg_admin_vars.usage.remaining_count -= 1;
+                            if (occidg_admin_vars.usage.remaining_count <= 0) {
+                                occidg_admin_vars.trial_expired = true;
                                 // Button stays disabled when trial expires
                                 return;
                             }
@@ -119,7 +119,7 @@
                                 response.data.message || 'Upgrade your subscription to access unlimited features.',
                                 response.data.ad_url ? addUTMParams(response.data.ad_url) : addUTMParams(baseSubscriptionUrl)
                             );
-                            oneclick_images_admin_vars.trial_expired = true;
+                            occidg_admin_vars.trial_expired = true;
                             // Button stays disabled when trial expires
                         } else if (error.includes('Usage limit reached')) {
                             showSubscriptionPrompt(
@@ -164,7 +164,7 @@
          */
         function updateMetadataFields(metadata) {
             try {
-                const selectedFields = oneclick_images_admin_vars.selected_fields || {
+                const selectedFields = occidg_admin_vars.selected_fields || {
                     alt_text: true,
                     title: true,
                     caption: true,
@@ -237,12 +237,12 @@
          * @param {string} url     The base URL for subscription plans.
          */
         function showSubscriptionPrompt(error, message, url) {
-            const licenseStatus = oneclick_images_admin_vars.license_status;
+            const licenseStatus = occidg_admin_vars.license_status;
             let subscriptionOptionsHtml = '';
 
             // Base UTM parameters
             const utmBase = {
-                utm_source: 'oneclick_images_plugin',
+                utm_source: 'occidg_plugin',
                 utm_medium: 'modal',
                 utm_campaign: error.includes('Free trial') ? 'free_trial_limit' : 'usage_limit'
             };
@@ -396,16 +396,16 @@
                     checkboxStatus[name] = checked;
                 });
                 
-                const formData = $('#oneclick_images_settings_form').serialize();
+                const formData = $('#occidg_settings_form').serialize();
                 
                 showSavingMessage(element, ' Saving...', 'info');
                 
                 $.ajax({
-                    url: oneclick_images_admin_vars.ajax_url,
+                    url: occidg_admin_vars.ajax_url,
                     type: 'POST',
                     data: {
-                        action: 'oneclick_images_save_settings',
-                        _ajax_nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
+                        action: 'occidg_save_settings',
+                        _ajax_nonce: occidg_admin_vars.occidg_ajax_nonce,
                         settings: formData
                     },
                     success: function(response) {
@@ -451,11 +451,11 @@
             updateLicenseStatusUI('validating', 'Checking license status...');
 
             $.ajax({
-                url: oneclick_images_admin_vars.ajax_url,
+                url: occidg_admin_vars.ajax_url,
                 type: 'POST',
                 data: {
-                    action: 'oneclick_images_get_license_status',
-                    nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
+                    action: 'occidg_get_license_status',
+                    nonce: occidg_admin_vars.occidg_ajax_nonce,
                 },
                 success: function(response) {
                     if (response.success) {
@@ -563,7 +563,7 @@
                         <h2 id="general-error-modal-title"><span class="dashicons dashicons-warning"></span> Action Skipped</h2>
                         <p>${message}</p>
                         <p>
-                            <a href="/wp-admin/options-general.php?page=oneclickcontent-images-settings" class="occ-modal-link">
+                            <a href="/wp-admin/options-general.php?page=occidg-settings" class="occ-modal-link">
                                 Click here to update your settings.
                             </a>
                         </p>
@@ -595,14 +595,14 @@
         window.showSubscriptionPrompt = showSubscriptionPrompt;
 
         // Event listeners for settings changes.
-        $('#oneclick_images_settings_form input, #oneclick_images_settings_form select').on('change', function() {
+        $('#occidg_settings_form input, #occidg_settings_form select').on('change', function() {
             const element = this;
             promiseSaveSettings(element).catch(() => {
                 // Silent catch for robustness.
             });
         });
 
-        $('#oneclick_images_license_key').on('keyup', function() {
+        $('#occidg_license_key').on('keyup', function() {
             const element = this;
             promiseSaveSettings(element)
                 .then(() => fetchLicenseStatus())

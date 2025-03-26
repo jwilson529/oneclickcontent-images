@@ -1,5 +1,5 @@
 
-FILE: ...l Sites/wp-clean-install/app/public/wp-content/plugins/oneclickcontent-images/admin/class-oneclickcontent-images-admin-settings.php
+FILE: ...jameswilson/Local Sites/wp-clean-install/app/public/wp-content/plugins/oneclickcontent-images/admin/class-occidg-admin-settings.php
 -----------------------------------------------------------------------------------------------------------------------------------------
 FOUND 0 ERRORS AND 1 WARNING AFFECTING 1 LINE
 -----------------------------------------------------------------------------------------------------------------------------------------
@@ -7,5 +7,5 @@ FOUND 0 ERRORS AND 1 WARNING AFFECTING 1 LINE
      |         | for benign reasons.
 -----------------------------------------------------------------------------------------------------------------------------------------
 
-Time: 665ms; Memory: 22MB
+Time: 652ms; Memory: 22MB
 

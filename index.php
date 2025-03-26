@@ -2,5 +2,5 @@
 /**
  * Silence is golden.
  *
- * @package    oneclickcontent-images
+ * @package    occidg
  */

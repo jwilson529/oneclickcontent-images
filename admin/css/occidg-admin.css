@@ -2,7 +2,7 @@
  * CSS styles for the OneClickContent Image Details plugin admin interface.
  *
  * Provides styling for settings forms, modals, bulk generation status, and UI elements.
- * All selectors are prefixed with .toplevel_page_oneclickcontent-images or .occ- to avoid clashes.
+ * All selectors are prefixed with .toplevel_page_occidg or .occ- to avoid clashes.
  *
  * @package    One_Click_Images
  * @subpackage One_Click_Images/admin/css
@@ -17,7 +17,7 @@
    1.0 General Container & Page Styling
    ========================================================================== */
 
-.toplevel_page_oneclickcontent-images #oneclick_images.wrap {
+.toplevel_page_occidg #occidg_images.wrap {
     max-width: 900px;
     margin: 1rem auto;
     padding: 30px;
@@ -27,7 +27,7 @@
     font-family: 'Helvetica Neue', Arial, sans-serif;
 }
 
-.toplevel_page_oneclickcontent-images #oneclick_images form {
+.toplevel_page_occidg #occidg_images form {
     margin-bottom: 20px;
 }
 
@@ -35,7 +35,7 @@
    2.0 Headings & Dividers
    ========================================================================== */
 
-.toplevel_page_oneclickcontent-images #oneclick_images h1 {
+.toplevel_page_occidg #occidg_images h1 {
     color: #fff;
     font-size: 2.5rem;
     font-weight: bold;
@@ -44,14 +44,14 @@
     text-align: center;
 }
 
-.toplevel_page_oneclickcontent-images #oneclick_images h2 {
+.toplevel_page_occidg #occidg_images h2 {
     color: #444;
     font-size: 20px;
     font-weight: bold;
     margin-bottom: 15px;
 }
 
-.toplevel_page_oneclickcontent-images #oneclick_images .settings-divider {
+.toplevel_page_occidg #occidg_images .settings-divider {
     border: 1px solid #ddd;
     margin: 30px 0;
 }
@@ -60,7 +60,7 @@
    3.0 Usage Information Section
    ========================================================================== */
 
-.toplevel_page_oneclickcontent-images #oneclick_images .usage-info-section {
+.toplevel_page_occidg #occidg_images .usage-info-section {
     margin-bottom: 20px;
     padding: 20px;
     background: #f8f9fa;
@@ -68,7 +68,7 @@
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-.toplevel_page_oneclickcontent-images #oneclick_images .usage-summary strong {
+.toplevel_page_occidg #occidg_images .usage-summary strong {
     display: block;
     margin-bottom: 10px;
     color: #333;
@@ -76,14 +76,14 @@
 }
 
 /* Progress bar container & bar */
-.toplevel_page_oneclickcontent-images .progress {
+.toplevel_page_occidg .progress {
     height: 20px;
     background-color: #e9ecef;
     border-radius: 4px;
     overflow: hidden;
 }
 
-.toplevel_page_oneclickcontent-images .progress-bar {
+.toplevel_page_occidg .progress-bar {
     line-height: 20px;
     color: #fff;
     font-size: 14px;
@@ -92,16 +92,16 @@
 }
 
 /* Progress bar color states */
-.toplevel_page_oneclickcontent-images .bg-success {
+.toplevel_page_occidg .bg-success {
     background-color: #28a745 !important;
 }
 
-.toplevel_page_oneclickcontent-images .bg-warning {
+.toplevel_page_occidg .bg-warning {
     background-color: #ffc107 !important;
     color: #333 !important;
 }
 
-.toplevel_page_oneclickcontent-images .bg-danger {
+.toplevel_page_occidg .bg-danger {
     background-color: #dc3545 !important;
 }
 
@@ -113,7 +113,7 @@
    4.0 Jumbotron (Optional Section)
    ========================================================================== */
 
-.toplevel_page_oneclickcontent-images #oneclick_images .jumbotron-wrapper {
+.toplevel_page_occidg #occidg_images .jumbotron-wrapper {
     position: relative;
     max-height: 225px;
     overflow: hidden;
@@ -121,7 +121,7 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.toplevel_page_oneclickcontent-images #oneclick_images .jumbotron-wrapper img {
+.toplevel_page_occidg #occidg_images .jumbotron-wrapper img {
     width: 100%;
     height: auto;
     max-height: 100%;
@@ -129,7 +129,7 @@
     object-fit: none;
 }
 
-.toplevel_page_oneclickcontent-images #oneclick_images .jumbotron-title {
+.toplevel_page_occidg #occidg_images .jumbotron-title {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -148,11 +148,11 @@
    5.0 Bulk Edit Header & Main CTA
    ========================================================================== */
 
-.toplevel_page_oneclickcontent-images .bulk-edit-header {
+.toplevel_page_occidg .bulk-edit-header {
     margin-bottom: 20px;
 }
 
-.toplevel_page_oneclickcontent-images .bulk-edit-header .button-hero {
+.toplevel_page_occidg .bulk-edit-header .button-hero {
     font-size: 18px;
     padding: 10px 20px;
     background-color: #007cba;
@@ -160,12 +160,12 @@
     color: #fff;
 }
 
-.toplevel_page_oneclickcontent-images .bulk-edit-header .button-hero:hover {
+.toplevel_page_occidg .bulk-edit-header .button-hero:hover {
     background-color: #005ea2;
     border-color: #005ea2;
 }
 
-.toplevel_page_oneclickcontent-images .bulk-edit-header .description {
+.toplevel_page_occidg .bulk-edit-header .description {
     margin-top: 10px;
     font-style: italic;
     color: #666;
@@ -175,7 +175,7 @@
    6.0 Bulk Generate Status
    ========================================================================== */
 
-.toplevel_page_oneclickcontent-images #bulk-generate-status {
+.toplevel_page_occidg #bulk-generate-status {
     margin-bottom: 20px;
     padding: 10px;
     background-color: #f8f9fa;
@@ -187,7 +187,7 @@
     /* Hidden until generation starts */
 }
 
-.toplevel_page_oneclickcontent-images #bulk-generate-status p {
+.toplevel_page_occidg #bulk-generate-status p {
     margin: 5px 0;
     font-size: 14px;
 }
@@ -196,7 +196,7 @@
    7.0 Notifications
    ========================================================================== */
 
-.toplevel_page_oneclickcontent-images .notice-success {
+.toplevel_page_occidg .notice-success {
     padding: 15px;
     background-color: #e8f6ec;
     border-left: 4px solid #28a745;
@@ -205,7 +205,7 @@
     font-size: 14px;
 }
 
-.toplevel_page_oneclickcontent-images .notice-error {
+.toplevel_page_occidg .notice-error {
     padding: 15px;
     background-color: #f8d7da;
     border-left: 4px solid #dc3545;
@@ -218,25 +218,25 @@
    8.0 Table & DataTables Styling
    ========================================================================== */
 
-.toplevel_page_oneclickcontent-images #image-metadata-table {
+.toplevel_page_occidg #image-metadata-table {
     border-collapse: collapse;
 }
 
-.toplevel_page_oneclickcontent-images #image-metadata-table th,
-.toplevel_page_oneclickcontent-images #image-metadata-table td {
+.toplevel_page_occidg #image-metadata-table th,
+.toplevel_page_occidg #image-metadata-table td {
     padding: 10px;
     border: 1px solid #ddd;
     vertical-align: top;
     text-align: center;
 }
 
-.toplevel_page_oneclickcontent-images #image-metadata-table th {
+.toplevel_page_occidg #image-metadata-table th {
     background-color: #f5f5f5;
     font-weight: bold;
 }
 
 /* Thumbnail preview within table */
-.toplevel_page_oneclickcontent-images #image-metadata-table .thumbnail-preview {
+.toplevel_page_occidg #image-metadata-table .thumbnail-preview {
     width: 50px;
     height: 50px;
     object-fit: cover;
@@ -247,13 +247,13 @@
 }
 
 /* Force WordPress's thumbnail to respect sizing */
-.toplevel_page_oneclickcontent-images #image-metadata-table img.attachment-thumbnail.size-thumbnail {
+.toplevel_page_occidg #image-metadata-table img.attachment-thumbnail.size-thumbnail {
     max-width: 100% !important;
 }
 
 /* Form elements in table cells */
-.toplevel_page_oneclickcontent-images #image-metadata-table input,
-.toplevel_page_oneclickcontent-images #image-metadata-table textarea {
+.toplevel_page_occidg #image-metadata-table input,
+.toplevel_page_occidg #image-metadata-table textarea {
     border: 1px solid #ccc;
     border-radius: 3px;
     padding: 4px;
@@ -263,13 +263,13 @@
     display: block;
 }
 
-.toplevel_page_oneclickcontent-images #image-metadata-table textarea {
+.toplevel_page_occidg #image-metadata-table textarea {
     height: 60px;
     resize: vertical;
 }
 
 /* Generate button in table rows */
-.toplevel_page_oneclickcontent-images #image-metadata-table .generate-metadata {
+.toplevel_page_occidg #image-metadata-table .generate-metadata {
     background-color: #28a745;
     border-color: #28a745;
     color: #fff;
@@ -280,12 +280,12 @@
     transition: background-color 0.3s ease;
 }
 
-.toplevel_page_oneclickcontent-images #image-metadata-table .generate-metadata:hover {
+.toplevel_page_occidg #image-metadata-table .generate-metadata:hover {
     background-color: #218838;
     border-color: #1e7e34;
 }
 
-.toplevel_page_oneclickcontent-images #image-metadata-table .generate-metadata:disabled {
+.toplevel_page_occidg #image-metadata-table .generate-metadata:disabled {
     background-color: #6c757d;
     border-color: #6c757d;
     cursor: not-allowed;
@@ -296,20 +296,20 @@
    ========================================================================== */
 
 /* Inputs: add extra padding for the status icon on the right */
-.toplevel_page_oneclickcontent-images #image-metadata-table input,
-.toplevel_page_oneclickcontent-images #image-metadata-table textarea {
+.toplevel_page_occidg #image-metadata-table input,
+.toplevel_page_occidg #image-metadata-table textarea {
     padding-right: 60px;
 }
 
 /* Wrapper for inputs with save status */
-.toplevel_page_oneclickcontent-images .input-wrapper {
+.toplevel_page_occidg .input-wrapper {
     position: relative;
     display: inline-block;
     width: 100%;
 }
 
 /* Save status element */
-.toplevel_page_oneclickcontent-images .save-status {
+.toplevel_page_occidg .save-status {
     display: none;
     position: absolute;
     right: 10px;
@@ -322,35 +322,35 @@
 }
 
 /* Different states */
-.toplevel_page_oneclickcontent-images .save-status-saving {
+.toplevel_page_occidg .save-status-saving {
     background-color: #007cba;
     color: #fff;
 }
 
-.toplevel_page_oneclickcontent-images .save-status-saved {
+.toplevel_page_occidg .save-status-saved {
     background-color: #28a745;
     color: #fff;
 }
 
-.toplevel_page_oneclickcontent-images .save-status-error {
+.toplevel_page_occidg .save-status-error {
     background-color: #d94f4f;
     color: #fff;
 }
 
-.toplevel_page_oneclickcontent-images .save-status-nochange {
+.toplevel_page_occidg .save-status-nochange {
     background-color: #6c757d;
     color: #fff;
 }
 
 /* Action wrapper & status for "Generate" buttons */
-.toplevel_page_oneclickcontent-images .action-wrapper {
+.toplevel_page_occidg .action-wrapper {
     position: relative;
     display: inline-block;
     width: 100%;
     text-align: center;
 }
 
-.toplevel_page_oneclickcontent-images .action-status {
+.toplevel_page_occidg .action-status {
     display: none;
     position: absolute;
     right: 10px;
@@ -363,22 +363,22 @@
 }
 
 /* Different states for action status */
-.toplevel_page_oneclickcontent-images .action-status-working {
+.toplevel_page_occidg .action-status-working {
     background-color: #007cba;
     color: #fff;
 }
 
-.toplevel_page_oneclickcontent-images .action-status-success {
+.toplevel_page_occidg .action-status-success {
     background-color: #28a745;
     color: #fff;
 }
 
-.toplevel_page_oneclickcontent-images .action-status-error {
+.toplevel_page_occidg .action-status-error {
     background-color: #d94f4f;
     color: #fff;
 }
 
-.toplevel_page_oneclickcontent-images .generate-metadata {
+.toplevel_page_occidg .generate-metadata {
     position: relative;
     padding-right: 60px;
 }
@@ -495,12 +495,12 @@
    11.0 Loading Indicator for Table
    ========================================================================== */
 
-.toplevel_page_oneclickcontent-images #image-metadata-table.loading {
+.toplevel_page_occidg #image-metadata-table.loading {
     opacity: 0.7;
     position: relative;
 }
 
-.toplevel_page_oneclickcontent-images #image-metadata-table.loading::after {
+.toplevel_page_occidg #image-metadata-table.loading::after {
     content: 'Generating...';
     position: absolute;
     top: 50%;
@@ -737,7 +737,7 @@
     transform: scale(1.05);
 }
 
-.toplevel_page_oneclickcontent-images .modal {
+.toplevel_page_occidg .modal {
     position: fixed;
     top: 0;
     left: 0;
@@ -750,7 +750,7 @@
     align-items: center;
 }
 
-.toplevel_page_oneclickcontent-images .modal-content {
+.toplevel_page_occidg .modal-content {
     background: #fff;
     padding: 20px;
     border-radius: 5px;
@@ -759,12 +759,12 @@
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.toplevel_page_oneclickcontent-images .modal-buttons {
+.toplevel_page_occidg .modal-buttons {
     margin-top: 20px;
     text-align: right;
 }
 
-.toplevel_page_oneclickcontent-images .modal-buttons .button {
+.toplevel_page_occidg .modal-buttons .button {
     margin-left: 10px;
 }
 
@@ -931,7 +931,7 @@
     border-radius: 4px;
 }
 
-.toplevel_page_oneclickcontent-images select#dt-length-0 {
+.toplevel_page_occidg select#dt-length-0 {
     width: 100%;
 }
 

@@ -90,11 +90,11 @@ jQuery(document).ready(function ($) {
             autoWidth: false,
             deferRender: true,
             ajax: {
-                url: oneclick_images_bulk_vars.ajax_url,
+                url: occidg_bulk_vars.ajax_url,
                 type: 'POST',
                 data: function (d) {
-                    d.action = 'oneclick_images_get_image_metadata';
-                    d.nonce  = oneclick_images_bulk_vars.nonce;
+                    d.action = 'occidg_get_image_metadata';
+                    d.nonce  = occidg_bulk_vars.nonce;
                 },
             },
             columns: [
@@ -157,10 +157,10 @@ jQuery(document).ready(function ($) {
                     searchable: false,
                     render: function (data, type, row) {
                         if (type === 'display') {
-                            const isOverLimit = oneclick_images_bulk_vars.is_valid_license && oneclick_images_bulk_vars.usage.remaining_count <= 0;
-                            const isDisabled  = oneclick_images_bulk_vars.trial_expired || isOverLimit;
+                            const isOverLimit = occidg_bulk_vars.is_valid_license && occidg_bulk_vars.usage.remaining_count <= 0;
+                            const isDisabled  = occidg_bulk_vars.trial_expired || isOverLimit;
                             return `<div class="action-wrapper">
-                                <button class="generate-metadata button" data-image-id="${row.id}" ${isDisabled ? 'disabled' : ''} title="${isDisabled ? (oneclick_images_bulk_vars.trial_expired ? 'Trial expired' : 'Out of credits') : ''}">Generate</button>
+                                <button class="generate-metadata button" data-image-id="${row.id}" ${isDisabled ? 'disabled' : ''} title="${isDisabled ? (occidg_bulk_vars.trial_expired ? 'Trial expired' : 'Out of credits') : ''}">Generate</button>
                                 <span class="action-status"></span>
                             </div>`;
                         }
@@ -254,19 +254,19 @@ jQuery(document).ready(function ($) {
         const rowIndex = table.row($row).index();
 
         // Check usage limits before proceeding.
-        if (oneclick_images_bulk_vars.trial_expired) {
+        if (occidg_bulk_vars.trial_expired) {
             window.showSubscriptionPrompt(
                 'Free Trial Expired',
                 'Your free trial has ended. Subscribe to continue generating metadata.',
-                oneclick_images_bulk_vars.settings_url || 'https://oneclickcontent.com/image-detail-generator/'
+                occidg_bulk_vars.settings_url || 'https://oneclickcontent.com/image-detail-generator/'
             );
             return;
         }
-        if (oneclick_images_bulk_vars.is_valid_license && oneclick_images_bulk_vars.usage.remaining_count <= 0) {
+        if (occidg_bulk_vars.is_valid_license && occidg_bulk_vars.usage.remaining_count <= 0) {
             window.showSubscriptionPrompt(
                 'Usage Limit Reached',
                 'You’ve used all your credits. Purchase more to continue.',
-                oneclick_images_bulk_vars.settings_url || 'https://oneclickcontent.com/image-detail-generator/'
+                occidg_bulk_vars.settings_url || 'https://oneclickcontent.com/image-detail-generator/'
             );
             return;
         }
@@ -274,11 +274,11 @@ jQuery(document).ready(function ($) {
         $button.prop('disabled', true).text('Generating...');
 
         $.ajax({
-            url: oneclick_images_admin_vars.ajax_url,
+            url: occidg_admin_vars.ajax_url,
             type: 'POST',
             data: {
-                action: 'oneclick_images_generate_metadata',
-                nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
+                action: 'occidg_generate_metadata',
+                nonce: occidg_admin_vars.occidg_ajax_nonce,
                 image_id: imageId,
             },
             success: function (response) {
@@ -323,19 +323,19 @@ jQuery(document).ready(function ($) {
                         window.showSubscriptionPrompt(
                             'Free Trial Limit Reached',
                             response.data.message || 'Upgrade your subscription to access unlimited features.',
-                            response.data.ad_url || oneclick_images_bulk_vars.settings_url || 'https://oneclickcontent.com/image-detail-generator/'
+                            response.data.ad_url || occidg_bulk_vars.settings_url || 'https://oneclickcontent.com/image-detail-generator/'
                         );
-                        oneclick_images_bulk_vars.trial_expired = true;
+                        occidg_bulk_vars.trial_expired = true;
                         $('.generate-metadata').prop('disabled', true).attr('title', 'Trial expired');
                         $('#generate-all-metadata').prop('disabled', true);
                     } else if (error.includes('Usage limit reached')) {
                         const htmlContent = `
                             <p><strong>Error:</strong> ${$('<div/>').text(error).html()}</p>
                             <p>${$('<div/>').text(response.data.message || 'Purchase additional image credits to continue.').html()}</p>
-                            <p><a href="${$('<div/>').text(response.data.ad_url || oneclick_images_bulk_vars.settings_url || 'https://oneclickcontent.com/image-detail-generator/').html()}" target="_blank">Purchase more credits</a> to continue generating metadata.</p>
+                            <p><a href="${$('<div/>').text(response.data.ad_url || occidg_bulk_vars.settings_url || 'https://oneclickcontent.com/image-detail-generator/').html()}" target="_blank">Purchase more credits</a> to continue generating metadata.</p>
                         `;
                         window.showLimitPrompt(htmlContent);
-                        oneclick_images_bulk_vars.usage.remaining_count = 0;
+                        occidg_bulk_vars.usage.remaining_count = 0;
                         $('.generate-metadata').prop('disabled', true).attr('title', 'Out of credits');
                         $('#generate-all-metadata').prop('disabled', true);
                     } else if (error.includes('Image validation failed')) {
@@ -344,7 +344,7 @@ jQuery(document).ready(function ($) {
                         window.showSubscriptionPrompt(
                             'Invalid License',
                             error || 'Please enter a valid license key to continue.',
-                            oneclick_images_bulk_vars.settings_url || 'https://oneclickcontent.com/image-detail-generator/'
+                            occidg_bulk_vars.settings_url || 'https://oneclickcontent.com/image-detail-generator/'
                         );
                     } else {
                         window.showGeneralErrorModal(error || 'An unexpected error occurred.');
@@ -443,11 +443,11 @@ jQuery(document).ready(function ($) {
         console.log('Fields to save:', allFields);
 
         $.ajax({
-            url: oneclick_images_bulk_vars.ajax_url,
+            url: occidg_bulk_vars.ajax_url,
             method: 'POST',
             data: {
-                action: 'oneclick_images_save_bulk_metadata',
-                nonce: oneclick_images_bulk_vars.nonce,
+                action: 'occidg_save_bulk_metadata',
+                nonce: occidg_bulk_vars.nonce,
                 image_id: imageId,
                 title: allFields.title,
                 alt_text: allFields.alt_text,
@@ -554,17 +554,17 @@ jQuery(document).ready(function ($) {
      * Updates the UI to reflect current usage statistics for credits or trial limits.
      */
     function updateUsageDisplay() {
-        if (!oneclick_images_bulk_vars.is_valid_license && !oneclick_images_bulk_vars.is_trial) {
+        if (!occidg_bulk_vars.is_valid_license && !occidg_bulk_vars.is_trial) {
             return;
         }
 
-        const used = oneclick_images_bulk_vars.usage.used_count;
-        const total = oneclick_images_bulk_vars.usage.total_allowed;
-        const remaining = oneclick_images_bulk_vars.usage.remaining_count;
+        const used = occidg_bulk_vars.usage.used_count;
+        const total = occidg_bulk_vars.usage.total_allowed;
+        const remaining = occidg_bulk_vars.usage.remaining_count;
         const percentage = total > 0 ? (used / total) * 100 : 0;
 
         $('#usage_count').text(
-            oneclick_images_bulk_vars.is_valid_license
+            occidg_bulk_vars.is_valid_license
                 ? `Used ${used} of ${total} credits`
                 : `Free Trial: Used ${used} of ${total} credits`
         );
@@ -573,7 +573,7 @@ jQuery(document).ready(function ($) {
             .text(`${Math.round(percentage)}%`)
             .attr('aria-valuenow', used);
 
-        if (oneclick_images_bulk_vars.is_valid_license && remaining <= 0) {
+        if (occidg_bulk_vars.is_valid_license && remaining <= 0) {
             $('.generate-metadata').prop('disabled', true).attr('title', 'Out of credits');
             $('#generate-all-metadata').prop('disabled', true);
         }
@@ -583,7 +583,7 @@ jQuery(document).ready(function ($) {
     // Initialization
     // =============================================================================
 
-    if (oneclick_images_bulk_vars.is_valid_license || oneclick_images_bulk_vars.is_trial) {
+    if (occidg_bulk_vars.is_valid_license || occidg_bulk_vars.is_trial) {
         updateUsageDisplay();
     }
 });

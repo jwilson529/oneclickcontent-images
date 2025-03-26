@@ -18,13 +18,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class OneClickContent_Images_Auto_Generate
+ * Class Occidg_Auto_Generate
  *
  * Handles automatic metadata generation for images during upload in the OneClickContent Image Details plugin.
  *
  * @since 1.0.0
  */
-class OneClickContent_Images_Auto_Generate {
+class Occidg_Auto_Generate {
 
 	/**
 	 * Constructor.
@@ -36,8 +36,8 @@ class OneClickContent_Images_Auto_Generate {
 	public function __construct() {
 		add_filter( 'wp_generate_attachment_metadata', array( $this, 'auto_generate_metadata' ), 10, 2 );
 		add_action( 'wp_ajax_check_image_error', array( $this, 'check_image_error' ) );
-		add_action( 'wp_ajax_oneclick_remove_image_error_transient', array( $this, 'oneclick_remove_image_error_transient' ) );
-		add_action( 'wp_ajax_oneclick_images_get_all_media_ids', array( $this, 'oneclick_images_get_all_media_ids' ) );
+		add_action( 'wp_ajax_occidg_remove_image_error_transient', array( $this, 'occidg_remove_image_error_transient' ) );
+		add_action( 'wp_ajax_occidg_get_all_media_ids', array( $this, 'occidg_get_all_media_ids' ) );
 	}
 
 	/**
@@ -51,19 +51,19 @@ class OneClickContent_Images_Auto_Generate {
 	 * @return array The unmodified metadata.
 	 */
 	public function auto_generate_metadata( $metadata, $attachment_id ) {
-		$auto_add = get_option( 'oneclick_images_auto_add_details', false );
+		$auto_add = get_option( 'occidg_auto_add_details', false );
 
 		if ( $auto_add ) {
-			if ( ! class_exists( 'OneClickContent_Images_Admin_Settings' ) ) {
+			if ( ! class_exists( 'Occidg_Admin_Settings' ) ) {
 				return $metadata; // Fail gracefully if the class is not loaded.
 			}
 
-			$oneclick_images_admin = new OneClickContent_Images_Admin_Settings();
-			$result                = $oneclick_images_admin->oneclick_images_generate_metadata( $attachment_id );
+			$occidg_admin = new Occidg_Admin_Settings();
+			$result       = $occidg_admin->occidg_generate_metadata( $attachment_id );
 
 			if ( isset( $result['error'] ) && false !== strpos( $result['error'], 'Usage limit reached' ) ) {
 				set_transient(
-					'oneclick_image_error',
+					'occidg_image_error',
 					array(
 						'message' => sanitize_text_field( $result['message'] ),
 						'ad_url'  => esc_url_raw( $result['ad_url'] ),
@@ -85,14 +85,14 @@ class OneClickContent_Images_Auto_Generate {
 	 * @return void Outputs JSON response with error data or an error message.
 	 */
 	public function check_image_error() {
-		check_ajax_referer( 'oneclick_images_ajax_nonce', 'nonce' );
+		check_ajax_referer( 'occidg_ajax_nonce', 'nonce' );
 
 		if ( ! current_user_can( 'upload_files' ) ) {
 			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'oneclickcontent-image-detail-generator' ) ) );
 			return;
 		}
 
-		$error_data = get_transient( 'oneclick_image_error' );
+		$error_data = get_transient( 'occidg_image_error' );
 
 		if ( $error_data ) {
 			wp_send_json_success( $error_data );
@@ -109,15 +109,15 @@ class OneClickContent_Images_Auto_Generate {
 	 * @since 1.0.0
 	 * @return void Outputs JSON response confirming the transient removal.
 	 */
-	public function oneclick_remove_image_error_transient() {
-		check_ajax_referer( 'oneclick_images_ajax_nonce', 'nonce' );
+	public function occidg_remove_image_error_transient() {
+		check_ajax_referer( 'occidg_ajax_nonce', 'nonce' );
 
 		if ( ! current_user_can( 'upload_files' ) ) {
 			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'oneclickcontent-image-detail-generator' ) ) );
 			return;
 		}
 
-		delete_transient( 'oneclick_image_error' );
+		delete_transient( 'occidg_image_error' );
 
 		wp_send_json_success( array( 'message' => __( 'Transient removed successfully.', 'oneclickcontent-image-detail-generator' ) ) );
 	}
@@ -130,8 +130,8 @@ class OneClickContent_Images_Auto_Generate {
 	 * @since 1.0.0
 	 * @return void Outputs JSON response with the list of image IDs or an error message.
 	 */
-	public function oneclick_images_get_all_media_ids() {
-		check_ajax_referer( 'oneclick_images_ajax_nonce', 'nonce' );
+	public function occidg_get_all_media_ids() {
+		check_ajax_referer( 'occidg_ajax_nonce', 'nonce' );
 
 		if ( ! current_user_can( 'upload_files' ) ) {
 			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'oneclickcontent-image-detail-generator' ) ) );

@@ -6,8 +6,8 @@
  * and registers them with the WordPress API. Calls the run function to execute
  * the list of actions and filters.
  *
- * @package    OneClickContent_Images
- * @subpackage OneClickContent_Images/includes
+ * @package    Occidg
+ * @subpackage Occidg/includes
  * @author     James Wilson <james@oneclickcontent.com>
  * @since      1.0.0
  * @copyright  2025 OneClickContent
@@ -25,13 +25,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class OneClickContent_Images_Loader
+ * Class Occidg_Loader
  *
  * Registers and manages all actions and filters for the OneClickContent Image Details plugin.
  *
  * @since 1.0.0
  */
-class OneClickContent_Images_Loader {
+class Occidg_Loader {
 
 	/**
 	 * The array of actions registered with WordPress.

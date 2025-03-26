@@ -29,11 +29,11 @@ jQuery( document ).ready( function( $ ) {
 
         // Check override_metadata option.
         $.ajax( {
-            url: oneclick_images_admin_vars.ajax_url,
+            url: occidg_admin_vars.ajax_url,
             type: 'POST',
             data: {
-                action: 'oneclick_images_check_override_metadata',
-                nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
+                action: 'occidg_check_override_metadata',
+                nonce: occidg_admin_vars.occidg_ajax_nonce,
             },
             success: function( response ) {
                 if ( response.success && ( true === response.data.override || '1' === response.data.override ) ) {
@@ -90,11 +90,11 @@ jQuery( document ).ready( function( $ ) {
         $( messageContainer ).text( '' );
 
         $.ajax( {
-            url: oneclick_images_admin_vars.ajax_url,
+            url: occidg_admin_vars.ajax_url,
             type: 'POST',
             data: {
-                action: 'oneclick_images_get_all_media_ids',
-                nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
+                action: 'occidg_get_all_media_ids',
+                nonce: occidg_admin_vars.occidg_ajax_nonce,
             },
             success: function( response ) {
                 if ( response.success && response.data.ids.length > 0 ) {
@@ -148,11 +148,11 @@ jQuery( document ).ready( function( $ ) {
         $(progressBar).css('width', percent + '%');
 
         $.ajax({
-            url: oneclick_images_admin_vars.ajax_url,
+            url: occidg_admin_vars.ajax_url,
             type: 'POST',
             data: {
-                action: 'oneclick_images_generate_metadata',
-                nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
+                action: 'occidg_generate_metadata',
+                nonce: occidg_admin_vars.occidg_ajax_nonce,
                 image_id: imageId,
             },
             success: function(response) {
@@ -226,21 +226,21 @@ jQuery( document ).ready( function( $ ) {
         const mediaLibraryUrl = `/wp-admin/post.php?post=${imageId}&action=edit`;
 
         $.ajax( {
-            url: oneclick_images_admin_vars.ajax_url,
+            url: occidg_admin_vars.ajax_url,
             type: 'GET',
             data: {
                 action: 'get_thumbnail',
                 image_id: imageId,
-                oneclick_images_ajax_nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
+                occidg_ajax_nonce: occidg_admin_vars.occidg_ajax_nonce,
             },
             success: function( thumbnailResponse ) {
                 const thumbnailUrl = thumbnailResponse.success && thumbnailResponse.data?.thumbnail ?
                     thumbnailResponse.data.thumbnail :
-                    oneclick_images_admin_vars.fallback_image_url;
+                    occidg_admin_vars.fallback_image_url;
                 buildMetadataDisplay( mediaLibraryUrl, thumbnailUrl, metadata, imageId, statusContainer );
             },
             error: function() {
-                const thumbnailUrl = oneclick_images_admin_vars.fallback_image_url;
+                const thumbnailUrl = occidg_admin_vars.fallback_image_url;
                 buildMetadataDisplay( mediaLibraryUrl, thumbnailUrl, metadata, imageId, statusContainer );
             },
         } );
@@ -308,7 +308,7 @@ jQuery( document ).ready( function( $ ) {
                         src="${safeThumbnailUrl}"
                         alt="Thumbnail for ${safeImageId}"
                         class="thumbnail-preview attachment-thumbnail size-thumbnail"
-                        onerror="this.src='${oneclick_images_admin_vars.fallback_image_url}';"
+                        onerror="this.src='${occidg_admin_vars.fallback_image_url}';"
                     />
                 </div>
                 <div class="metadata-container">
@@ -329,11 +329,11 @@ jQuery( document ).ready( function( $ ) {
      */
     function fetchUsageStatus( retryCount = 3 ) {
         $.ajax( {
-            url: oneclick_images_admin_vars.ajax_url,
+            url: occidg_admin_vars.ajax_url,
             type: 'POST',
             data: {
-                action: 'oneclick_images_check_usage',
-                nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce,
+                action: 'occidg_check_usage',
+                nonce: occidg_admin_vars.occidg_ajax_nonce,
             },
             success: function( response ) {
                 if ( response.success ) {

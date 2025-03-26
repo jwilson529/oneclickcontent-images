@@ -18,13 +18,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class OneClickContent_Images_Bulk_Edit
+ * Class Occidg_Bulk_Edit
  *
  * Manages bulk editing and metadata generation in the Media Library.
  *
  * @since 1.0.0
  */
-class OneClickContent_Images_Bulk_Edit {
+class Occidg_Bulk_Edit {
 
 	/**
 	 * Renders the bulk edit tab interface in the admin area.
@@ -33,7 +33,7 @@ class OneClickContent_Images_Bulk_Edit {
 	 * @return void
 	 */
 	public function render_bulk_edit_tab() {
-		$license_status   = get_option( 'oneclick_images_license_status', 'unknown' );
+		$license_status   = get_option( 'occidg_license_status', 'unknown' );
 		$is_valid_license = ( 'active' === $license_status );
 
 		$fallback_image_url = plugin_dir_url( __FILE__ ) . 'assets/icon.png';
@@ -61,18 +61,18 @@ class OneClickContent_Images_Bulk_Edit {
 		);
 
 		wp_localize_script(
-			'oneclickcontent-images-bulk-edit',
-			'oneclick_images_bulk_vars',
+			'occidg-bulk-edit',
+			'occidg_bulk_vars',
 			array(
 				'ajax_url'         => admin_url( 'admin-ajax.php' ),
-				'nonce'            => wp_create_nonce( 'oneclick_images_bulk_edit' ),
+				'nonce'            => wp_create_nonce( 'occidg_bulk_edit' ),
 				'is_valid_license' => $is_valid_license,
 				'license_cta_html' => $license_cta_html,
 				'usage'            => $usage_data,
 			)
 		);
 		?>
-		<div id="oneclick_images_bulk_edit" class="wrap">
+		<div id="occidg_bulk_edit" class="wrap">
 			<h2><?php esc_html_e( 'Bulk Edit Image Metadata', 'oneclickcontent-image-detail-generator' ); ?></h2>
 			
 			<div class="usage-info-section">
@@ -161,7 +161,7 @@ class OneClickContent_Images_Bulk_Edit {
 	 * @return void
 	 */
 	public function get_image_metadata() {
-		check_ajax_referer( 'oneclick_images_bulk_edit', 'nonce' );
+		check_ajax_referer( 'occidg_bulk_edit', 'nonce' );
 		if ( ! current_user_can( 'edit_posts' ) ) {
 			wp_send_json_error( 'Permission denied.' );
 		}
@@ -229,7 +229,7 @@ class OneClickContent_Images_Bulk_Edit {
 	 * @return void
 	 */
 	public function save_bulk_metadata() {
-		check_ajax_referer( 'oneclick_images_bulk_edit', 'nonce' );
+		check_ajax_referer( 'occidg_bulk_edit', 'nonce' );
 		if ( false === current_user_can( 'edit_posts' ) ) {
 			wp_send_json_error( 'Permission denied.' );
 		}

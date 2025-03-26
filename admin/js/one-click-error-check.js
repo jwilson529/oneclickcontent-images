@@ -34,11 +34,11 @@
             $('#occ-subscription-modal').fadeOut();
 
             $.ajax({
-                url: oneclick_images_admin_vars.ajax_url,
+                url: occidg_admin_vars.ajax_url,
                 method: 'POST',
                 data: {
-                    action: 'oneclick_remove_image_error_transient',
-                    nonce: oneclick_images_admin_vars.oneclick_images_ajax_nonce
+                    action: 'occidg_remove_image_error_transient',
+                    nonce: occidg_admin_vars.occidg_ajax_nonce
                 }
             });
         }

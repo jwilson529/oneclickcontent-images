@@ -19,14 +19,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class OneClickContent_Images_License_Update
+ * Class Occidg_License_Update
  *
  * Manages license validation and usage tracking for the OneClickContent Image Details plugin.
  * Update checking has been removed to comply with WordPress Plugin Directory guidelines.
  *
  * @since 1.0.0
  */
-class OneClickContent_Images_License_Update {
+class Occidg_License_Update {
 
 	/**
 	 * The License Validation API URL.
@@ -59,9 +59,9 @@ class OneClickContent_Images_License_Update {
 		$this->plugin_slug = sanitize_text_field( $plugin_slug );
 
 		// Register AJAX handlers for license and usage management.
-		add_action( 'wp_ajax_oneclick_images_validate_license', array( $this, 'ajax_validate_license' ) );
-		add_action( 'wp_ajax_oneclick_images_get_license_status', array( $this, 'ajax_get_license_status' ) );
-		add_action( 'wp_ajax_oneclick_images_check_usage', array( $this, 'oneclick_images_ajax_check_usage' ) );
+		add_action( 'wp_ajax_occidg_validate_license', array( $this, 'ajax_validate_license' ) );
+		add_action( 'wp_ajax_occidg_get_license_status', array( $this, 'ajax_get_license_status' ) );
+		add_action( 'wp_ajax_occidg_check_usage', array( $this, 'occidg_ajax_check_usage' ) );
 	}
 
 	/**
@@ -78,9 +78,9 @@ class OneClickContent_Images_License_Update {
 			return;
 		}
 
-		$license_key = get_option( 'oneclick_images_license_key', '' );
+		$license_key = get_option( 'occidg_license_key', '' );
 		if ( empty( $license_key ) ) {
-			update_option( 'oneclick_images_license_status', 'inactive' );
+			update_option( 'occidg_license_status', 'inactive' );
 			wp_send_json_error(
 				array(
 					'status'  => 'inactive',
@@ -106,7 +106,7 @@ class OneClickContent_Images_License_Update {
 		);
 
 		if ( is_wp_error( $response ) ) {
-			update_option( 'oneclick_images_license_status', 'inactive' );
+			update_option( 'occidg_license_status', 'inactive' );
 			wp_send_json_error(
 				array(
 					'status'  => 'inactive',
@@ -118,7 +118,7 @@ class OneClickContent_Images_License_Update {
 
 		$data = json_decode( wp_remote_retrieve_body( $response ), true );
 		if ( JSON_ERROR_NONE !== json_last_error() || ! isset( $data['status'] ) || 'success' !== $data['status'] ) {
-			update_option( 'oneclick_images_license_status', 'inactive' );
+			update_option( 'occidg_license_status', 'inactive' );
 			wp_send_json_success(
 				array(
 					'status'  => 'inactive',
@@ -128,7 +128,7 @@ class OneClickContent_Images_License_Update {
 			return;
 		}
 
-		update_option( 'oneclick_images_license_status', 'active' );
+		update_option( 'occidg_license_status', 'active' );
 		wp_send_json_success(
 			array(
 				'status'  => 'active',
@@ -151,9 +151,9 @@ class OneClickContent_Images_License_Update {
 			return;
 		}
 
-		$license_key = get_option( 'oneclick_images_license_key', '' );
+		$license_key = get_option( 'occidg_license_key', '' );
 		if ( empty( $license_key ) ) {
-			update_option( 'oneclick_images_license_status', 'inactive' );
+			update_option( 'occidg_license_status', 'inactive' );
 			wp_send_json_error(
 				array(
 					'status'  => 'inactive',
@@ -190,7 +190,7 @@ class OneClickContent_Images_License_Update {
 
 		$data = json_decode( wp_remote_retrieve_body( $response ), true );
 		if ( JSON_ERROR_NONE !== json_last_error() || ! isset( $data['status'] ) || 'success' !== $data['status'] ) {
-			update_option( 'oneclick_images_license_status', 'inactive' );
+			update_option( 'occidg_license_status', 'inactive' );
 			wp_send_json_success(
 				array(
 					'status'  => 'inactive',
@@ -200,7 +200,7 @@ class OneClickContent_Images_License_Update {
 			return;
 		}
 
-		update_option( 'oneclick_images_license_status', 'active' );
+		update_option( 'occidg_license_status', 'active' );
 		wp_send_json_success(
 			array(
 				'status'  => 'active',
@@ -217,14 +217,14 @@ class OneClickContent_Images_License_Update {
 	 * @since 1.0.0
 	 * @return void Outputs JSON response with usage data or an error message.
 	 */
-	public function oneclick_images_ajax_check_usage() {
+	public function occidg_ajax_check_usage() {
 		$nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) : '';
-		if ( ! wp_verify_nonce( $nonce, 'oneclick_images_ajax_nonce' ) ) {
+		if ( ! wp_verify_nonce( $nonce, 'occidg_ajax_nonce' ) ) {
 			wp_send_json_error( array( 'error' => __( 'Invalid nonce.', 'oneclickcontent-image-detail-generator' ) ) );
 			return;
 		}
 
-		$license_key = get_option( 'oneclick_images_license_key', '' );
+		$license_key = get_option( 'occidg_license_key', '' );
 		$origin_url  = esc_url_raw( home_url() );
 
 		if ( '' === $license_key ) {
@@ -235,7 +235,7 @@ class OneClickContent_Images_License_Update {
 		$request_data = array(
 			'license_key'  => sanitize_text_field( $license_key ),
 			'origin_url'   => $origin_url,
-			'product_slug' => defined( 'OCC_IMAGES_PRODUCT_SLUG' ) ? OCC_IMAGES_PRODUCT_SLUG : 'demo',
+			'product_slug' => defined( 'OCCIDG_PRODUCT_SLUG' ) ? OCCIDG_PRODUCT_SLUG : 'demo',
 		);
 
 		$response = wp_remote_post(

@@ -62,7 +62,7 @@ This plugin connects to the OneClickContent API to check usage limits.
 ## Installation
 
 1. **Upload the Plugin**:
-   - Upload the `oneclickcontent-images` folder to the `/wp-content/plugins/` directory.
+   - Upload the `occidg` folder to the `/wp-content/plugins/` directory.
 
 2. **Activate the Plugin**:
    - Activate through the Plugins menu in WordPress.

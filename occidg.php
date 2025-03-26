@@ -10,8 +10,8 @@
  * @link       https://oneclickcontent.com
  * @since      1.0.0
  *
- * @package    OneClickContent_Images
- * @subpackage OneClickContent_Images
+ * @package    Occidg
+ * @subpackage Occidg
  */
 
 /**
@@ -45,35 +45,35 @@ if ( ! defined( 'WPINC' ) ) {
  *
  * @since 1.0.0
  */
-define( 'OCC_IMAGES_VERSION', '1.1.9' );
-define( 'OCC_IMAGES_PRODUCT_SLUG', 'oneclickcontent-image-meta-generator' );
+define( 'OCCIDG_VERSION', '1.1.9' );
+define( 'OCCIDG_PRODUCT_SLUG', 'oneclickcontent-image-meta-generator' );
 
 /**
  * The code that runs during plugin activation.
  *
- * This action is documented in includes/class-oneclickcontent-images-activator.php.
+ * This action is documented in includes/class-occidg-activator.php.
  *
  * @since 1.0.0
  */
-function oneclick_images_activate() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-oneclickcontent-images-activator.php';
-	OneClickContent_Images_Activator::activate();
+function occidg_activate() {
+	require_once plugin_dir_path( __FILE__ ) . 'includes/class-occidg-activator.php';
+	Occidg_Activator::activate();
 }
 
 /**
  * The code that runs during plugin deactivation.
  *
- * This action is documented in includes/class-oneclickcontent-images-deactivator.php.
+ * This action is documented in includes/class-occidg-deactivator.php.
  *
  * @since 1.0.0
  */
-function oneclick_images_deactivate() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-oneclickcontent-images-deactivator.php';
-	OneClickContent_Images_Deactivator::deactivate();
+function occidg_deactivate() {
+	require_once plugin_dir_path( __FILE__ ) . 'includes/class-occidg-deactivator.php';
+	Occidg_Deactivator::deactivate();
 }
 
-register_activation_hook( __FILE__, 'oneclick_images_activate' );
-register_deactivation_hook( __FILE__, 'oneclick_images_deactivate' );
+register_activation_hook( __FILE__, 'occidg_activate' );
+register_deactivation_hook( __FILE__, 'occidg_deactivate' );
 
 /**
  * The core plugin class that defines internationalization, admin-specific hooks,
@@ -81,7 +81,7 @@ register_deactivation_hook( __FILE__, 'oneclick_images_deactivate' );
  *
  * @since 1.0.0
  */
-require plugin_dir_path( __FILE__ ) . 'includes/class-oneclickcontent-images.php';
+require plugin_dir_path( __FILE__ ) . 'includes/class-occidg.php';
 
 /**
  * Begins execution of the plugin.
@@ -91,8 +91,8 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-oneclickcontent-images.php
  *
  * @since 1.0.0
  */
-function run_oneclick_images() {
-	$plugin = new OneClickContent_Images();
+function occidg_run() {
+	$plugin = new Occidg();
 	$plugin->run();
 }
-run_oneclick_images();
+occidg_run();

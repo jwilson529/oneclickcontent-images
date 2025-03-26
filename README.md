@@ -6,7 +6,7 @@
 **Requires at least**: 5.0  
 **Tested up to**: 6.7  
 **Requires PHP**: 7.2  
-**Stable tag**: 1.1.9  
+**Stable tag**: 1.1.10  
 **License**: GPLv2 or later  
 **License URI**: [GPLv2](https://www.gnu.org/licenses/gpl-2.0.html)  
 
@@ -18,7 +18,7 @@ Automatically generate image details like titles, descriptions, alt texts, and c
 
 **OneClickContent - Image Detail Generator** is a WordPress plugin that enhances your images by automatically generating details using AI technology. Improve your website's SEO and accessibility by adding descriptive titles, alt texts, captions, and descriptions to your images effortlessly.
 
-### Features:
+### Features
 
 - **Automated Detail Generation**: Create image titles, descriptions, alt texts, and captions with a single click.
 - **Auto Add on Upload**: Automatically generate details for images upon upload based on plugin settings.
@@ -39,6 +39,23 @@ To provide detail generation, this plugin sends the following data to **oneclick
 - **License Key**: Used to verify your subscription.
 
 From there, this data is processed by **OpenAI's GPT-4o-mini model** (or other models as we adapt to the latest advancements in AI) to generate details. This process is fully managed by **OneClickContent**, and you do not need an OpenAI API key.
+
+---
+
+## External Services
+
+This plugin connects to the OneClickContent API to check usage limits.
+
+- **Endpoint**: `https://oneclickcontent.com/wp-json/subscriber/v1/check-usage`
+- **Data Sent**: Subscriber data to verify usage.
+- **Documentation**: [Terms of Service](https://oneclickcontent.com/terms/) | [Privacy Policy](https://oneclickcontent.com/privacy/)
+
+---
+
+## Third-party Libraries
+
+- **DataTables**: [Source & Documentation](https://github.com/DataTables/DataTablesSrc)
+- **DataTables Buttons**: [Source & Documentation](https://github.com/DataTables/Buttons)
 
 ---
 
@@ -96,27 +113,30 @@ If enabled, the plugin will automatically generate details for any images you up
 
 ## Screenshots
 
-1. **Settings Page**: Configure your OneClickContent license key, select a language, and enable auto detail generation on upload.
+1. **Settings Page**: Configure your OneClickContent license key, select a language, and enable auto detail generation on upload.  
    ![Settings Page](assets/settings.png)
 
-2. **Media Library Integration**: Generate details directly from the Media Library.
+2. **Media Library Integration**: Generate details directly from the Media Library.  
    ![Media Library Integration](assets/media-library.png)
 
-3. **Bulk Edit Tab**: Manage details for multiple images at once.
+3. **Bulk Edit Tab**: Manage details for multiple images at once.  
    ![Bulk Edit Tab](assets/bulk-edit.png)
 
-4. **Generated Details**: View and edit the generated details for your images.
+4. **Generated Details**: View and edit the generated details for your images.  
    ![Generated Details](assets/generated.png)
 
-5. **Language Selection**: Choose your preferred language for detail generation.
+5. **Language Selection**: Choose your preferred language for detail generation.  
    ![Language Selection](assets/language.png)
 
 ---
 
 ## Changelog
 
-### 1.1.9
-- Better Settings and Bulk Edit screen handling.
+### 1.1.10
+- Security enhancements and WPCS compliance improvements.
+- Fixed asset enqueuing issues and updated DataTables integration.
+- Improved nonce verification and sanitization for AJAX calls.
+- Various bug fixes and performance optimizations.
 
 ### 1.1.8
 - Enhanced security with improved nonce verification across AJAX and form handling.
@@ -150,17 +170,21 @@ If enabled, the plugin will automatically generate details for any images you up
 
 ## Upgrade Notice
 
+### 1.1.10
+- Security and performance enhancements. Please update to improve stability and compliance.
+
 ### 1.1.8
-- Security enhancements and WPCS compliance. Update for improved stability and best practices.
+- Security enhancements and WPCS compliance improvements.
+- Improved update system handling and nonce verification.
 
 ### 1.1.7
-- Fixes nonce verification in thumbnail fetching for improved security.
+- Fixed nonce verification issues.
 
 ### 1.1.5
-- Fixes and enhancements to the update system. Resolves issues with stale update indicators and transient handling.
+- Fixes and enhancements to the update system.
 
 ### 1.1.1
-- Added multilingual support and improved transparency. Please review the updated plugin description.
+- Added multilingual support and improved transparency.
 
 ### 1.1.0
 - Added "Auto Add Details on Upload" feature.

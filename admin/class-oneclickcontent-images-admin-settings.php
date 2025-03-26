@@ -34,16 +34,30 @@ class OneClickContent_Images_Admin_Settings {
 	 * @return void
 	 */
 	public function display_admin_notices() {
-		$settings_updated = isset( $_GET['settings-updated'] ) ? sanitize_text_field( wp_unslash( $_GET['settings-updated'] ) ) : '';
-		$nonce            = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
+		// Only allow users with the manage_options capability.
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
 
-		if ( current_user_can( 'manage_options' ) && $settings_updated && 'true' === $settings_updated ) {
+		// Only process if a settings update is indicated.
+		if ( isset( $_GET['settings-updated'] ) && 'true' === $_GET['settings-updated'] ) {
+			// Retrieve and sanitize nonce from GET.
+			$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
+
+			// Verify nonce before processing.
 			if ( ! empty( $nonce ) && wp_verify_nonce( $nonce, 'oneclick_images_ajax_nonce' ) ) {
 				add_settings_error(
 					'oneclick_images_messages',
 					'oneclick_images_message',
 					__( 'Settings saved.', 'oneclickcontent-image-detail-generator' ),
 					'updated'
+				);
+			} else {
+				add_settings_error(
+					'oneclick_images_messages',
+					'oneclick_images_message',
+					__( 'Invalid nonce. Settings were not saved.', 'oneclickcontent-image-detail-generator' ),
+					'error'
 				);
 			}
 		}
@@ -371,31 +385,41 @@ class OneClickContent_Images_Admin_Settings {
 	 * @return void Responds with a JSON success or error message.
 	 */
 	public function oneclick_images_save_settings() {
+		// Check user capabilities.
+		if ( false === current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( __( 'Insufficient permissions.', 'oneclickcontent-image-detail-generator' ) );
+			return;
+		}
+
+		// Verify nonce from POST.
 		$ajax_nonce = isset( $_POST['_ajax_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_ajax_nonce'] ) ) : '';
-		if ( ! $ajax_nonce || ! wp_verify_nonce( $ajax_nonce, 'oneclick_images_ajax_nonce' ) ) {
+		if ( '' === $ajax_nonce || ! wp_verify_nonce( $ajax_nonce, 'oneclick_images_ajax_nonce' ) ) {
 			wp_send_json_error( __( 'Invalid nonce.', 'oneclickcontent-image-detail-generator' ) );
 			return;
 		}
 
-		if ( ! isset( $_POST['settings'] ) ) {
+		// Retrieve and sanitize the 'settings' input using filter_input.
+		$raw_settings = filter_input( INPUT_POST, 'settings', FILTER_DEFAULT );
+		if ( empty( $raw_settings ) ) {
 			wp_send_json_error( __( 'Settings data missing.', 'oneclickcontent-image-detail-generator' ) );
 			return;
 		}
-
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Form data needs to be parsed before sanitization
-		$settings_input = wp_unslash( $_POST['settings'] );
+		// Sanitize the raw settings string.
+		$settings_input = sanitize_text_field( wp_unslash( $raw_settings ) );
 		parse_str( $settings_input, $settings );
+		// Sanitize the resulting array.
+		$settings = map_deep( $settings, 'sanitize_text_field' );
 
-		// Handle metadata fields explicitly.
+		// Define expected metadata fields.
 		$fields          = array( 'title', 'description', 'alt_text', 'caption' );
 		$metadata_fields = array();
 
-		// Set all metadata fields to unchecked (0) by default.
+		// Set all metadata fields to unchecked ('0') by default.
 		foreach ( $fields as $field ) {
 			$metadata_fields[ $field ] = '0';
 		}
 
-		// Override with any checked fields from the form.
+		// If settings include metadata fields, update accordingly.
 		if ( isset( $settings['oneclick_images_metadata_fields'] ) && is_array( $settings['oneclick_images_metadata_fields'] ) ) {
 			foreach ( $settings['oneclick_images_metadata_fields'] as $field => $value ) {
 				if ( in_array( $field, $fields, true ) ) {
@@ -413,15 +437,14 @@ class OneClickContent_Images_Admin_Settings {
 		$override = isset( $settings['oneclick_images_override_metadata'] ) ? '1' : '0';
 		update_option( 'oneclick_images_override_metadata', $override );
 
-		$language = isset( $settings['oneclick_images_language'] ) ? sanitize_text_field( $settings['oneclick_images_language'] ) : 'en';
+		$language = isset( $settings['oneclick_images_language'] ) ? $settings['oneclick_images_language'] : 'en';
 		update_option( 'oneclick_images_language', $language );
 
-		$license = isset( $settings['oneclick_images_license_key'] ) ? sanitize_text_field( $settings['oneclick_images_license_key'] ) : '';
+		$license = isset( $settings['oneclick_images_license_key'] ) ? $settings['oneclick_images_license_key'] : '';
 		update_option( 'oneclick_images_license_key', $license );
 
 		wp_send_json_success();
 	}
-
 	/**
 	 * Generate metadata for an image using the OneClickContent API.
 	 *

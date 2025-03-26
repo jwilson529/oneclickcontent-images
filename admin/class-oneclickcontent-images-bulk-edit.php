@@ -230,30 +230,34 @@ class OneClickContent_Images_Bulk_Edit {
 	 */
 	public function save_bulk_metadata() {
 		check_ajax_referer( 'oneclick_images_bulk_edit', 'nonce' );
-		if ( ! current_user_can( 'edit_posts' ) ) {
+		if ( false === current_user_can( 'edit_posts' ) ) {
 			wp_send_json_error( 'Permission denied.' );
 		}
+		$image_id = isset( $_POST['image_id'] ) ? absint( $_POST['image_id'] ) : 0;
 
-		$image_id    = isset( $_POST['image_id'] ) ? absint( $_POST['image_id'] ) : 0;
-		$title       = isset( $_POST['title'] ) ? sanitize_text_field( wp_unslash( $_POST['title'] ) ) : '';
-		$alt_text    = isset( $_POST['alt_text'] ) ? sanitize_text_field( wp_unslash( $_POST['alt_text'] ) ) : '';
-		$description = isset( $_POST['description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['description'] ) ) : '';
-		$caption     = isset( $_POST['caption'] ) ? sanitize_textarea_field( wp_unslash( $_POST['caption'] ) ) : '';
+		// Explicitly check for empty strings using strict comparison.
+		$title       = ( isset( $_POST['title'] ) && '' !== $_POST['title'] ) ? sanitize_text_field( wp_unslash( $_POST['title'] ) ) : '';
+		$alt_text    = ( isset( $_POST['alt_text'] ) && '' !== $_POST['alt_text'] ) ? sanitize_text_field( wp_unslash( $_POST['alt_text'] ) ) : '';
+		$description = ( isset( $_POST['description'] ) && '' !== $_POST['description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['description'] ) ) : '';
+		$caption     = ( isset( $_POST['caption'] ) && '' !== $_POST['caption'] ) ? sanitize_textarea_field( wp_unslash( $_POST['caption'] ) ) : '';
 
-		if ( ! $image_id ) {
+		if ( 0 === $image_id ) {
 			wp_send_json_error( 'Invalid image ID.' );
 		}
 
 		// Update the metadata.
 		update_post_meta( $image_id, '_wp_attachment_image_alt', $alt_text );
-		wp_update_post(
-			array(
-				'ID'           => $image_id,
-				'post_title'   => $title,
-				'post_content' => $description,
-				'post_excerpt' => $caption,
-			)
+
+		// Force update with empty values.
+		$post_update_args = array(
+			'ID'           => $image_id,
+			'post_title'   => $title,
+			'post_content' => $description,
+			'post_excerpt' => $caption,
 		);
+
+		// Use wp_update_post with the 'force_update' parameter.
+		wp_update_post( $post_update_args, true );
 
 		// Return the updated metadata.
 		$updated_data = array(
@@ -262,10 +266,8 @@ class OneClickContent_Images_Bulk_Edit {
 			'alt_text'    => $alt_text,
 			'description' => $description,
 			'caption'     => $caption,
-			// Optionally include thumbnail if your DataTable needs it.
 			'thumbnail'   => wp_get_attachment_image( $image_id, 'thumbnail', false, array( 'class' => 'thumbnail-preview' ) ),
 		);
-
 		wp_send_json_success( $updated_data );
 	}
 }

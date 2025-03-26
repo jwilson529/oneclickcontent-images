@@ -5,7 +5,7 @@ Tags: images, details, OpenAI, AI, accessibility
 Requires at least: 5.0  
 Tested up to: 6.7  
 Requires PHP: 7.2  
-Stable tag: 1.1.9
+Stable tag: 1.1.10  
 License: GPLv2 or later  
 License URI: https://www.gnu.org/licenses/gpl-2.0.html  
 
@@ -15,7 +15,7 @@ Automatically generate image details like titles, descriptions, alt texts, and c
 
 **OneClickContent - Image Detail Generator** is a WordPress plugin that enhances your images by automatically generating details using AI technology. Improve your website's SEO and accessibility by adding descriptive titles, alt texts, captions, and descriptions to your images effortlessly.
 
-= Features: =
+== Features ==
 
 * **Automated Detail Generation**: Create image titles, descriptions, alt texts, and captions with a single click.
 * **Auto Add on Upload**: Automatically generate details for images upon upload based on plugin settings.
@@ -26,7 +26,7 @@ Automatically generate image details like titles, descriptions, alt texts, and c
 * **Improved Accessibility**: Enhance user experience for visitors using assistive technologies.
 * **Bulk Editing**: Manage and generate details for multiple images at once via the Bulk Edit tab.
 
-= Transparency: =
+== Transparency ==
 
 To provide detail generation, this plugin sends the following data to **oneclickcontent.com**:
 - **Image Data**: Either the image itself or its URL.
@@ -34,6 +34,17 @@ To provide detail generation, this plugin sends the following data to **oneclick
 - **License Key**: Used to verify your subscription.
 
 From there, this data is processed by **OpenAI's GPT-4o-mini model** (or other models at our discretion) to generate details. This process is fully managed by **OneClickContent**, and you do not need an OpenAI API key.
+
+== External Services ==
+This plugin connects to the OneClickContent API to check usage limits.
+
+- **Endpoint:** `https://oneclickcontent.com/wp-json/subscriber/v1/check-usage`
+- **Data Sent:** Subscriber data to verify usage.
+- **Documentation:** [Terms of Service](https://oneclickcontent.com/terms/) | [Privacy Policy](https://oneclickcontent.com/privacy/)
+
+== Third-party Libraries ==
+- **DataTables:** [Source & Documentation](https://github.com/DataTables/DataTablesSrc)
+- **DataTables Buttons:** [Source & Documentation](https://github.com/DataTables/Buttons)
 
 == Installation ==
 
@@ -93,13 +104,17 @@ If enabled, the plugin will automatically generate details for any images you up
 
 == Changelog ==
 
-= 1.1.8 =
-* Better Settings and Bulk Edit screen handling. 
+= 1.1.10 =
+* Security enhancements and WPCS compliance improvements.
+* Fixed asset enqueuing issues and updated DataTables integration.
+* Improved nonce verification and sanitization for AJAX calls.
+* Various bug fixes and performance optimizations.
 
 = 1.1.8 =
-* Enhanced security with improved nonce verification across AJAX and form handling.
-* Achieved full WordPress Coding Standards (WPCS) compliance, including Yoda conditions and superglobal sanitization.
-* Optimized asset enqueuing with safer GET parameter handling using `filter_input()`.
+* Enhanced settings and bulk edit screen handling.
+* Improved transient management for update checks.
+* Better handling of stale update indicators.
+* Security improvements with nonce verification.
 
 = 1.1.7 =
 * Fixed nonce issue in get_thumbnail AJAX call.
@@ -110,11 +125,10 @@ If enabled, the plugin will automatically generate details for any images you up
 = 1.1.5 =
 * General fixes and improvements to the update system.
 * Resolved issues with stale transients causing incorrect update indicators.
-* Improved transient management to ensure updates are accurately reflected.
-* Enhanced handling of plugin update checks with better validation and cleanup.
+* Optimized transient management and update checks.
 
 = 1.1.1 =
-* Added multilingual support for detail generation (English, Spanish, French, German, Italian, Chinese, Japanese).
+* Added multilingual support for detail generation.
 * Improved transparency regarding data sent to oneclickcontent.com and OpenAI.
 * Simplified user requirements—no OpenAI API key needed.
 
@@ -126,17 +140,21 @@ If enabled, the plugin will automatically generate details for any images you up
 
 == Upgrade Notice ==
 
+= 1.1.10 =
+* Security and performance enhancements. Please update to improve stability and compliance.
+
 = 1.1.8 =
-* Security enhancements and WPCS compliance. Update for improved stability and best practices.
+* Security enhancements and WPCS compliance improvements.
+* Improved update system handling and nonce verification.
 
 = 1.1.7 =
-* Fixes nonce verification in thumbnail fetching for improved security.
+* Fixed nonce verification issues.
 
 = 1.1.5 =
-* Fixes and enhancements to the update system. Resolves issues with stale update indicators and transient handling.
+* General fixes and enhancements to the update system.
 
 = 1.1.1 =
-* Added multilingual support and improved transparency. Please review the updated plugin description.
+* Added multilingual support and improved transparency.
 
 = 1.1.0 =
 * Added "Auto Add Details on Upload" feature.

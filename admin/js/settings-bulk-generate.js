@@ -358,6 +358,8 @@ jQuery( document ).ready( function( $ ) {
         } );
     }
 
+    window.fetchUsageStatus = fetchUsageStatus;
+
     /**
      * Update the usage status UI.
      *

@@ -96,14 +96,15 @@ class OneClickContent_Images_Admin {
 		$header_image_url      = plugin_dir_url( __FILE__ ) . 'assets/header-image.webp';
 		$first_time_key        = 'oneclick_images_first_time';
 		$is_first_time         = get_option( $first_time_key, true );
+		$tab_nonce             = wp_create_nonce( 'oneclickcontent_tab_switch' );
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'OneClickContent Images', 'oneclickcontent-image-detail-generator' ); ?></h1>
 			<h2 class="nav-tab-wrapper">
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=oneclickcontent-images&tab=settings' ) ); ?>" class="nav-tab <?php echo 'settings' === $tab ? 'nav-tab-active' : ''; ?>">
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=oneclickcontent-images&tab=settings&_wpnonce=' . $tab_nonce ) ); ?>" class="nav-tab <?php echo 'settings' === $tab ? 'nav-tab-active' : ''; ?>">
 					<?php esc_html_e( 'Settings', 'oneclickcontent-image-detail-generator' ); ?>
 				</a>
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=oneclickcontent-images&tab=bulk-edit' ) ); ?>" class="nav-tab <?php echo 'bulk-edit' === $tab ? 'nav-tab-active' : ''; ?>">
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=oneclickcontent-images&tab=bulk-edit&_wpnonce=' . $tab_nonce ) ); ?>" class="nav-tab <?php echo 'bulk-edit' === $tab ? 'nav-tab-active' : ''; ?>">
 					<?php esc_html_e( 'Bulk Edit', 'oneclickcontent-image-detail-generator' ); ?>
 				</a>
 			</h2>
@@ -255,35 +256,6 @@ class OneClickContent_Images_Admin {
 					</div>
 				</div>
 			</div>
-
-			<style>
-				.modal {
-					display: none;
-					position: fixed;
-					z-index: 1000;
-					left: 0;
-					top: 0;
-					width: 100%;
-					height: 100%;
-					overflow: auto;
-					background-color: rgba(0,0,0,0.5);
-				}
-				.modal-content {
-					background-color: #fff;
-					margin: 10% auto;
-					padding: 30px;
-					border-radius: 8px;
-					width: 90%;
-					max-width: 600px;
-					box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-				}
-				.modal-content h2 {
-					margin-top: 0;
-				}
-				.modal-buttons .button + .button {
-					margin-left: 10px;
-				}
-			</style>
 			<?php
 		endif;
 	}
@@ -315,32 +287,21 @@ class OneClickContent_Images_Admin {
 
 			// Only proceed for the plugin's admin page.
 			if ( 'toplevel_page_oneclickcontent-images' === $screen->id ) {
-				// Safely get the current tab.
-				// Note: This is just a UI state parameter, not processing form submissions,
-				// so nonce verification is not necessary.
-				$tab = '';
-				if ( isset( $_GET['tab'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- UI state parameter only.
-					$tab = sanitize_key( wp_unslash( $_GET['tab'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- UI state parameter only.
-				}
+				$tab   = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'general';
+				$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
 
-				// Default to 'general' tab if none specified.
-				if ( empty( $tab ) ) {
+				// Fallback to 'general' if nonce is invalid or missing.
+				if ( empty( $tab ) || ! wp_verify_nonce( $nonce, 'oneclickcontent_tab_switch' ) ) {
 					$tab = 'general';
 				}
 
-				// Only load DataTables CSS for bulk-edit tab.
+				// Note: Tab parameter is for UI state only; nonce adds an extra layer of verification.
 				if ( 'bulk-edit' === $tab ) {
 					wp_enqueue_style(
 						$this->plugin_name . '-datatables',
-						plugin_dir_url( __FILE__ ) . 'css/jquery.dataTables.min.css',
+						plugin_dir_url( __FILE__ ) . 'css/datatables.min.css', // Combined file with Buttons styling.
 						array(),
-						'1.13.1'
-					);
-					wp_enqueue_style(
-						$this->plugin_name . '-datatables-buttons',
-						plugin_dir_url( __FILE__ ) . 'css/buttons.dataTables.min.css',
-						array( $this->plugin_name . '-datatables' ),
-						'2.4.2'
+						'2.2.2' // Version from the combined build.
 					);
 				}
 			}
@@ -449,29 +410,18 @@ class OneClickContent_Images_Admin {
 				isset( $_GET['tab'] ) && 'bulk-edit' === sanitize_key( $_GET['tab'] ) ) {
 				wp_enqueue_script(
 					$this->plugin_name . '-datatables',
-					plugin_dir_url( __FILE__ ) . 'js/jquery.dataTables.min.js',
+					plugin_dir_url( __FILE__ ) . 'js/datatables.min.js', // Combined file with Buttons functionality.
 					array( 'jquery' ),
-					'1.13.1',
-					true
-				);
-				wp_enqueue_script(
-					$this->plugin_name . '-datatables-buttons',
-					plugin_dir_url( __FILE__ ) . 'js/dataTables.buttons.min.js',
-					array( $this->plugin_name . '-datatables' ),
-					'2.4.2',
-					true
-				);
-				wp_enqueue_script(
-					$this->plugin_name . '-datatables-buttons-html5',
-					plugin_dir_url( __FILE__ ) . 'js/buttons.html5.min.js',
-					array( $this->plugin_name . '-datatables-buttons' ),
-					'2.4.2',
+					'2.2.2', // Version from the combined build.
 					true
 				);
 				wp_enqueue_script(
 					$this->plugin_name . '-bulk-edit',
 					plugin_dir_url( __FILE__ ) . 'js/bulk-edit.js',
-					array( $this->plugin_name . '-datatables', $this->plugin_name . '-datatables-buttons-html5', $this->plugin_name . '-settings' ),
+					array(
+						$this->plugin_name . '-datatables',
+						$this->plugin_name . '-settings',
+					),
 					$this->version,
 					true
 				);
@@ -505,7 +455,6 @@ class OneClickContent_Images_Admin {
 			}
 		}
 	}
-
 	/**
 	 * Add a "Generate Metadata" button to the Media Library attachment details.
 	 *

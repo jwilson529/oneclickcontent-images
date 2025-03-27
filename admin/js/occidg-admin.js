@@ -99,16 +99,7 @@
                         const metadata = response.data.metadata;
                         updateMetadataFields(metadata);
 
-                        // Update trial usage locally for non-licensed users
-                        if (!occidg_admin_vars.is_valid_license) {
-                            occidg_admin_vars.usage.used_count += 1;
-                            occidg_admin_vars.usage.remaining_count -= 1;
-                            if (occidg_admin_vars.usage.remaining_count <= 0) {
-                                occidg_admin_vars.trial_expired = true;
-                                // Button stays disabled when trial expires
-                                return;
-                            }
-                        }
+                        // Removed trial usage update so the button is always re-enabled.
                         button.attr('disabled', false).text('Generate Metadata');
                     } else if (!response.success && response.data && response.data.error) {
                         // Handle errors
@@ -427,14 +418,11 @@
                             showSavingMessage(element, ' Saved!', 'success');
                             resolve();
                         } else {
-                            console.error('[OneClickContent] Error message:', response.data);
                             showSavingMessage(element, 'Failed to Save!', 'error');
                             reject(new Error('Failed to save settings'));
                         }
                     },
                     error: function(xhr, status, error) {
-                        console.error('[OneClickContent] AJAX error:', status, error);
-                        console.error('[OneClickContent] Response text:', xhr.responseText);
                         showSavingMessage(element, 'Error occurred!', 'error');
                         reject(error);
                     }

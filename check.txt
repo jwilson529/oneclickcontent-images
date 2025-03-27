@@ -1,11 +1,11 @@
 
-FILE: ...jameswilson/Local Sites/wp-clean-install/app/public/wp-content/plugins/oneclickcontent-images/admin/class-occidg-admin-settings.php
------------------------------------------------------------------------------------------------------------------------------------------
+FILE: ...meswilson/Local Sites/wp-clean-install/app/public/wp-content/plugins/oneclickcontent-images/admin/class-occidg-admin-settings.php
+---------------------------------------------------------------------------------------------------------------------------------------
 FOUND 0 ERRORS AND 1 WARNING AFFECTING 1 LINE
------------------------------------------------------------------------------------------------------------------------------------------
- 457 | WARNING | base64_encode() can be used to obfuscate code which is strongly discouraged. Please verify that the function is used
+---------------------------------------------------------------------------------------------------------------------------------------
+ 465 | WARNING | base64_encode() can be used to obfuscate code which is strongly discouraged. Please verify that the function is used
      |         | for benign reasons.
------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------
 
-Time: 671ms; Memory: 22MB
+Time: 663ms; Memory: 22MB
 

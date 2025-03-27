@@ -466,16 +466,6 @@ class Occidg_Admin {
 	 * @param WP_Post $post        The attachment post object.
 	 * @return array Modified form fields with the custom button.
 	 */
-	/**
-	 * Add a "Generate Metadata" button to the Media Library attachment details.
-	 *
-	 * Modifies the Media Library form to include a button for generating metadata.
-	 *
-	 * @since 1.0.0
-	 * @param array   $form_fields An array of attachment form fields.
-	 * @param WP_Post $post        The attachment post object.
-	 * @return array Modified form fields with the custom button.
-	 */
 	public function add_generate_metadata_button( $form_fields, $post ) {
 		if ( ! preg_match( '/^image\//', $post->post_mime_type ) ) {
 			return $form_fields;
@@ -491,7 +481,7 @@ class Occidg_Admin {
 		$trial_usage      = (int) get_option( 'occidg_trial_usage', 0 );
 		$usage_data       = array(
 			'used_count'      => $is_trial ? $trial_usage : 0,
-			'total_allowed'   => $is_trial ? $trial_limit : 100,
+			'total_allowed'   => $is_trial ? $trial_limit : 10,
 			'remaining_count' => $is_trial ? max( $trial_limit - $trial_usage, 0 ) : 0,
 		);
 

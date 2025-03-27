@@ -129,6 +129,7 @@ class Occidg_License_Update {
 		}
 
 		update_option( 'occidg_license_status', 'active' );
+		delete_option( 'occidg_trial_expired' );
 		wp_send_json_success(
 			array(
 				'status'  => 'active',
@@ -201,6 +202,7 @@ class Occidg_License_Update {
 		}
 
 		update_option( 'occidg_license_status', 'active' );
+		delete_option( 'occidg_trial_expired' );
 		wp_send_json_success(
 			array(
 				'status'  => 'active',

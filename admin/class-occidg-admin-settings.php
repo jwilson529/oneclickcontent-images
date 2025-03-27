@@ -424,7 +424,16 @@ class Occidg_Admin_Settings {
 	 * @return array|false The generated metadata on success, or false/an error array on failure.
 	 */
 	public function occidg_generate_metadata( $image_id ) {
-		$api_key    = get_option( 'occidg_license_key' );
+		$api_key = get_option( 'occidg_license_key' );
+
+		// If there's no license key, check if the free trial has expired.
+		if ( empty( $api_key ) && get_option( 'occidg_trial_expired', false ) ) {
+			return array(
+				'success' => false,
+				'error'   => __( 'Your free trial has expired. Please activate your license to continue using this feature.', 'occidg' ),
+			);
+		}
+
 		$remote_url = empty( $api_key )
 			? 'https://oneclickcontent.com/wp-json/free-trial/v1/generate-meta'
 			: 'https://oneclickcontent.com/wp-json/subscriber/v1/generate-meta';
@@ -450,7 +459,6 @@ class Occidg_Admin_Settings {
 		}
 
 		$image_data = file_get_contents( $image_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
-
 		if ( false === $image_data ) {
 			return false;
 		}
@@ -503,9 +511,7 @@ class Occidg_Admin_Settings {
 		}
 
 		$response_body = wp_remote_retrieve_body( $response );
-		$response_code = wp_remote_retrieve_response_code( $response );
-
-		$data = json_decode( $response_body, true );
+		$data          = json_decode( $response_body, true );
 		if ( json_last_error() !== JSON_ERROR_NONE ) {
 			$json_error = json_last_error_msg();
 			return array(

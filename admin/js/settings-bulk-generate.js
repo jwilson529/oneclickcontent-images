@@ -202,7 +202,6 @@ jQuery( document ).ready( function( $ ) {
                 } else {
                     // Unexpected response format
                     $(messageContainer).text(`Image ${imageId} - Unexpected response format`);
-                    console.error('Unexpected response:', data);
                     fetchUsageStatus();
                     processBulkGeneration(ids, index + 1, $button, total, statusContainer, stopButton, progressBar, messageContainer);
                 }

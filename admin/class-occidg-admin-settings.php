@@ -34,34 +34,11 @@ class Occidg_Admin_Settings {
 	 * @return void
 	 */
 	public function display_admin_notices() {
-		// Only allow users with the manage_options capability.
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
 
-		// Only process if a settings update is indicated.
-		if ( isset( $_GET['settings-updated'] ) && 'true' === $_GET['settings-updated'] ) {
-			// Retrieve and sanitize nonce from GET.
-			$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
-
-			// Verify nonce before processing.
-			if ( ! empty( $nonce ) && wp_verify_nonce( $nonce, 'occidg_ajax_nonce' ) ) {
-				add_settings_error(
-					'occidg_messages',
-					'occidg_message',
-					__( 'Settings saved.', 'oneclickcontent-image-detail-generator' ),
-					'updated'
-				);
-			} else {
-				add_settings_error(
-					'occidg_messages',
-					'occidg_message',
-					__( 'Invalid nonce. Settings were not saved.', 'oneclickcontent-image-detail-generator' ),
-					'error'
-				);
-			}
-		}
-
+		// Display any queued settings errors or notices.
 		settings_errors( 'occidg_messages' );
 	}
 
@@ -72,7 +49,6 @@ class Occidg_Admin_Settings {
 	 * @return void
 	 */
 	public function occidg_register_settings() {
-        // phpcs:ignore PluginCheck.CodeAnalysis.SettingSanitization.register_settingDynamic -- sanitize_callback is defined and safe.
 		$option_group = 'occidg_settings';
 
 		register_setting(
@@ -152,14 +128,14 @@ class Occidg_Admin_Settings {
 	private function add_settings_sections_and_fields() {
 		add_settings_section(
 			'occidg_metadata_section',
-			__( 'Select Metadata Fields to Replace', 'oneclickcontent-image-detail-generator' ),
+			__( 'Select Metadata Fields to Replace', 'occidg' ),
 			array( $this, 'occidg_metadata_section_callback' ),
 			'occidg_settings'
 		);
 
 		add_settings_field(
 			'occidg_metadata_fields',
-			__( 'Metadata Fields', 'oneclickcontent-image-detail-generator' ),
+			__( 'Metadata Fields', 'occidg' ),
 			array( $this, 'occidg_metadata_fields_callback' ),
 			'occidg_settings',
 			'occidg_metadata_section'
@@ -167,14 +143,14 @@ class Occidg_Admin_Settings {
 
 		add_settings_section(
 			'occidg_settings_section',
-			__( 'OneClickContent Image Details Settings', 'oneclickcontent-image-detail-generator' ),
+			__( 'OneClickContent Image Details Settings', 'occidg' ),
 			array( $this, 'occidg_settings_section_callback' ),
 			'occidg_settings'
 		);
 
 		add_settings_field(
 			'occidg_auto_add_details',
-			__( 'Auto Add Details on Upload', 'oneclickcontent-image-detail-generator' ),
+			__( 'Auto Add Details on Upload', 'occidg' ),
 			array( $this, 'occidg_auto_add_details_callback' ),
 			'occidg_settings',
 			'occidg_settings_section',
@@ -183,7 +159,7 @@ class Occidg_Admin_Settings {
 
 		add_settings_field(
 			'occidg_override_metadata',
-			__( 'Override Existing Details', 'oneclickcontent-image-detail-generator' ),
+			__( 'Override Existing Details', 'occidg' ),
 			array( $this, 'occidg_override_metadata_callback' ),
 			'occidg_settings',
 			'occidg_settings_section',
@@ -192,7 +168,7 @@ class Occidg_Admin_Settings {
 
 		add_settings_field(
 			'occidg_language',
-			__( 'Language', 'oneclickcontent-image-detail-generator' ),
+			__( 'Language', 'occidg' ),
 			array( $this, 'occidg_language_callback' ),
 			'occidg_settings',
 			'occidg_settings_section',
@@ -201,7 +177,7 @@ class Occidg_Admin_Settings {
 
 		add_settings_field(
 			'occidg_license_key',
-			__( 'OneClickContent License Key', 'oneclickcontent-image-detail-generator' ),
+			__( 'OneClickContent License Key', 'occidg' ),
 			array( $this, 'occidg_license_key_callback' ),
 			'occidg_settings',
 			'occidg_settings_section',
@@ -217,13 +193,22 @@ class Occidg_Admin_Settings {
 	 */
 	public function occidg_language_callback() {
 		$languages = array(
-			'en' => __( 'English', 'oneclickcontent-image-detail-generator' ),
-			'es' => __( 'Spanish', 'oneclickcontent-image-detail-generator' ),
-			'fr' => __( 'French', 'oneclickcontent-image-detail-generator' ),
-			'de' => __( 'German', 'oneclickcontent-image-detail-generator' ),
-			'it' => __( 'Italian', 'oneclickcontent-image-detail-generator' ),
-			'zh' => __( 'Chinese', 'oneclickcontent-image-detail-generator' ),
-			'ja' => __( 'Japanese', 'oneclickcontent-image-detail-generator' ),
+			'en' => __( 'English', 'occidg' ),
+			'es' => __( 'Spanish', 'occidg' ),
+			'fr' => __( 'French', 'occidg' ),
+			'de' => __( 'German', 'occidg' ),
+			'it' => __( 'Italian', 'occidg' ),
+			'zh' => __( 'Chinese', 'occidg' ),
+			'ja' => __( 'Japanese', 'occidg' ),
+			'pt' => __( 'Portuguese', 'occidg' ),
+			'ru' => __( 'Russian', 'occidg' ),
+			'ar' => __( 'Arabic', 'occidg' ),
+			'ko' => __( 'Korean', 'occidg' ),
+			'nl' => __( 'Dutch', 'occidg' ),
+			'tr' => __( 'Turkish', 'occidg' ),
+			'pl' => __( 'Polish', 'occidg' ),
+			'sv' => __( 'Swedish', 'occidg' ),
+			'hi' => __( 'Hindi', 'occidg' ),
 		);
 
 		$selected_language = get_option( 'occidg_language', 'en' );
@@ -268,7 +253,7 @@ class Occidg_Admin_Settings {
 	 * @return void
 	 */
 	public function occidg_metadata_section_callback() {
-		echo '<p>' . esc_html__( 'Select which metadata fields you want to automatically generate and replace for images.', 'oneclickcontent-image-detail-generator' ) . '</p>';
+		echo '<p>' . esc_html__( 'Select which metadata fields you want to automatically generate and replace for images.', 'occidg' ) . '</p>';
 	}
 
 	/**
@@ -279,10 +264,10 @@ class Occidg_Admin_Settings {
 	 */
 	public function occidg_override_metadata_callback() {
 		$checked       = get_option( 'occidg_override_metadata', false );
-		$checked_value = $checked ? 1 : 0; // Sanitize to ensure it's a strict 1 or 0.
+		$checked_value = $checked ? 1 : 0;
 		?>
 		<input type="checkbox" id="occidg_override_metadata" name="occidg_override_metadata" value="1" <?php checked( 1, esc_attr( $checked_value ) ); ?> />
-		<p class="description"><?php esc_html_e( 'Check this box if you want to override existing metadata details when generating new metadata.', 'oneclickcontent-image-detail-generator' ); ?></p>
+		<p class="description"><?php esc_html_e( 'Check this box if you want to override existing metadata details when generating new metadata.', 'occidg' ); ?></p>
 		<?php
 	}
 
@@ -295,10 +280,10 @@ class Occidg_Admin_Settings {
 	public function occidg_metadata_fields_callback() {
 		$options = get_option( 'occidg_metadata_fields', array() );
 		$fields  = array(
-			'title'       => __( 'Title', 'oneclickcontent-image-detail-generator' ),
-			'description' => __( 'Description', 'oneclickcontent-image-detail-generator' ),
-			'alt_text'    => __( 'Alt Text', 'oneclickcontent-image-detail-generator' ),
-			'caption'     => __( 'Caption', 'oneclickcontent-image-detail-generator' ),
+			'title'       => __( 'Title', 'occidg' ),
+			'description' => __( 'Description', 'occidg' ),
+			'alt_text'    => __( 'Alt Text', 'occidg' ),
+			'caption'     => __( 'Caption', 'occidg' ),
 		);
 
 		foreach ( $fields as $key => $label ) {
@@ -342,7 +327,7 @@ class Occidg_Admin_Settings {
 	 * @return void
 	 */
 	public function occidg_settings_section_callback() {
-		echo '<p>' . esc_html__( 'Configure the settings for the OneClickContent Image Details plugin.', 'oneclickcontent-image-detail-generator' ) . '</p>';
+		echo '<p>' . esc_html__( 'Configure the settings for the OneClickContent Image Details plugin.', 'occidg' ) . '</p>';
 	}
 
 	/**
@@ -355,7 +340,7 @@ class Occidg_Admin_Settings {
 		$checked = get_option( 'occidg_auto_add_details', false );
 		?>
 		<input type="checkbox" id="occidg_auto_add_details" name="occidg_auto_add_details" value="1" <?php checked( 1, $checked ); ?> />
-		<p class="description"><?php esc_html_e( 'Automatically generate and add metadata details when images are added to the Media Library.', 'oneclickcontent-image-detail-generator' ); ?></p>
+		<p class="description"><?php esc_html_e( 'Automatically generate and add metadata details when images are added to the Media Library.', 'occidg' ); ?></p>
 		<?php
 	}
 
@@ -370,11 +355,11 @@ class Occidg_Admin_Settings {
 		?>
 		<input type="password" id="occidg_license_key" name="occidg_license_key" value="<?php echo esc_attr( $value ); ?>" />
 		<button type="button" id="validate_license_button" class="button button-secondary" style="margin-left: 10px;">
-			<?php esc_html_e( 'Validate License', 'oneclickcontent-image-detail-generator' ); ?>
+			<?php esc_html_e( 'Validate License', 'occidg' ); ?>
 		</button>
 		<span id="license_status_label" style="margin-left: 10px; font-weight: bold;"></span>
 		<div id="license_status_message" style="margin-top: 10px;"></div>
-		<p class="description"><?php echo wp_kses_post( __( 'Get your OneClickContent License Key <a href="https://oneclickcontent.com/" target="_blank">here</a>.', 'oneclickcontent-image-detail-generator' ) ); ?></p>
+		<p class="description"><?php echo wp_kses_post( __( 'Get your OneClickContent License Key <a href="https://oneclickcontent.com/" target="_blank">here</a>.', 'occidg' ) ); ?></p>
 		<?php
 	}
 
@@ -382,59 +367,44 @@ class Occidg_Admin_Settings {
 	 * Handles saving settings for the OneClickContent Images plugin via AJAX.
 	 *
 	 * @since 1.0.0
-	 * @return void Responds with a JSON success or error message.
+	 * @return void
 	 */
 	public function occidg_save_settings() {
-		// Check user capabilities.
-		if ( false === current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( __( 'Insufficient permissions.', 'oneclickcontent-image-detail-generator' ) );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( __( 'Insufficient permissions.', 'occidg' ) );
 			return;
 		}
 
-		// Verify nonce from POST.
-		$ajax_nonce = isset( $_POST['_ajax_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_ajax_nonce'] ) ) : '';
-		if ( '' === $ajax_nonce || ! wp_verify_nonce( $ajax_nonce, 'occidg_ajax_nonce' ) ) {
-			wp_send_json_error( __( 'Invalid nonce.', 'oneclickcontent-image-detail-generator' ) );
+		$nonce = isset( $_POST['_ajax_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_ajax_nonce'] ) ) : '';
+		if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, 'occidg_ajax_nonce' ) ) {
+			wp_send_json_error( __( 'Invalid nonce.', 'occidg' ) );
 			return;
 		}
 
-		// Retrieve and sanitize the 'settings' input using filter_input.
 		$raw_settings = filter_input( INPUT_POST, 'settings', FILTER_DEFAULT );
 		if ( empty( $raw_settings ) ) {
-			wp_send_json_error( __( 'Settings data missing.', 'oneclickcontent-image-detail-generator' ) );
+			wp_send_json_error( __( 'Settings data missing.', 'occidg' ) );
 			return;
 		}
-		// Sanitize the raw settings string.
-		$settings_input = sanitize_text_field( wp_unslash( $raw_settings ) );
-		parse_str( $settings_input, $settings );
-		// Sanitize the resulting array.
+
+		parse_str( wp_unslash( $raw_settings ), $settings );
 		$settings = map_deep( $settings, 'sanitize_text_field' );
 
-		// Define expected metadata fields.
 		$fields          = array( 'title', 'description', 'alt_text', 'caption' );
-		$metadata_fields = array();
+		$metadata_fields = array_fill_keys( $fields, '0' );
 
-		// Set all metadata fields to unchecked ('0') by default.
-		foreach ( $fields as $field ) {
-			$metadata_fields[ $field ] = '0';
-		}
-
-		// If settings include metadata fields, update accordingly.
 		if ( isset( $settings['occidg_metadata_fields'] ) && is_array( $settings['occidg_metadata_fields'] ) ) {
-			foreach ( $settings['occidg_metadata_fields'] as $field => $value ) {
-				if ( in_array( $field, $fields, true ) ) {
-					$metadata_fields[ $field ] = '1';
-				}
+			foreach ( $fields as $field ) {
+				$metadata_fields[ $field ] = isset( $settings['occidg_metadata_fields'][ $field ] ) && '1' === $settings['occidg_metadata_fields'][ $field ] ? '1' : '0';
 			}
 		}
 
 		update_option( 'occidg_metadata_fields', $metadata_fields );
 
-		// Update other options.
-		$auto_add = isset( $settings['occidg_auto_add_details'] ) ? '1' : '0';
+		$auto_add = isset( $settings['occidg_auto_add_details'] ) && '1' === $settings['occidg_auto_add_details'] ? '1' : '0';
 		update_option( 'occidg_auto_add_details', $auto_add );
 
-		$override = isset( $settings['occidg_override_metadata'] ) ? '1' : '0';
+		$override = isset( $settings['occidg_override_metadata'] ) && '1' === $settings['occidg_override_metadata'] ? '1' : '0';
 		update_option( 'occidg_override_metadata', $override );
 
 		$language = isset( $settings['occidg_language'] ) ? $settings['occidg_language'] : 'en';
@@ -445,6 +415,7 @@ class Occidg_Admin_Settings {
 
 		wp_send_json_success();
 	}
+
 	/**
 	 * Generate metadata for an image using the OneClickContent API.
 	 *
@@ -474,7 +445,7 @@ class Occidg_Admin_Settings {
 		if ( empty( $generate_metadata ) ) {
 			return array(
 				'success' => false,
-				'error'   => __( 'No metadata fields require generation, and "Override Metadata" is disabled.', 'oneclickcontent-image-detail-generator' ),
+				'error'   => __( 'No metadata fields require generation, and "Override Metadata" is disabled.', 'occidg' ),
 			);
 		}
 
@@ -483,7 +454,6 @@ class Occidg_Admin_Settings {
 		if ( false === $image_data ) {
 			return false;
 		}
-		// Encode image data to base64 for API transmission (benign use, not obfuscation).
 		$image_base64 = base64_encode( $image_data );
 		$image_type   = wp_check_filetype( $image_path )['ext'];
 
@@ -499,15 +469,27 @@ class Occidg_Admin_Settings {
 			'product_slug'  => defined( 'OCCIDG_PRODUCT_SLUG' ) ? OCCIDG_PRODUCT_SLUG : 'demo',
 		);
 
+		$headers = array(
+			'Content-Type' => 'application/json',
+			'api-key'      => $api_key,
+		);
+
+		if ( empty( $api_key ) ) {
+			$salt                         = defined( 'OCCIDG_HMAC_SALT' ) ? OCCIDG_HMAC_SALT : 'default-salt';
+			$origin_url                   = esc_url_raw( home_url() );
+			$timestamp                    = time();
+			$data                         = $origin_url . $timestamp;
+			$hmac_hash                    = hash_hmac( 'sha256', $data, $salt );
+			$headers['X-Free-Trial-Hash'] = $hmac_hash;
+			$headers['X-Timestamp']       = $timestamp;
+		}
+
 		$response = wp_remote_post(
 			$remote_url,
 			array(
-				'headers' => array(
-					'Content-Type' => 'application/json',
-					'api-key'      => $api_key,
-				),
+				'headers' => $headers,
 				'body'    => wp_json_encode( $body ),
-				'timeout' => 30, // Reduced from 120 to comply with performance standards.
+				'timeout' => 30,
 			)
 		);
 
@@ -515,18 +497,20 @@ class Occidg_Admin_Settings {
 			$error_message = $response->get_error_message();
 			return array(
 				'success' => false,
-				'error'   => __( 'Failed to communicate with the metadata service.', 'oneclickcontent-image-detail-generator' ),
+				'error'   => __( 'Failed to communicate with the metadata service.', 'occidg' ),
 				'details' => $error_message,
 			);
 		}
 
 		$response_body = wp_remote_retrieve_body( $response );
-		$data          = json_decode( $response_body, true );
+		$response_code = wp_remote_retrieve_response_code( $response );
+
+		$data = json_decode( $response_body, true );
 		if ( json_last_error() !== JSON_ERROR_NONE ) {
 			$json_error = json_last_error_msg();
 			return array(
 				'success' => false,
-				'error'   => __( 'Invalid response from metadata service.', 'oneclickcontent-image-detail-generator' ),
+				'error'   => __( 'Invalid response from metadata service.', 'occidg' ),
 				'details' => $json_error,
 			);
 		}
@@ -551,7 +535,7 @@ class Occidg_Admin_Settings {
 
 		return array(
 			'success' => false,
-			'error'   => __( 'Metadata processing failed.', 'oneclickcontent-image-detail-generator' ),
+			'error'   => __( 'Metadata processing failed.', 'occidg' ),
 		);
 	}
 
@@ -564,24 +548,21 @@ class Occidg_Admin_Settings {
 	public function ajax_generate_metadata() {
 		check_ajax_referer( 'occidg_ajax_nonce', 'nonce' );
 
-		// Sanitize immediately after unslashing to satisfy WPCS.
 		$image_ids = isset( $_POST['image_ids'] )
 			? sanitize_text_field( wp_unslash( $_POST['image_ids'] ) )
 			: ( isset( $_POST['image_id'] )
 				? absint( wp_unslash( $_POST['image_id'] ) )
 				: 0 );
 
-		// Process the sanitized input: decode JSON if string, or convert to int.
 		$image_ids = is_string( $image_ids ) ? json_decode( $image_ids, true ) : (int) $image_ids;
 		$image_ids = is_array( $image_ids ) ? array_map( 'intval', $image_ids ) : array( (int) $image_ids );
 
-		// Ensure we have at least one valid ID before proceeding.
 		if ( empty( $image_ids ) || ! is_array( $image_ids ) || $image_ids[0] <= 0 ) {
-			wp_send_json_error( __( 'Invalid image ID(s).', 'oneclickcontent-image-detail-generator' ) );
+			wp_send_json_error( __( 'Invalid image ID(s).', 'occidg' ) );
 			return;
 		}
 
-		$result = $this->occidg_generate_metadata( $image_ids[0] ); // Assuming single image for simplicity.
+		$result = $this->occidg_generate_metadata( $image_ids[0] );
 
 		wp_send_json( $result );
 	}
@@ -712,7 +693,7 @@ class Occidg_Admin_Settings {
 				return false;
 			}
 
-			$sanitized_metadata = array_map( 'sanitize_text_field', $metadata ); // Added sanitization for security.
+			$sanitized_metadata = array_map( 'sanitize_text_field', $metadata );
 
 			if ( isset( $generate_metadata['alt_text'] ) ) {
 				update_post_meta( $image_id, '_wp_attachment_image_alt', $sanitized_metadata['alt_text'] );
@@ -824,42 +805,40 @@ class Occidg_Admin_Settings {
 	 */
 	public function occidg_ajax_generate_metadata() {
 		if ( ! check_ajax_referer( 'occidg_ajax_nonce', 'nonce', false ) ) {
-			wp_send_json_error( __( 'Nonce verification failed.', 'oneclickcontent-image-detail-generator' ) );
+			wp_send_json_error( __( 'Nonce verification failed.', 'occidg' ) );
 			return;
 		}
 
 		if ( ! current_user_can( 'upload_files' ) ) {
-			wp_send_json_error( __( 'Permission denied.', 'oneclickcontent-image-detail-generator' ) );
+			wp_send_json_error( __( 'Permission denied.', 'occidg' ) );
 			return;
 		}
 
 		$image_id = isset( $_POST['image_id'] ) ? absint( $_POST['image_id'] ) : 0;
 
 		if ( ! $image_id ) {
-			wp_send_json_error( __( 'Invalid image ID.', 'oneclickcontent-image-detail-generator' ) );
+			wp_send_json_error( __( 'Invalid image ID.', 'occidg' ) );
 			return;
 		}
 
 		$metadata = $this->occidg_generate_metadata( $image_id );
 
-		// Check if $metadata is an array and has a 'success' key.
 		if ( is_array( $metadata ) && isset( $metadata['success'] ) ) {
 			if ( $metadata['success'] ) {
 				wp_send_json_success(
 					array(
-						'message'  => __( 'Metadata generated successfully.', 'oneclickcontent-image-detail-generator' ),
+						'message'  => __( 'Metadata generated successfully.', 'occidg' ),
 						'metadata' => $metadata,
 					)
 				);
 			} else {
-				// Pass through the error details from the REST response.
 				wp_send_json_error( $metadata );
 			}
 		} else {
-			// Handle unexpected cases (e.g., $metadata is null or not an array).
-			wp_send_json_error( __( 'Failed to generate metadata.', 'oneclickcontent-image-detail-generator' ) );
+			wp_send_json_error( __( 'Failed to generate metadata.', 'occidg' ) );
 		}
 	}
+
 	/**
 	 * AJAX handler to refresh the nonce.
 	 *
@@ -868,12 +847,12 @@ class Occidg_Admin_Settings {
 	 */
 	public function occidg_ajax_refresh_nonce() {
 		if ( ! check_ajax_referer( 'occidg_ajax_nonce', 'nonce', false ) ) {
-			wp_send_json_error( __( 'Nonce verification failed.', 'oneclickcontent-image-detail-generator' ) );
+			wp_send_json_error( __( 'Nonce verification failed.', 'occidg' ) );
 			return;
 		}
 
 		if ( ! current_user_can( 'upload_files' ) ) {
-			wp_send_json_error( __( 'Permission denied.', 'oneclickcontent-image-detail-generator' ) );
+			wp_send_json_error( __( 'Permission denied.', 'occidg' ) );
 			return;
 		}
 

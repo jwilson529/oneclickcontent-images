@@ -27,24 +27,23 @@ Automatically generate image details like titles, descriptions, alt texts, and c
 * **Bulk Editing**: Manage and generate details for multiple images at once via the Bulk Edit tab.
 
 == Transparency ==
-
 To provide detail generation, this plugin sends the following data to **oneclickcontent.com**:
 - **Image Data**: Either the image itself or its URL.
 - **Website URL**: Used for licensing and debugging.
 - **License Key**: Used to verify your subscription.
-
 From there, this data is processed by **OpenAI's GPT-4o-mini model** (or other models at our discretion) to generate details. This process is fully managed by **OneClickContent**, and you do not need an OpenAI API key.
 
 == External Services ==
 This plugin connects to the OneClickContent API to check usage limits.
-
 - **Endpoint:** `https://oneclickcontent.com/wp-json/subscriber/v1/check-usage`
 - **Data Sent:** Subscriber data to verify usage.
 - **Documentation:** [Terms of Service](https://oneclickcontent.com/terms/) | [Privacy Policy](https://oneclickcontent.com/privacy/)
 
 == Third-party Libraries ==
-- **DataTables:** [Source & Documentation](https://github.com/DataTables/DataTablesSrc)
-- **DataTables Buttons:** [Source & Documentation](https://github.com/DataTables/Buttons)
+- **DataTables (with Buttons and HTML5 Export):** Minified file (v2.2.2, Buttons v3.2.2) used in plugin. Unminified source available at [DataTables GitHub](https://github.com/DataTables/DataTablesSrc/releases/tag/2.2.2) and [Buttons GitHub](https://github.com/DataTables/Buttons/releases/tag/3.2.2), or rebuild via [DataTables Builder](https://datatables.net/download/#dt/dt-2.2.2/b-3.2.2/b-html5-3.2.2).
+
+== Source Code ==
+- The source code for this plugin, including all unminified JavaScript files (e.g., `occidg-admin.js`, `bulk-edit.js`), is available at [GitHub Repository](https://github.com/jwilson529/oneclickcontent-images).
 
 == Installation ==
 

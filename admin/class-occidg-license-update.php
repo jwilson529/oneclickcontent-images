@@ -74,7 +74,7 @@ class Occidg_License_Update {
 	 */
 	public function ajax_validate_license() {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'oneclickcontent-image-detail-generator' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'occidg' ) ) );
 			return;
 		}
 
@@ -84,7 +84,7 @@ class Occidg_License_Update {
 			wp_send_json_error(
 				array(
 					'status'  => 'inactive',
-					'message' => __( 'License key is missing.', 'oneclickcontent-image-detail-generator' ),
+					'message' => __( 'License key is missing.', 'occidg' ),
 				)
 			);
 			return;
@@ -110,7 +110,7 @@ class Occidg_License_Update {
 			wp_send_json_error(
 				array(
 					'status'  => 'inactive',
-					'message' => __( 'Unable to validate license.', 'oneclickcontent-image-detail-generator' ),
+					'message' => __( 'Unable to validate license.', 'occidg' ),
 				)
 			);
 			return;
@@ -122,7 +122,7 @@ class Occidg_License_Update {
 			wp_send_json_success(
 				array(
 					'status'  => 'inactive',
-					'message' => __( 'License is inactive or invalid.', 'oneclickcontent-image-detail-generator' ),
+					'message' => __( 'License is inactive or invalid.', 'occidg' ),
 				)
 			);
 			return;
@@ -132,7 +132,7 @@ class Occidg_License_Update {
 		wp_send_json_success(
 			array(
 				'status'  => 'active',
-				'message' => __( 'License validated successfully.', 'oneclickcontent-image-detail-generator' ),
+				'message' => __( 'License validated successfully.', 'occidg' ),
 			)
 		);
 	}
@@ -147,7 +147,7 @@ class Occidg_License_Update {
 	 */
 	public function ajax_get_license_status() {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'oneclickcontent-image-detail-generator' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'occidg' ) ) );
 			return;
 		}
 
@@ -157,7 +157,7 @@ class Occidg_License_Update {
 			wp_send_json_error(
 				array(
 					'status'  => 'inactive',
-					'message' => __( 'License key is missing.', 'oneclickcontent-image-detail-generator' ),
+					'message' => __( 'License key is missing.', 'occidg' ),
 				)
 			);
 			return;
@@ -182,7 +182,7 @@ class Occidg_License_Update {
 			wp_send_json_error(
 				array(
 					'status'  => 'inactive',
-					'message' => __( 'Unable to verify license status.', 'oneclickcontent-image-detail-generator' ),
+					'message' => __( 'Unable to verify license status.', 'occidg' ),
 				)
 			);
 			return;
@@ -194,7 +194,7 @@ class Occidg_License_Update {
 			wp_send_json_success(
 				array(
 					'status'  => 'inactive',
-					'message' => __( 'License is inactive or invalid.', 'oneclickcontent-image-detail-generator' ),
+					'message' => __( 'License is inactive or invalid.', 'occidg' ),
 				)
 			);
 			return;
@@ -204,7 +204,7 @@ class Occidg_License_Update {
 		wp_send_json_success(
 			array(
 				'status'  => 'active',
-				'message' => __( 'License is active and valid.', 'oneclickcontent-image-detail-generator' ),
+				'message' => __( 'License is active and valid.', 'occidg' ),
 			)
 		);
 	}
@@ -220,7 +220,7 @@ class Occidg_License_Update {
 	public function occidg_ajax_check_usage() {
 		$nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) : '';
 		if ( ! wp_verify_nonce( $nonce, 'occidg_ajax_nonce' ) ) {
-			wp_send_json_error( array( 'error' => __( 'Invalid nonce.', 'oneclickcontent-image-detail-generator' ) ) );
+			wp_send_json_error( array( 'error' => __( 'Invalid nonce.', 'occidg' ) ) );
 			return;
 		}
 
@@ -228,7 +228,7 @@ class Occidg_License_Update {
 		$origin_url  = esc_url_raw( home_url() );
 
 		if ( '' === $license_key ) {
-			wp_send_json_error( array( 'error' => __( 'License key is missing.', 'oneclickcontent-image-detail-generator' ) ) );
+			wp_send_json_error( array( 'error' => __( 'License key is missing.', 'occidg' ) ) );
 			return;
 		}
 
@@ -254,12 +254,12 @@ class Occidg_License_Update {
 
 		$decoded_response = json_decode( wp_remote_retrieve_body( $response ), true );
 		if ( JSON_ERROR_NONE !== json_last_error() ) {
-			wp_send_json_error( array( 'error' => __( 'Invalid response from server.', 'oneclickcontent-image-detail-generator' ) ) );
+			wp_send_json_error( array( 'error' => __( 'Invalid response from server.', 'occidg' ) ) );
 			return;
 		}
 
 		if ( 200 !== wp_remote_retrieve_response_code( $response ) || isset( $decoded_response['error'] ) ) {
-			$error_message = isset( $decoded_response['error'] ) ? $decoded_response['error'] : __( 'Unknown error occurred.', 'oneclickcontent-image-detail-generator' );
+			$error_message = isset( $decoded_response['error'] ) ? $decoded_response['error'] : __( 'Unknown error occurred.', 'occidg' );
 			wp_send_json_error( array( 'error' => $error_message ) );
 			return;
 		}

@@ -387,26 +387,40 @@
          */
         function promiseSaveSettings(element) {
             return new Promise((resolve, reject) => {
-
-                // Special handling for checkboxes
-                const checkboxStatus = {};
+                // Explicitly collect all checkbox states
+                const metadataFields = {};
                 $('.metadata-field-checkbox').each(function() {
-                    const name = $(this).attr('name');
-                    const checked = $(this).is(':checked');
-                    checkboxStatus[name] = checked;
+                    const key = $(this).attr('name').replace('occidg_metadata_fields[', '').replace(']', '');
+                    metadataFields[key] = $(this).is(':checked') ? '1' : '0';
                 });
-                
-                const formData = $('#occidg_settings_form').serialize();
-                
+
+                // Log the collected checkbox states
+                console.log('[OCCIDG] Checkbox states:', metadataFields);
+
+                // Collect other form fields
+                const formData = {
+                    'occidg_auto_add_details': $('#occidg_auto_add_details').is(':checked') ? '1' : '0',
+                    'occidg_override_metadata': $('#occidg_override_metadata').is(':checked') ? '1' : '0',
+                    'occidg_language': $('#occidg_language').val(),
+                    'occidg_license_key': $('#occidg_license_key').val(),
+                    'occidg_metadata_fields': metadataFields
+                };
+
+                // Convert to URL-encoded string
+                const serializedData = $.param(formData);
+
+                // Log the serialized data being sent
+                console.log('[OCCIDG] Serialized data:', serializedData);
+
                 showSavingMessage(element, ' Saving...', 'info');
-                
+
                 $.ajax({
                     url: occidg_admin_vars.ajax_url,
                     type: 'POST',
                     data: {
                         action: 'occidg_save_settings',
                         _ajax_nonce: occidg_admin_vars.occidg_ajax_nonce,
-                        settings: formData
+                        settings: serializedData
                     },
                     success: function(response) {
                         if (response.success) {
@@ -427,7 +441,7 @@
                 });
             });
         }
-
+        
         /**
          * Update the license status UI based on the response.
          *
@@ -594,11 +608,11 @@
         window.showLimitPrompt = showLimitPrompt;
         window.showSubscriptionPrompt = showSubscriptionPrompt;
 
-        // Event listeners for settings changes.
+        // Event listeners for settings changes
         $('#occidg_settings_form input, #occidg_settings_form select').on('change', function() {
             const element = this;
             promiseSaveSettings(element).catch(() => {
-                // Silent catch for robustness.
+                // Silent catch for robustness
             });
         });
 

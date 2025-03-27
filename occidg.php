@@ -23,7 +23,7 @@
  * Author URI:        https://oneclickcontent.com/
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
- * Text Domain:       oneclickcontent-image-detail-generator
+ * Text Domain:       occidg
  * Domain Path:       /languages
  *
  * @wordpress-plugin
@@ -47,6 +47,7 @@ if ( ! defined( 'WPINC' ) ) {
  */
 define( 'OCCIDG_VERSION', '1.1.9' );
 define( 'OCCIDG_PRODUCT_SLUG', 'oneclickcontent-image-meta-generator' );
+define( 'OCCIDG_HMAC_SALT', 'AwOd18+WK{FmK%<T>;pb9i$oUz:DMuo0<Say;KeA$+gxRk>y?wR2$LD:^fG-N`$,' );
 
 /**
  * The code that runs during plugin activation.

@@ -208,7 +208,7 @@ class Occidg_Admin {
 
 		<?php if ( $is_first_time ) : ?>
 			<?php $fallback_image_url = plugin_dir_url( __FILE__ ) . 'assets/icon.png'; ?>
-			<div id="oneclick-images-first-time-modal" class="modal" style="display:block;">
+			<div id="occidg-first-time-modal" class="modal" style="display:block;">
 				<div class="modal-content">
 					<div class="modal-header" style="display: flex; align-items: center; gap: 15px;">
 						<img src="<?php echo esc_url( $fallback_image_url ); ?>" alt="Plugin Icon" style="width: 50px; height: 50px;">

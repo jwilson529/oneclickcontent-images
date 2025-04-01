@@ -800,7 +800,7 @@
 
 
 /* Modal Container */
-#oneclick-images-first-time-modal {
+#occidg-first-time-modal {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -935,7 +935,7 @@
     width: 100%;
 }
 
-#oneclick-images-first-time-modal .modal {
+#occidg-first-time-modal .modal {
     display: none;
     position: fixed;
     z-index: 1000;
@@ -947,7 +947,7 @@
     background-color: rgba(0, 0, 0, 0.5);
 }
 
-#oneclick-images-first-time-modal .modal-content {
+#occidg-first-time-modal .modal-content {
     background-color: #fff;
     margin: 10% auto;
     padding: 30px;
@@ -957,10 +957,87 @@
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
 }
 
-#oneclick-images-first-time-modal .modal-content h2 {
+#occidg-first-time-modal .modal-content h2 {
     margin-top: 0;
 }
 
-#oneclick-images-first-time-modal .modal-buttons .button+.button {
+#occidg-first-time-modal .modal-buttons .button+.button {
     margin-left: 10px;
+}
+
+/* -------------------------------
+   Responsive Nav Tabs
+------------------------------- */
+.nav-tab-wrapper {
+    overflow-x: auto;          /* Enable horizontal scroll */
+    white-space: nowrap;       /* Keep tabs on one line */
+    padding-bottom: 5px;       /* Allow space for scrollbar if needed */
+}
+
+.nav-tab-wrapper .nav-tab {
+    display: inline-block;     /* Size based on content */
+    width: auto !important;    /* Override WP default full width */
+    margin-right: 10px;        /* Space between tabs */
+    box-sizing: border-box;
+}
+
+/* Reduce padding/font on smaller screens */
+@media (max-width: 768px) {
+    .nav-tab-wrapper .nav-tab {
+        padding: 8px 10px;
+        font-size: 14px;
+    }
+}
+
+/* -------------------------------
+   Responsive DataTable Container
+------------------------------- */
+.dt-container {
+    display: block;
+    width: 100%;
+    overflow-x: auto;          /* Allow horizontal scrolling if table is wider than viewport */
+    -webkit-overflow-scrolling: touch;  /* Smooth scrolling on mobile */
+}
+
+/* Let the table size itself based on content instead of forced 100% width */
+.dt-container table {
+    width: auto !important;
+    min-width: 800px;          /* Adjust this value as needed based on your columns */
+    border-collapse: collapse;
+}
+
+/* Prevent table cells from wrapping so that columns maintain their width */
+.dt-container table th,
+.dt-container table td {
+    white-space: nowrap;
+}
+
+/* Optional: Adjust cell padding and font sizes on smaller screens */
+@media (max-width: 768px) {
+    .dt-container table th,
+    .dt-container table td {
+        padding: 8px 10px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .dt-container table th,
+    .dt-container table td {
+        padding: 6px 8px;
+        font-size: 12px;
+    }
+}
+
+button#validate_license_button {
+    margin: 0 !important;
+    margin-top: 1rem !important;
+}
+
+
+@media (min-width: 1024px) {
+    #image-metadata-table_wrapper,
+    #image-metadata-table {
+        width: 100% !important;
+    }
 }

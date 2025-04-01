@@ -86,7 +86,7 @@ jQuery(document).ready(function ($) {
             serverSide: true,
             processing: true,
             searching: true,
-            ordering: false,
+            ordering: true,  // Enable overall ordering
             autoWidth: false,
             deferRender: true,
             ajax: {
@@ -108,9 +108,10 @@ jQuery(document).ready(function ($) {
                                 <span class="save-status"></span>
                             </div>`;
                         }
+                        // For sorting, use the raw text.
                         return data;
                     },
-                    orderable: false,
+                    orderable: true,
                 },
                 {
                     data: 'alt_text',
@@ -123,7 +124,7 @@ jQuery(document).ready(function ($) {
                         }
                         return data;
                     },
-                    orderable: false,
+                    orderable: true,
                 },
                 {
                     data: 'description',
@@ -136,7 +137,7 @@ jQuery(document).ready(function ($) {
                         }
                         return data;
                     },
-                    orderable: false,
+                    orderable: true,
                 },
                 {
                     data: 'caption',
@@ -149,7 +150,7 @@ jQuery(document).ready(function ($) {
                         }
                         return data;
                     },
-                    orderable: false,
+                    orderable: true,
                 },
                 {
                     data: null,
@@ -243,9 +244,6 @@ jQuery(document).ready(function ($) {
         }
     });
 
-    /**
-     * Handles the click event for generating metadata.
-     */
     table.on('click', '.generate-metadata', function () {
         const $button = $(this);
         const imageId = $button.data('image-id');
@@ -271,7 +269,10 @@ jQuery(document).ready(function ($) {
             return;
         }
 
+        // Disable the generate button.
         $button.prop('disabled', true).text('Generating...');
+        // Disable and gray out all inputs in the row.
+        $row.find('input, textarea').prop('disabled', true).css('opacity', 0.5);
 
         $.ajax({
             url: occidg_admin_vars.ajax_url,
@@ -282,7 +283,6 @@ jQuery(document).ready(function ($) {
                 image_id: imageId,
             },
             success: function (response) {
-                // Inside the success callback for the generate-metadata AJAX request:
                 if (response.success && response.data && response.data.metadata) {
                     // Successful metadata generation.
                     const metadata = response.data.metadata;
@@ -311,13 +311,12 @@ jQuery(document).ready(function ($) {
                         $button.prop('disabled', false).text('Generate');
                         setTimeout(() => $status.fadeOut(), 2000);
 
-                        // Instead of manually updating usage, fetch updated usage from the server.
+                        // Fetch updated usage from the server.
                         fetchUsageStatus(3);
                     } else {
                         table.ajax.reload(null, false);
                     }
                 } else if (!response.success && response.data && response.data.error) {
-                    // Handle errors.
                     const error = response.data.error;
                     if (error.includes('Free trial limit reached')) {
                         window.showSubscriptionPrompt(
@@ -353,18 +352,21 @@ jQuery(document).ready(function ($) {
                     $status.text('Error: ' + error).addClass('action-status-error').fadeIn();
                     setTimeout(() => $status.fadeOut(), 2000);
                 } else {
-                    // Handle unexpected response format.
                     $status.text('Error: Failed').addClass('action-status-error').fadeIn();
                     $button.prop('disabled', false).text('Generate');
                     setTimeout(() => $status.fadeOut(), 2000);
                     window.showGeneralErrorModal('Unexpected response format from server.');
                 }
+                // Re-enable the row inputs in any case.
+                $row.find('input, textarea').prop('disabled', false).css('opacity', 1);
             },
             error: function (xhr) {
                 $status.text('Error: ' + xhr.responseText).addClass('action-status-error').fadeIn();
                 $button.prop('disabled', false).text('Generate');
                 setTimeout(() => $status.fadeOut(), 2000);
                 window.showGeneralErrorModal('An error occurred while processing the request: ' + xhr.responseText);
+                // Re-enable the row inputs on error.
+                $row.find('input, textarea').prop('disabled', false).css('opacity', 1);
             },
         });
     });

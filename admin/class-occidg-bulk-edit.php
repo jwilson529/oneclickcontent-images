@@ -155,73 +155,97 @@ class Occidg_Bulk_Edit {
 	}
 
 	/**
-	 * Fetch image metadata for DataTables via AJAX with server-side pagination and search.
+	 * Fetch image metadata for DataTables via AJAX with server-side pagination, search, and sorting.
 	 *
 	 * @since 1.0.0
 	 * @return void
 	 */
 	public function get_image_metadata() {
-		check_ajax_referer( 'occidg_bulk_edit', 'nonce' );
-		if ( ! current_user_can( 'edit_posts' ) ) {
-			wp_send_json_error( 'Permission denied.' );
-		}
+	    check_ajax_referer( 'occidg_bulk_edit', 'nonce' );
+	    if ( ! current_user_can( 'edit_posts' ) ) {
+	        wp_send_json_error( 'Permission denied.' );
+	    }
 
-		$draw         = isset( $_REQUEST['draw'] ) ? intval( $_REQUEST['draw'] ) : 1;
-		$start        = isset( $_REQUEST['start'] ) ? intval( $_REQUEST['start'] ) : 0;
-		$length       = isset( $_REQUEST['length'] ) ? intval( $_REQUEST['length'] ) : 10;
-		$search_value = isset( $_REQUEST['search']['value'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['search']['value'] ) ) : '';
+	    $draw         = isset( $_REQUEST['draw'] ) ? intval( $_REQUEST['draw'] ) : 1;
+	    $start        = isset( $_REQUEST['start'] ) ? intval( $_REQUEST['start'] ) : 0;
+	    $length       = isset( $_REQUEST['length'] ) ? intval( $_REQUEST['length'] ) : 10;
+	    $search_value = isset( $_REQUEST['search']['value'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['search']['value'] ) ) : '';
 
-		$page = $start / $length + 1;
+	    $page = $start / $length + 1;
 
-		$args = array(
-			'post_type'      => 'attachment',
-			'post_mime_type' => 'image',
-			'post_status'    => 'inherit',
-			'posts_per_page' => $length,
-			'paged'          => $page,
-		);
+	    // Base query arguments.
+	    $args = array(
+	        'post_type'      => 'attachment',
+	        'post_mime_type' => 'image',
+	        'post_status'    => 'inherit',
+	        'posts_per_page' => $length,
+	        'paged'          => $page,
+	    );
 
-		if ( ! empty( $search_value ) ) {
-			$args['s'] = $search_value;
-		}
+	    if ( ! empty( $search_value ) ) {
+	        $args['s'] = $search_value;
+	    }
 
-		$total_query   = new WP_Query(
-			array_merge(
-				$args,
-				array(
-					'posts_per_page' => -1,
-					'fields'         => 'ids',
-				)
-			)
-		);
-		$records_total = $total_query->found_posts;
+	    // Handle ordering parameters sent by DataTables.
+	    // DataTables sends order[0][column] and order[0][dir].
+	    $order_column_index = isset( $_REQUEST['order'][0]['column'] ) ? intval( $_REQUEST['order'][0]['column'] ) : 1;
+	    $order_dir = isset( $_REQUEST['order'][0]['dir'] ) ? sanitize_text_field( $_REQUEST['order'][0]['dir'] ) : 'asc';
 
-		$query            = new WP_Query( $args );
-		$records_filtered = $query->found_posts;
+	    // Map DataTables column index to WP_Query keys.
+	    // Column indices: 0 = thumbnail, 1 = title, 2 = alt_text, 3 = description, 4 = caption, 5 = actions.
+	    if ( $order_column_index === 2 ) {
+	        // For alt_text, sort by the meta value.
+	        $args['meta_key'] = '_wp_attachment_image_alt';
+	        $args['orderby']  = 'meta_value';
+	        $args['order']    = $order_dir;
+	    } elseif ( in_array( $order_column_index, array( 1, 3, 4 ) ) ) {
+	        $column_map = array(
+	            1 => 'post_title',
+	            3 => 'post_content',
+	            4 => 'post_excerpt',
+	        );
+	        $args['orderby'] = $column_map[ $order_column_index ];
+	        $args['order']   = $order_dir;
+	    }
+	    // If order_column_index is 0 or 5, leave ordering as default.
 
-		$data = array();
-		foreach ( $query->posts as $post ) {
-			$thumbnail = wp_get_attachment_image( $post->ID, 'thumbnail', false, array( 'style' => 'max-width: 50px;' ) );
-			$data[]    = array(
-				'thumbnail'   => $thumbnail,
-				'title'       => esc_html( get_the_title( $post->ID ) ),
-				'alt_text'    => esc_attr( get_post_meta( $post->ID, '_wp_attachment_image_alt', true ) ),
-				'description' => esc_textarea( $post->post_content ),
-				'caption'     => esc_textarea( $post->post_excerpt ),
-				'id'          => $post->ID,
-			);
-		}
+	    // Get total record count.
+	    $total_query = new WP_Query(
+	        array_merge(
+	            $args,
+	            array(
+	                'posts_per_page' => -1,
+	                'fields'         => 'ids',
+	            )
+	        )
+	    );
+	    $records_total = $total_query->found_posts;
 
-		wp_send_json(
-			array(
-				'draw'            => $draw,
-				'recordsTotal'    => $records_total,
-				'recordsFiltered' => $records_filtered,
-				'data'            => $data,
-			)
-		);
+	    $query            = new WP_Query( $args );
+	    $records_filtered = $query->found_posts;
+
+	    $data = array();
+	    foreach ( $query->posts as $post ) {
+	        $thumbnail = wp_get_attachment_image( $post->ID, 'thumbnail', false, array( 'style' => 'max-width: 50px;' ) );
+	        $data[]    = array(
+	            'thumbnail'   => $thumbnail,
+	            'title'       => esc_html( get_the_title( $post->ID ) ),
+	            'alt_text'    => esc_attr( get_post_meta( $post->ID, '_wp_attachment_image_alt', true ) ),
+	            'description' => esc_textarea( $post->post_content ),
+	            'caption'     => esc_textarea( $post->post_excerpt ),
+	            'id'          => $post->ID,
+	        );
+	    }
+
+	    wp_send_json(
+	        array(
+	            'draw'            => $draw,
+	            'recordsTotal'    => $records_total,
+	            'recordsFiltered' => $records_filtered,
+	            'data'            => $data,
+	        )
+	    );
 	}
-
 	/**
 	 * Save edited metadata via AJAX.
 	 *

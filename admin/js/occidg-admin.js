@@ -24,7 +24,7 @@
                     dismiss_first_time_nonce: occidg_admin_vars.dismiss_first_time_nonce
                 },
                 success: function(response) {
-                    $('#oneclick-images-first-time-modal').fadeOut();
+                    $('#occidg-first-time-modal').fadeOut();
                 }
             });
         });

@@ -3,9 +3,9 @@ FILE: ...meswilson/Local Sites/wp-clean-install/app/public/wp-content/plugins/on
 ---------------------------------------------------------------------------------------------------------------------------------------
 FOUND 0 ERRORS AND 1 WARNING AFFECTING 1 LINE
 ---------------------------------------------------------------------------------------------------------------------------------------
- 465 | WARNING | base64_encode() can be used to obfuscate code which is strongly discouraged. Please verify that the function is used
+ 462 | WARNING | base64_encode() can be used to obfuscate code which is strongly discouraged. Please verify that the function is used
      |         | for benign reasons.
 ---------------------------------------------------------------------------------------------------------------------------------------
 
-Time: 669ms; Memory: 22MB
+Time: 639ms; Memory: 22MB
 

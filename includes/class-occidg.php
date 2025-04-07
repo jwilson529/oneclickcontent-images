@@ -72,7 +72,6 @@ class Occidg {
 		$this->occidg_images = 'occidg';
 
 		$this->load_dependencies();
-		$this->set_locale();
 		$this->define_admin_hooks();
 	}
 
@@ -82,7 +81,6 @@ class Occidg {
 	 * Include the following files that make up the plugin:
 	 *
 	 * - Occidg_Loader: Orchestrates the hooks of the plugin.
-	 * - Occidg_I18n: Defines internationalization functionality.
 	 * - Occidg_Admin: Defines all hooks for the admin area.
 	 * - Occidg_Admin_Settings: Handles admin settings.
 	 * - Occidg_Auto_Generate: Handles automatic metadata generation.
@@ -99,11 +97,6 @@ class Occidg {
 		 * The class responsible for orchestrating the actions and filters of the core plugin.
 		 */
 		require_once plugin_dir_path( __DIR__ ) . 'includes/class-occidg-loader.php';
-
-		/**
-		 * The class responsible for defining internationalization functionality of the plugin.
-		 */
-		require_once plugin_dir_path( __DIR__ ) . 'includes/class-occidg-i18n.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.
@@ -131,19 +124,6 @@ class Occidg {
 		require_once plugin_dir_path( __DIR__ ) . 'admin/class-occidg-bulk-edit.php';
 
 		$this->loader = new Occidg_Loader();
-	}
-
-	/**
-	 * Define the locale for this plugin for internationalization.
-	 *
-	 * Uses the Occidg_I18n class to set the domain and register the hook with WordPress.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 */
-	private function set_locale() {
-		$plugin_i18n = new Occidg_I18n();
-		$this->loader->add_action( 'plugins_loaded', $plugin_i18n, 'load_plugin_textdomain' );
 	}
 
 	/**

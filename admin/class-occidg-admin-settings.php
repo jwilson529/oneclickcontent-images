@@ -381,14 +381,12 @@ class Occidg_Admin_Settings {
 			return;
 		}
 
-		$raw_settings = filter_input( INPUT_POST, 'settings', FILTER_DEFAULT );
-		if ( empty( $raw_settings ) ) {
-			wp_send_json_error( __( 'Settings data missing.', 'occidg' ) );
+		if ( ! isset( $_POST['settings'] ) || ! is_array( $_POST['settings'] ) ) {
+			wp_send_json_error( __( 'Settings data missing or invalid.', 'occidg' ) );
 			return;
 		}
 
-		parse_str( wp_unslash( $raw_settings ), $settings );
-		$settings = map_deep( $settings, 'sanitize_text_field' );
+		$settings = map_deep( wp_unslash( $_POST['settings'] ), 'sanitize_text_field' );
 
 		$fields          = array( 'title', 'description', 'alt_text', 'caption' );
 		$metadata_fields = array_fill_keys( $fields, '0' );
@@ -398,7 +396,6 @@ class Occidg_Admin_Settings {
 				$metadata_fields[ $field ] = isset( $settings['occidg_metadata_fields'][ $field ] ) && '1' === $settings['occidg_metadata_fields'][ $field ] ? '1' : '0';
 			}
 		}
-
 		update_option( 'occidg_metadata_fields', $metadata_fields );
 
 		$auto_add = isset( $settings['occidg_auto_add_details'] ) && '1' === $settings['occidg_auto_add_details'] ? '1' : '0';

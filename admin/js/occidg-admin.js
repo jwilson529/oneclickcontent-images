@@ -397,11 +397,8 @@
                     'occidg_metadata_fields': metadataFields
                 };
 
-                // Convert to URL-encoded string
-                const serializedData = $.param(formData);
-
-                // Log the serialized data being sent
-                console.log('[OCCIDG] Serialized data:', serializedData);
+                // Log the form data object being sent
+                console.log('[OCCIDG] Form data:', formData);
 
                 showSavingMessage(element, ' Saving...', 'info');
 
@@ -411,7 +408,7 @@
                     data: {
                         action: 'occidg_save_settings',
                         _ajax_nonce: occidg_admin_vars.occidg_ajax_nonce,
-                        settings: serializedData
+                        settings: formData
                     },
                     success: function(response) {
                         if (response.success) {

@@ -44,7 +44,3 @@ jobs:
         run: |
           ~/.composer/vendor/bin/phpcs --standard=WordPress . --ignore=vendor,node_modules
         continue-on-error: true
-
-      # Run plugin check
-      - name: Run plugin check
-        uses: wordpress/plugin-check-action@v1

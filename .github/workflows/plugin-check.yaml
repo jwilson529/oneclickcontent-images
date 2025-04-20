@@ -78,13 +78,13 @@ jobs:
           unzip occidg.zip -d dist
 
       - name: Deploy to WP.org SVN
-        # Pin to a known tag
         uses: 10up/action-wordpress-plugin-deploy@2.3.0
-        with:
-          # NOTE: no trailing slash
-          svn-url:    https://plugins.svn.wordpress.org/occidg
-          plugin-dir: dist
-          assets-dir: assets
         env:
+          # SVN creds
           SVN_USERNAME: ${{ secrets.WPORG_USERNAME }}
           SVN_PASSWORD: ${{ secrets.WPORG_PASSWORD }}
+
+          # Tell the action exactly:
+          SLUG:       occidg      # your plugin slug on WP.org
+          BUILD_DIR:  dist        # folder built by your `dist` script
+          ASSETS_DIR: assets      # folder in your repo with icons/banners/screenshots

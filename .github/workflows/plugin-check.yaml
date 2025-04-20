@@ -67,7 +67,6 @@ jobs:
       - name: Build assets & generate POT
         run: |
           npm run dist
-          php generate-pot.php
 
       - name: Create clean ZIP
         run: npm run dist

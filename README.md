@@ -114,19 +114,13 @@ If enabled, the plugin will automatically generate details for any images you up
 ## Screenshots
 
 1. **Settings Page**: Configure your OneClickContent license key, select a language, and enable auto detail generation on upload.  
-   ![Settings Page](assets/settings.png)
+   ![Settings Page](assets/screenshot-3.png)
 
-2. **Media Library Integration**: Generate details directly from the Media Library.  
-   ![Media Library Integration](assets/media-library.png)
+2. **Generated Details**: View and edit the generated details for your images.  
+   ![Generated Details](assets/screenshot-1.png)
 
-3. **Bulk Edit Tab**: Manage details for multiple images at once.  
-   ![Bulk Edit Tab](assets/bulk-edit.png)
-
-4. **Generated Details**: View and edit the generated details for your images.  
-   ![Generated Details](assets/generated.png)
-
-5. **Language Selection**: Choose your preferred language for detail generation.  
-   ![Language Selection](assets/language.png)
+3. **Language Selection**: Choose your preferred language for detail generation.  
+   ![Language Selection](assets/screenshot-2.png)
 
 ---
 

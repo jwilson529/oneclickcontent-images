@@ -80,8 +80,9 @@ jobs:
       - name: Deploy to WP.org SVN
         uses: 10up/action-wordpress-plugin-deploy@stable
         with:
-          svn-url: https://plugins.svn.wordpress.org/occidg/
+          svn-url:    https://plugins.svn.wordpress.org/occidg/
           plugin-dir: dist
           assets-dir: assets
-          svn-username: ${{ secrets.WPORG_USERNAME }}
-          svn-password: ${{ secrets.WPORG_PASSWORD }}
+        env:
+          SVN_USERNAME: ${{ secrets.WPORG_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.WPORG_PASSWORD }}

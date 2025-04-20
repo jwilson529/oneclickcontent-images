@@ -428,7 +428,6 @@ jQuery(document).ready(function ($) {
             }
             return;
         }
-        console.log('Change detected, proceeding with save');
 
         $status.text(' Saving...').addClass('save-status-saving').css('display', 'inline-block');
 

@@ -47,7 +47,7 @@ if ( ! defined( 'WPINC' ) ) {
  */
 define( 'OCCIDG_VERSION', '1.1.10' );
 define( 'OCCIDG_PRODUCT_SLUG', 'oneclickcontent-image-meta-generator' );
-define( 'OCCIDG_HMAC_SALT', 'AwOd18+WK{FmK%<T>;pb9i$oUz:DMuo0<Say;KeA$+gxRk>y?wR2$LD:^fG-N`$,' );
+define( 'OCCIDG_HMAC_SALT', 'default-salt' );
 
 /**
  * The code that runs during plugin activation.

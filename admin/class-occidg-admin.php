@@ -595,15 +595,29 @@ class Occidg_Admin {
 
 		$admin_settings = new Occidg_Admin_Settings();
 
+		$image_ids = array();
 		foreach ( $post_ids as $post_id ) {
-			$admin_settings->occidg_generate_metadata( intval( $post_id ) );
+			if ( wp_attachment_is_image( $post_id ) ) {
+				$image_ids[] = intval( $post_id );
+			}
 		}
 
-		$generated_details_nonce = wp_create_nonce( 'generated_details_nonce' );
-		$args                    = array(
-			'generated_details'       => count( $post_ids ),
-			'generated_details_nonce' => $generated_details_nonce,
+		$skipped_count = count( $post_ids ) - count( $image_ids );
+
+		foreach ( $image_ids as $image_id ) {
+			$admin_settings->occidg_generate_metadata( $image_id );
+		}
+
+		$generated_count = count( $image_ids );
+		$nonce           = wp_create_nonce( 'generated_details_nonce' );
+		$args            = array(
+			'generated_details'       => $generated_count,
+			'generated_details_nonce' => $nonce,
 		);
+		if ( $skipped_count ) {
+			$args['skipped_non_images'] = $skipped_count;
+		}
+
 		return add_query_arg( $args, $redirect_to );
 	}
 
@@ -614,26 +628,42 @@ class Occidg_Admin {
 	 * @return void
 	 */
 	public function generate_details_bulk_action_admin_notice() {
+		// Bail if required params are missing.
 		if ( ! isset( $_REQUEST['generated_details'], $_REQUEST['generated_details_nonce'] ) ) {
 			return;
 		}
 
+		// Verify nonce.
 		$nonce = sanitize_text_field( wp_unslash( $_REQUEST['generated_details_nonce'] ) );
 		if ( ! wp_verify_nonce( $nonce, 'generated_details_nonce' ) ) {
 			return;
 		}
 
-		$count = intval( wp_unslash( $_REQUEST['generated_details'] ) );
+		// How many items were generated?
+		$generated = intval( wp_unslash( $_REQUEST['generated_details'] ) );
 
+		// Build the base message.
+		if ( 1 === $generated ) {
+			$message = 'Metadata generated for 1 media item.';
+		} else {
+			$message = sprintf( 'Metadata generated for %d media items.', $generated );
+		}
+
+		// If any non‑images were skipped, append that count.
+		if ( ! empty( $_REQUEST['skipped_non_images'] ) ) {
+			$skipped = intval( wp_unslash( $_REQUEST['skipped_non_images'] ) );
+
+			if ( 1 === $skipped ) {
+				$message .= ' (Skipped 1 non-image.)';
+			} else {
+				$message .= sprintf( ' (Skipped %d non-images.)', $skipped );
+			}
+		}
+
+		// Output the admin notice.
 		printf(
 			'<div class="notice notice-success is-dismissible"><p>%s</p></div>',
-			esc_html(
-				sprintf(
-					/* translators: %d is the number of media items processed */
-					__( 'Metadata generated for %d media items.', 'occidg' ),
-					$count
-				)
-			)
+			esc_html( $message )
 		);
 	}
 

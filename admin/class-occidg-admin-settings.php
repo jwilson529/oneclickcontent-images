@@ -480,12 +480,22 @@ class Occidg_Admin_Settings {
 		);
 
 		if ( empty( $api_key ) ) {
-			$salt                         = defined( 'OCCIDG_HMAC_SALT' ) ? OCCIDG_HMAC_SALT : 'default-salt';
-			$origin_url                   = esc_url_raw( home_url() );
-			$timestamp                    = time();
-			$data                         = $origin_url . $timestamp;
-			$hmac_hash                    = hash_hmac( 'sha256', $data, $salt );
-			$headers['X-Free-Trial-Hash'] = $hmac_hash;
+			// 1) grab the current salt (from cache or server)
+			$salt = $this->get_trial_salt();
+			// 2) bail loudly if we somehow have no salt
+			if ( empty( $salt ) ) {
+				return array(
+					'success' => false,
+					'error'   => __( 'Unable to retrieve trial authentication salt.', 'occidg' ),
+				);
+			}
+
+			$origin_url = esc_url_raw( home_url() );
+			$timestamp  = time();
+			$data       = $origin_url . $timestamp;
+
+			// 3) compute and attach
+			$headers['X-Free-Trial-Hash'] = hash_hmac( 'sha256', $data, $salt );
 			$headers['X-Timestamp']       = $timestamp;
 		}
 
@@ -540,6 +550,41 @@ class Occidg_Admin_Settings {
 			'success' => false,
 			'error'   => __( 'Metadata processing failed.', 'occidg' ),
 		);
+	}
+
+	/**
+	 * Fetch (and cache) the free‑trial HMAC salt from our server.
+	 *
+	 * @return string
+	 */
+	private function get_trial_salt() {
+		$salt = get_transient( 'occidg_trial_salt' );
+		if ( $salt ) {
+			return $salt;
+		}
+
+		$response = wp_remote_post(
+			'https://oneclickcontent.com/wp-json/free-trial/v1/get-trial-salt',
+			array(
+				'timeout' => 10,
+				'body'    => array(
+					'site_url'    => home_url(),
+					'plugin_slug' => 'occidg',
+				),
+			)
+		);
+
+		if ( ! is_wp_error( $response ) ) {
+			$body = json_decode( wp_remote_retrieve_body( $response ), true );
+			if ( ! empty( $body['salt'] ) && is_string( $body['salt'] ) ) {
+				$salt = sanitize_text_field( $body['salt'] );
+				set_transient( 'occidg_trial_salt', $salt, 6 * HOUR_IN_SECONDS );
+				return $salt;
+			}
+		}
+
+		// 3) Fallback to whatever constant you defined (or empty)
+		return defined( 'OCCIDG_HMAC_SALT' ) ? OCCIDG_HMAC_SALT : '';
 	}
 
 	/**

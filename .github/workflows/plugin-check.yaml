@@ -1,4 +1,4 @@
-name: 'build-test'
+name: build-test
 
 on:
   pull_request:
@@ -6,41 +6,83 @@ on:
     branches:
       - main
       - 'releases/*'
+  release:
+    types: [published]  # ⇦ fire when you publish a GitHub Release
 
 jobs:
   test:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Setup Node.js environment (force to use Node.js 20)
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
           check-latest: true
 
-      # Remove hidden files, excluding .git and .github directories
       - name: Remove hidden files
         run: find . -type f -name '.*' -not -name '.git' -not -name '.github' -exec rm -rf {} +
 
-      # Set up PHP environment
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.0'
 
-      # Install WPCS dependencies
       - name: Install WPCS
         run: |
           composer global config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
           composer global require "wp-coding-standards/wpcs"
           composer global require "dealerdirect/phpcodesniffer-composer-installer"
 
-      # Run WPCS checks
       - name: Run WPCS
         run: |
           ~/.composer/vendor/bin/phpcs --standard=WordPress . --ignore=vendor,node_modules
         continue-on-error: true
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+    steps:
+      - name: Checkout code (full history & tags)
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js & PHP
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.0'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          composer install --no-dev --optimize-autoloader
+
+      - name: Build assets & generate POT
+        run: |
+          npm run build
+          php generate-pot.php
+
+      - name: Create clean ZIP
+        run: npm run dist
+
+      - name: Extract ZIP to “dist/”
+        run: |
+          rm -rf dist
+          mkdir dist
+          unzip occidg.zip -d dist
+
+      - name: Deploy to WP.org SVN
+        uses: 10up/action-wordpress-plugin-deploy@v2
+        with:
+          svn-url: https://plugins.svn.wordpress.org/occidg/
+          plugin-dir: dist
+          assets-dir: assets
+          svn-username: ${{ secrets.WPORG_USERNAME }}
+          svn-password: ${{ secrets.WPORG_PASSWORD }}

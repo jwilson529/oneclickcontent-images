@@ -4,7 +4,7 @@
 **Donate link**: [Donate](https://oneclickcontent.com/donate)  
 **Tags**: images, details, OpenAI, AI, accessibility  
 **Requires at least**: 5.0  
-**Tested up to**: 6.7  
+**Tested up to**: 6.8  
 **Requires PHP**: 7.2  
 **Stable tag**: 1.1.10  
 **License**: GPLv2 or later  

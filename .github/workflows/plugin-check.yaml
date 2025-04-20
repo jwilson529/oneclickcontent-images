@@ -79,7 +79,7 @@ jobs:
           unzip occidg.zip -d dist
 
       - name: Deploy to WP.org SVN
-        uses: 10up/action-wordpress-plugin-deploy@v2
+        uses: 10up/action-wordpress-plugin-deploy@stable
         with:
           svn-url: https://plugins.svn.wordpress.org/occidg/
           plugin-dir: dist

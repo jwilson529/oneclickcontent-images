@@ -21,8 +21,6 @@ Thumbs.db
 
 # Compiled asset files
 *.compiled
-*.min.css
-*.min.js
 *.css.map
 *.js.map
 

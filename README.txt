@@ -5,7 +5,7 @@ Tags: images, details, OpenAI, AI, accessibility
 Requires at least: 5.0  
 Tested up to: 6.7  
 Requires PHP: 7.2  
-Stable tag: 1.1.10  
+Stable tag: 1.1.11  
 License: GPLv2 or later  
 License URI: https://www.gnu.org/licenses/gpl-2.0.html  
 
@@ -102,6 +102,10 @@ If enabled, the plugin will automatically generate details for any images you up
 5. **Language Selection:** Choose your preferred language for detail generation.
 
 == Changelog ==
+
+= 1.1.11 =
+* **FIX**: Vendor DataTables assets were missing from the packaged ZIP—bulk‐edit table now loads correctly.  
+* **FIX**: Asset enqueue URLs corrected.  
 
 = 1.1.10 =
 * Security enhancements and WPCS compliance improvements.

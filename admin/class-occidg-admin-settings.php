@@ -834,12 +834,16 @@ class Occidg_Admin_Settings {
 			return false;
 		}
 
-		$resized = $image->resize( 500, 500, true );
-		if ( is_wp_error( $resized ) ) {
-			return false;
+		$current_size = $image->get_size();
+		$width        = $current_size['width'];
+		$height       = $current_size['height'];
+
+		if ( $width > 1024 ) {
+			$image->resize( 1024, null, false );
 		}
 
-		$image->set_quality( 85 );
+		$image->set_quality( 90 );
+
 		$saved = $image->save( $output_path, 'image/webp' );
 
 		return ! is_wp_error( $saved );

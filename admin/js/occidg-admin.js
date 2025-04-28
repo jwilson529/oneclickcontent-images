@@ -32,7 +32,7 @@
         /**
          * Handles metadata generation for a specific image when the button is clicked.
          */
-        $(document).on('click', '#generate_metadata_button', function (e) {
+        $(document).on('click', '#generate_metadata_button', function(e) {
             e.preventDefault();
 
             const button = $(this);
@@ -87,7 +87,8 @@
                     nonce: occidg_admin_vars.occidg_ajax_nonce,
                     image_id: imageId,
                 },
-                success: function (response) {
+                success: function(response) {
+
                     if (typeof response !== 'object') {
                         showGeneralErrorModal('An unexpected error occurred. Please try again.');
                         button.attr('disabled', false).text('Generate Metadata');
@@ -95,15 +96,15 @@
                     }
 
                     if (response.success && response.data && response.data.metadata) {
-                        // Successful metadata generation
+                        // Successful metadata generation.
                         const metadata = response.data.metadata;
                         updateMetadataFields(metadata);
 
-                        // Removed trial usage update so the button is always re-enabled.
                         button.attr('disabled', false).text('Generate Metadata');
                     } else if (!response.success && response.data && response.data.error) {
-                        // Handle errors
                         const error = response.data.error;
+
+
                         if (error.includes('Free trial limit reached')) {
                             showSubscriptionPrompt(
                                 'Free Trial Limit Reached',
@@ -111,7 +112,6 @@
                                 response.data.ad_url ? addUTMParams(response.data.ad_url) : addUTMParams(baseSubscriptionUrl)
                             );
                             occidg_admin_vars.trial_expired = true;
-                            // Button stays disabled when trial expires
                         } else if (error.includes('Usage limit reached')) {
                             showSubscriptionPrompt(
                                 'Usage Limit Reached',
@@ -126,35 +126,35 @@
                             showGeneralErrorModal('The image already has all metadata fields filled, and "Override Metadata" is disabled.');
                             button.attr('disabled', false).text('Generate Metadata');
                         } else if (error.includes('license')) {
-                            showSubscriptionPrompt(
-                                'Invalid License',
-                                error || 'Please enter a valid license key to continue.',
-                                addUTMParams(baseSubscriptionUrl)
-                            );
-                            button.attr('disabled', false).text('Generate Metadata');
-                        } else {
+                             showSubscriptionPrompt(
+                                 'Invalid License',
+                                 error || 'Please enter a valid license key to continue.',
+                                 addUTMParams(baseSubscriptionUrl)
+                             );
+                             button.attr('disabled', false).text('Generate Metadata');
+                         } else {
                             showGeneralErrorModal(error || 'An unexpected error occurred.');
                             button.attr('disabled', false).text('Generate Metadata');
                         }
                     } else {
+                        console.error("[AJAX Error Response] Unexpected format:", response); // Keep for debugging
                         showGeneralErrorModal('An unexpected error occurred.');
                         button.attr('disabled', false).text('Generate Metadata');
                     }
                 },
-                error: function () {
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error("[AJAX Error] Status:", textStatus, "Error:", errorThrown, "Response:", jqXHR.responseText); // Keep for debugging
                     showGeneralErrorModal('An error occurred while processing the request. Please try again.');
                     button.attr('disabled', false).text('Generate Metadata');
                 }
             });
         });
 
-        /**
-         * Updates metadata fields in the UI.
-         *
-         * @param {Object} metadata The metadata object containing title, description, alt_text, and caption.
-         */
         function updateMetadataFields(metadata) {
             try {
+                // Ensure metadata object and its properties exist.
+                const generatedMetadata = metadata.metadata || {};
+
                 const selectedFields = occidg_admin_vars.selected_fields || {
                     alt_text: true,
                     title: true,
@@ -162,61 +162,58 @@
                     description: true,
                 };
 
-                // Update alt text field.
-                const altInputLibrary = $('#attachment-details-two-column-alt-text');
-                const altInputSingle = $('#attachment-details-alt-text');
-                if (metadata.alt_text && selectedFields.alt_text) {
-                    if (altInputLibrary.length) {
-                        altInputLibrary.val(metadata.alt_text).trigger('change');
-                    }
-                    if (altInputSingle.length) {
-                        altInputSingle.val(metadata.alt_text).trigger('change');
-                    }
-                }
+                const altInput = $('#attachment-details-two-column-alt-text, #attachment-details-alt-text, #attachment_alt');
+                if (generatedMetadata.alt_text !== undefined && generatedMetadata.alt_text !== null && selectedFields.alt_text) {
+                    if (altInput.length) {
+
+                        altInput.val(generatedMetadata.alt_text); 
+
+                         altInput.trigger('change').trigger('input'); 
+
+                    } 
+                } 
 
                 // Update title field.
-                const titleInputLibrary = $('#attachment-details-two-column-title');
-                const titleInputSingle = $('#attachment-details-title');
-                if (metadata.title && selectedFields.title) {
-                    if (titleInputLibrary.length) {
-                        titleInputLibrary.val(metadata.title).trigger('change');
-                    }
-                    if (titleInputSingle.length) {
-                        titleInputSingle.val(metadata.title).trigger('change');
-                    }
-                }
-
+                const titleInput = $('#attachment-details-two-column-title, #attachment-details-title');
+                if (generatedMetadata.title !== undefined && generatedMetadata.title !== null && selectedFields.title) {
+                     if (titleInput.length) {
+                         titleInput.val(generatedMetadata.title);
+                         titleInput.trigger('change').trigger('input');
+                     } 
+                } 
                 // Update caption field.
-                const captionInputLibrary = $('#attachment-details-two-column-caption');
-                const captionInputSingle = $('#attachment-details-caption');
-                if (metadata.caption && selectedFields.caption) {
-                    if (captionInputLibrary.length) {
-                        captionInputLibrary.val(metadata.caption).trigger('change');
-                    }
-                    if (captionInputSingle.length) {
-                        captionInputSingle.val(metadata.caption).trigger('change');
-                    }
-                }
+                const captionInput = $('#attachment-details-two-column-caption, #attachment-details-caption, #attachment_caption');
+                 if (generatedMetadata.caption !== undefined && generatedMetadata.caption !== null && selectedFields.caption) {
+                     if (captionInput.length) {
+                         captionInput.val(generatedMetadata.caption);
+                         captionInput.trigger('change').trigger('input');
+                     } 
+                 } 
 
                 // Update description field.
-                const descriptionInputLibrary = $('#attachment-details-two-column-description');
-                const descriptionInputSingle = $('#attachment-details-description');
-                if (metadata.description && selectedFields.description) {
-                    if (descriptionInputLibrary.length) {
-                        descriptionInputLibrary.val(metadata.description).trigger('change');
-                    }
-                    if (descriptionInputSingle.length) {
-                        descriptionInputSingle.val(metadata.description).trigger('change');
-                    }
+                const descriptionInput = $('#attachment-details-two-column-description, #attachment-details-description, #attachment_content');
+                 if (generatedMetadata.description !== undefined && generatedMetadata.description !== null && selectedFields.description) {
+                     if (descriptionInput.length) {
+                         descriptionInput.val(generatedMetadata.description);
+                         descriptionInput.trigger('change').trigger('input');
+                     } 
+                 } 
+
+                if ($('body').hasClass('post-type-attachment') && $('body').hasClass('post-php')) {
+
+                    $('form#post').trigger('change');
+
+                } else {
+                     $(document).trigger('attachmentUpdate'); 
                 }
 
-                $('input, textarea').trigger('change').trigger('input');
+
             } catch (err) {
-                // Silent catch for robustness; errors are not displayed to user.
+                 showGeneralErrorModal('An error occurred while updating the fields on the page.'); // Potentially show an error to the user
             }
         }
 
-        // Expose updateMetadataFields globally.
+        // Expose updateMetadataFields globally if needed by other scripts, otherwise remove
         window.updateMetadataFields = updateMetadataFields;
 
 
@@ -426,7 +423,7 @@
                 });
             });
         }
-        
+
         /**
          * Update the license status UI based on the response.
          *

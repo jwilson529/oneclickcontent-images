@@ -507,7 +507,7 @@ class Occidg_Admin_Settings {
 				'timeout' => 30,
 			)
 		);
-
+		
 		if ( is_wp_error( $response ) ) {
 			$error_message = $response->get_error_message();
 			return array(
@@ -815,38 +815,82 @@ class Occidg_Admin_Settings {
 	}
 
 	/**
-	 * Generate the specified image size in WebP format.
+	 * Generate the specified image size in WebP format and ensure it fits
+	 * Azure AI Content Safety's 4 MB (Base-64) limit.
 	 *
-	 * @since 1.0.0
-	 * @param int    $image_id     The image ID.
-	 * @param string $size         The image size to generate.
-	 * @param string $output_path  The output path for the generated WebP image.
-	 * @return bool True on success, false on failure.
+	 * @since 1.1.0
+	 *
+	 * @param int    $image_id     Attachment ID.
+	 * @param string $size         Image size label (kept for API parity).
+	 * @param string $output_path  Destination file path.
+	 * @return bool  True on success, false on failure.
 	 */
 	private function generate_image_size_as_webp( $image_id, $size, $output_path ) {
+
+		// ---- SETTINGS --------------------------------------------------------- //
+		$target_bytes = 3 * 1024 * 1024; // 3 MB on disk  → <4 MB after Base-64.
+		$min_quality  = 60;              // Do not go below this.
+		$quality_step = 5;               // Decrease quality in 5-point steps.
+		$scale_factor = 0.9;             // When quality floor reached, shrink width by 10 %.
+
+		// ---- LOAD ORIGINAL ---------------------------------------------------- //
 		$image_path = get_attached_file( $image_id );
 		if ( ! file_exists( $image_path ) ) {
 			return false;
 		}
 
-		$image = wp_get_image_editor( $image_path );
-		if ( is_wp_error( $image ) ) {
+		$orig_editor = wp_get_image_editor( $image_path );
+		if ( is_wp_error( $orig_editor ) ) {
 			return false;
 		}
 
-		$current_size = $image->get_size();
+		// ---- START VALUES ----------------------------------------------------- //
+		$current_size = $orig_editor->get_size();
 		$width        = $current_size['width'];
 		$height       = $current_size['height'];
+		$quality      = 90;
 
 		if ( $width > 1024 ) {
-			$image->resize( 1024, null, false );
+			$width  = 1024;
+			$height = null; // Preserve aspect ratio.
 		}
 
-		$image->set_quality( 90 );
+		// ---- TRY, MEASURE, ADJUST -------------------------------------------- //
+		while ( true ) {
 
-		$saved = $image->save( $output_path, 'image/webp' );
+			// Always clone the pristine editor to avoid double compression.
+			$editor = clone $orig_editor;
+			$editor->resize( $width, $height, false );
+			$editor->set_quality( $quality );
 
-		return ! is_wp_error( $saved );
+			$saved = $editor->save( $output_path, 'image/webp' );
+			if ( is_wp_error( $saved ) ) {
+				return false;
+			}
+
+			$filesize = filesize( $output_path );
+
+			// Success
+			if ( $filesize <= $target_bytes ) {
+				return true;
+			}
+
+			// First, lower quality.
+			if ( $quality - $quality_step >= $min_quality ) {
+				$quality -= $quality_step;
+				continue;
+			}
+
+			// Then, reduce width.
+			$width  = (int) round( $width * $scale_factor );
+			$height = null;
+			$quality = 90; // Reset quality after each down-scale.
+
+			// Fail-safe: stop if the image would get absurdly small.
+			if ( $width < 512 ) {
+				return false;
+			}
+		}
 	}
 
 	/**

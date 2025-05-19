@@ -188,6 +188,7 @@ class Occidg {
 		$this->loader->add_action( 'wp_ajax_occidg_get_image_metadata', $plugin_bulk_edit, 'get_image_metadata' );
 		$this->loader->add_action( 'wp_ajax_occidg_save_bulk_metadata', $plugin_bulk_edit, 'save_bulk_metadata' );
 	}
+	
 	/**
 	 * Run the loader to execute all hooks with WordPress.
 	 *

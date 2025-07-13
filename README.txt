@@ -5,7 +5,7 @@ Tags: images, seo, alt text, OpenAI, AI, accessibility, WordPress plugins
 Requires at least: 5.0
 Tested up to: 6.8
 Requires PHP: 7.2
-Stable tag: 1.1.13
+Stable tag: 1.1.14
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 

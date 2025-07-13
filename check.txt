@@ -1,11 +1,21 @@
 
-FILE: ...jameswilson/Local Sites/wp-clean-install/app/public/wp-content/plugins/oneclickcontent-images/admin/class-occidg-admin-settings.php
------------------------------------------------------------------------------------------------------------------------------------------
-FOUND 0 ERRORS AND 1 WARNING AFFECTING 1 LINE
------------------------------------------------------------------------------------------------------------------------------------------
- 462 | WARNING | base64_encode() can be used to obfuscate code which is strongly discouraged. Please verify that the function is used
-     |         | for benign reasons.
------------------------------------------------------------------------------------------------------------------------------------------
+FILE: /Users/jameswilson/Local Sites/wp-clean-install/app/public/wp-content/plugins/oneclickcontent-images/admin/class-occidg-admin.php
+---------------------------------------------------------------------------------------------------------------------------------------
+FOUND 0 ERRORS AND 4 WARNINGS AFFECTING 3 LINES
+---------------------------------------------------------------------------------------------------------------------------------------
+ 287 | WARNING | Processing form data without nonce verification.
+ 288 | WARNING | Processing form data without nonce verification.
+ 367 | WARNING | Processing form data without nonce verification.
+ 367 | WARNING | Processing form data without nonce verification.
+---------------------------------------------------------------------------------------------------------------------------------------
 
-Time: 899ms; Memory: 24MB
+
+FILE: /Users/jameswilson/Local Sites/wp-clean-install/app/public/wp-content/plugins/oneclickcontent-images/admin/class-occidg-admin-settings.php
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+FOUND 0 ERRORS AND 1 WARNING AFFECTING 1 LINE
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+ 462 | WARNING | base64_encode() can be used to obfuscate code which is strongly discouraged. Please verify that the function is used for benign reasons.
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Time: 946ms; Memory: 24MB
 

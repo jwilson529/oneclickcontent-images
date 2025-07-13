@@ -52,7 +52,7 @@ class Occidg_Auto_Generate {
 	 */
 	public function auto_generate_metadata( $metadata, $attachment_id ) {
 		if ( ! wp_attachment_is_image( $attachment_id ) ) {
-		    return $metadata;
+			return $metadata;
 		}
 
 		$auto_add = get_option( 'occidg_auto_add_details', false );

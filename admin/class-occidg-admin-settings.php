@@ -507,7 +507,7 @@ class Occidg_Admin_Settings {
 				'timeout' => 30,
 			)
 		);
-		
+
 		if ( is_wp_error( $response ) ) {
 			$error_message = $response->get_error_message();
 			return array(
@@ -870,7 +870,7 @@ class Occidg_Admin_Settings {
 
 			$filesize = filesize( $output_path );
 
-			// Success
+			// Success.
 			if ( $filesize <= $target_bytes ) {
 				return true;
 			}
@@ -882,8 +882,8 @@ class Occidg_Admin_Settings {
 			}
 
 			// Then, reduce width.
-			$width  = (int) round( $width * $scale_factor );
-			$height = null;
+			$width   = (int) round( $width * $scale_factor );
+			$height  = null;
 			$quality = 90; // Reset quality after each down-scale.
 
 			// Fail-safe: stop if the image would get absurdly small.

@@ -45,7 +45,7 @@ if ( ! defined( 'WPINC' ) ) {
  *
  * @since 1.0.0
  */
-define( 'OCCIDG_VERSION', '1.1.13' );
+define( 'OCCIDG_VERSION', '1.1.14' );
 define( 'OCCIDG_PRODUCT_SLUG', 'oneclickcontent-image-meta-generator' );
 define( 'OCCIDG_HMAC_SALT', 'default-salt' );
 

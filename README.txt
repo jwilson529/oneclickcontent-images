@@ -138,6 +138,9 @@ More languages are planned for future updates.
 
 == Changelog ==
 
+= 1.1.14 =
+* Update to media library API calls
+
 = 1.1.13 =
 * Plugin description, FAQs, and marketing language improved.
 * Minor settings screen layout enhancements.

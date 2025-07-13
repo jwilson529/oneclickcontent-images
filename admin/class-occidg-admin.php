@@ -261,301 +261,243 @@ class Occidg_Admin {
 	}
 
 	/**
-	 * Enqueue admin-specific stylesheets for the plugin.
-	 *
-	 * Loads CSS files on relevant admin screens (e.g., Media Library, plugin pages).
-	 *
-	 * @since 1.0.0
-	 * @return void
-	 */
-	public function enqueue_styles() {
-		$screen = get_current_screen();
-		if ( ! $screen instanceof WP_Screen ) {
-			return; // Exit early if screen is not available.
-		}
+	   * Enqueue admin-specific stylesheets for the plugin.
+	   *
+	   * Loads CSS on Media Library, post edit, and plugin pages.
+	   *
+	   * @since 1.0.0
+	   */
+	  public function enqueue_styles() {
+	      $screen = get_current_screen();
+	      if ( ! $screen || ! in_array( $screen->base, [ 'upload', 'post', 'post-new', 'toplevel_page_occidg' ], true ) ) {
+	          return;
+	      }
 
-		$allowed_screens = array( 'upload', 'post', 'post-new', 'toplevel_page_occidg' );
+	      // Core admin styles
+	      wp_enqueue_style(
+	          $this->plugin_name,
+	          plugin_dir_url( __FILE__ ) . 'css/occidg-admin.css',
+	          [],
+	          $this->version
+	      );
 
-		if ( in_array( $screen->base, $allowed_screens, true ) ) {
-			wp_enqueue_style(
-				$this->plugin_name,
-				plugin_dir_url( __FILE__ ) . 'css/occidg-admin.css',
-				array(),
-				$this->version,
-				'all'
-			);
+	      // DataTables on Bulk-Edit tab
+	      if (
+	          'toplevel_page_occidg' === $screen->id
+	          && isset( $_GET['tab'] )
+	          && 'bulk-edit' === sanitize_key( wp_unslash( $_GET['tab'] ) )
+	      ) {
+	          wp_enqueue_style(
+	              "{$this->plugin_name}-datatables",
+	              plugin_dir_url( __FILE__ ) . 'css/datatables.min.css',
+	              [],
+	              '2.2.2'
+	          );
+	      }
+	  }
 
-			// Only proceed for the plugin's admin page.
-			if ( 'toplevel_page_occidg' === $screen->id ) {
-				$tab   = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'general';
-				$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
+	  /**
+	   * Enqueue admin-specific JavaScript files for the plugin.
+	   *
+	   * Loads JS and localizes data on Media Library, post edit, and plugin pages.
+	   *
+	   * @since 1.0.0
+	   */
+	  public function enqueue_scripts() {
+	      if ( ! is_admin() ) {
+	          return;
+	      }
 
-				// Fallback to 'general' if nonce is invalid or missing.
-				if ( empty( $tab ) || ! wp_verify_nonce( $nonce, 'oneclickcontent_tab_switch' ) ) {
-					$tab = 'general';
-				}
+	      $screen = get_current_screen();
+	      if ( ! $screen || ! in_array( $screen->base, [ 'upload', 'post', 'post-new', 'toplevel_page_occidg' ], true ) ) {
+	          return;
+	      }
 
-				// Note: Tab parameter is for UI state only; nonce adds an extra layer of verification.
-				if ( 'bulk-edit' === $tab ) {
-					wp_enqueue_style(
-						$this->plugin_name . '-datatables',
-						plugin_dir_url( __FILE__ ) . 'css/datatables.min.css', // Combined file with Buttons styling.
-						array(),
-						'2.2.2' // Version from the combined build.
-					);
-				}
-			}
-		}
-	}
+	      // Core admin scripts
+	      wp_enqueue_script(
+	          $this->plugin_name,
+	          plugin_dir_url( __FILE__ ) . 'js/occidg-admin.js',
+	          [ 'jquery' ],
+	          $this->version,
+	          true
+	      );
+	      wp_enqueue_script(
+	          "{$this->plugin_name}-error-check",
+	          plugin_dir_url( __FILE__ ) . 'js/one-click-error-check.js',
+	          [ 'jquery' ],
+	          $this->version,
+	          true
+	      );
+	      wp_enqueue_media();
 
-	/**
-	 * Enqueue admin-specific JavaScript files for the plugin.
-	 *
-	 * Loads JavaScript files and localized data on relevant admin screens.
-	 *
-	 * @since 1.0.0
-	 * @return void
-	 */
-	public function enqueue_scripts() {
-		if ( ! is_admin() ) {
-			return;
-		}
+	      // Localize with cached usage
+	      $usage = $this->get_usage_data();
+	      wp_localize_script(
+	          $this->plugin_name,
+	          'occidg_admin_vars',
+	          [
+	              'ajax_url'          => admin_url( 'admin-ajax.php' ),
+	              'occidg_ajax_nonce' => wp_create_nonce( 'occidg_ajax_nonce' ),
+	              'is_trial'          => empty( get_option( 'occidg_license_key' ) ),
+	              'trial_expired'     => get_option( 'occidg_trial_expired', false ),
+	              'usage'             => $usage,
+	              'settings_url'      => admin_url( 'admin.php?page=occidg' ),
+	          ]
+	      );
 
-		$screen = get_current_screen();
-		if ( ! $screen instanceof WP_Screen ) {
-			return;
-		}
+	      // Plugin settings scripts
+	      if ( 'toplevel_page_occidg' === $screen->id ) {
+	          wp_enqueue_script(
+	              "{$this->plugin_name}-settings",
+	              plugin_dir_url( __FILE__ ) . 'js/settings-bulk-generate.js',
+	              [ 'jquery', $this->plugin_name ],
+	              $this->version,
+	              true
+	          );
+	          wp_localize_script(
+	              "{$this->plugin_name}-settings",
+	              'occidg_bulk_vars',
+	              [
+	                  'ajax_url' => admin_url( 'admin-ajax.php' ),
+	                  'nonce'    => wp_create_nonce( 'occidg_bulk_edit' ),
+	              ]
+	          );
 
-		// Verify nonce for any POST data processing if applicable.
-		$nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) : '';
-		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'] && ! wp_verify_nonce( $nonce, 'occidg_bulk_edit' ) ) {
-			return; // Silently exit instead of wp_die to avoid breaking script loading.
-		}
+	          if ( isset( $_GET['tab'] ) && 'bulk-edit' === sanitize_key( wp_unslash( $_GET['tab'] ) ) ) {
+	              wp_enqueue_script(
+	                  "{$this->plugin_name}-datatables",
+	                  plugin_dir_url( __FILE__ ) . 'js/datatables.min.js',
+	                  [ 'jquery' ],
+	                  '2.2.2',
+	                  true
+	              );
+	              wp_enqueue_script(
+	                  "{$this->plugin_name}-bulk-edit",
+	                  plugin_dir_url( __FILE__ ) . 'js/bulk-edit.js',
+	                  [ "{$this->plugin_name}-datatables", "{$this->plugin_name}-settings" ],
+	                  $this->version,
+	                  true
+	              );
+	              wp_localize_script(
+	                  "{$this->plugin_name}-bulk-edit",
+	                  'occidg_bulk_vars',
+	                  [
+	                      'ajax_url' => admin_url( 'admin-ajax.php' ),
+	                      'nonce'    => wp_create_nonce( 'occidg_bulk_edit' ),
+	                  ]
+	              );
+	          }
+	      }
 
-		$allowed_screens = array( 'upload', 'post', 'post-new', 'toplevel_page_occidg' );
+	      // Media edit screen settings
+	      if ( 'post' === $screen->base && 'attachment' === $screen->post_type && 'edit' === $screen->action ) {
+	          wp_enqueue_script(
+	              "{$this->plugin_name}-settings",
+	              plugin_dir_url( __FILE__ ) . 'js/settings-bulk-generate.js',
+	              [ 'jquery', $this->plugin_name ],
+	              $this->version,
+	              true
+	          );
+	          wp_localize_script(
+	              "{$this->plugin_name}-settings",
+	              'occidg_bulk_vars',
+	              [
+	                  'ajax_url' => admin_url( 'admin-ajax.php' ),
+	                  'nonce'    => wp_create_nonce( 'occidg_bulk_edit' ),
+	              ]
+	          );
+	      }
+	  }
 
-		if ( in_array( $screen->base, $allowed_screens, true ) ) {
-			// Core admin script.
-			wp_enqueue_script(
-				$this->plugin_name,
-				plugin_dir_url( __FILE__ ) . 'js/occidg-admin.js',
-				array( 'jquery' ),
-				$this->version,
-				true
-			);
+	  /**
+	   * Add a "Generate Metadata" button to the Media Library attachment details.
+	   *
+	   * Only outputs the button HTML—enable/disable and usage counts
+	   * are handled in occidg-admin.js via occidg_admin_vars.
+	   *
+	   * @since 1.0.0
+	   * @param array   $form_fields Existing form fields.
+	   * @param WP_Post $post        Attachment post object.
+	   * @return array Modified form fields.
+	   */
+	  public function add_generate_metadata_button( $form_fields, $post ) {
+	      if ( strpos( $post->post_mime_type, 'image/' ) !== 0 ) {
+	          return $form_fields;
+	      }
 
-			wp_enqueue_script(
-				$this->plugin_name . '-error-check',
-				plugin_dir_url( __FILE__ ) . 'js/one-click-error-check.js',
-				array( 'jquery' ),
-				$this->version,
-				true
-			);
+	      $form_fields['generate_metadata'] = [
+	          'label' => __( 'Generate Metadata', 'occidg' ),
+	          'input' => 'html',
+	          'html'  => sprintf(
+	              '<button type="button" class="button generate-metadata" data-image-id="%d">%s</button>',
+	              (int) $post->ID,
+	              esc_html__( 'Generate Metadata', 'occidg' )
+	          ),
+	      ];
 
-			wp_enqueue_media();
+	      return $form_fields;
+	  }
 
-			$selected_fields = wp_parse_args(
-				get_option( 'occidg_metadata_fields', array() ),
-				array(
-					'title'       => false,
-					'description' => false,
-					'alt_text'    => false,
-					'caption'     => false,
-				)
-			);
+	  /**
+	   * Retrieve and cache license usage data.
+	   *
+	   * Hits the remote endpoint at most once per hour and falls back to trial data.
+	   *
+	   * @since 1.0.0
+	   * @return array Usage metrics.
+	   */
+	  protected function get_usage_data() {
+	      $cache_key = 'occidg_usage_data';
+	      if ( false !== ( $data = get_transient( $cache_key ) ) ) {
+	          return $data;
+	      }
 
-			$license_status = get_option( 'occidg_license_status', 'unknown' );
+	      $trial_usage = (int) get_option( 'occidg_trial_usage', 0 );
+	      $data = [
+	          'success'         => false,
+	          'used_count'      => $trial_usage,
+	          'usage_limit'     => 10,
+	          'addon_count'     => 0,
+	          'remaining_count' => max( 10 - $trial_usage, 0 ),
+	      ];
 
-			$admin_vars = array(
-				'ajax_url'                 => admin_url( 'admin-ajax.php' ),
-				'occidg_ajax_nonce'        => wp_create_nonce( 'occidg_ajax_nonce' ),
-				'selected_fields'          => $selected_fields,
-				'license_status'           => sanitize_text_field( $license_status ),
-				'upload_base_url'          => wp_upload_dir()['baseurl'],
-				'fallback_image_url'       => plugin_dir_url( __FILE__ ) . 'assets/icon.png',
-				'dismiss_first_time_nonce' => wp_create_nonce( 'occidg_dismiss_first_time' ),
-			);
-			wp_localize_script( $this->plugin_name, 'occidg_admin_vars', $admin_vars );
+	      $license_key = get_option( 'occidg_license_key', '' );
+	      if ( $license_key ) {
+	          $response = wp_remote_post(
+	              rest_url( 'subscriber/v1/check-usage' ),
+	              [
+	                  'body'    => wp_json_encode( [
+	                      'license_key'  => $license_key,
+	                      'origin_url'   => home_url(),
+	                      'product_slug' => 'occidg',
+	                  ] ),
+	                  'headers' => [ 'Content-Type' => 'application/json' ],
+	                  'timeout' => 5,
+	              ]
+	          );
 
-			wp_localize_script(
-				$this->plugin_name . '-error-check',
-				'occidg_error_vars',
-				array(
-					'ajax_url'          => $admin_vars['ajax_url'],
-					'occidg_ajax_nonce' => $admin_vars['occidg_ajax_nonce'],
-				)
-			);
+	          if ( ! is_wp_error( $response ) ) {
+	              $body = json_decode( wp_remote_retrieve_body( $response ), true ) ?: [];
+	              if ( ! empty( $body['success'] ) ) {
+	                  $data = [
+	                      'success'         => true,
+	                      'used_count'      => $body['used_count']      ?? $data['used_count'],
+	                      'usage_limit'     => $body['usage_limit']     ?? $data['usage_limit'],
+	                      'addon_count'     => $body['addon_count']     ?? 0,
+	                      'remaining_count' => $body['remaining_count'] ?? $data['remaining_count'],
+	                  ];
+	                  if ( get_option( 'occidg_trial_expired', false ) ) {
+	                      update_option( 'occidg_trial_expired', false );
+	                  }
+	              }
+	          }
+	      }
 
-			// Load settings-bulk-generate.js on both settings and bulk edit tabs.
-			if ( 'toplevel_page_occidg' === $screen->id ) {
-				wp_enqueue_script(
-					$this->plugin_name . '-settings',
-					plugin_dir_url( __FILE__ ) . 'js/settings-bulk-generate.js',
-					array( 'jquery', $this->plugin_name ),
-					$this->version,
-					true
-				);
-				wp_localize_script(
-					$this->plugin_name . '-settings',
-					'occidg_bulk_vars',
-					array(
-						'ajax_url' => admin_url( 'admin-ajax.php' ),
-						'nonce'    => wp_create_nonce( 'occidg_bulk_edit' ),
-					)
-				);
-			}
+	      set_transient( $cache_key, $data, HOUR_IN_SECONDS );
+	      return $data;
+	  }
 
-			// Bulk edit tab specific scripts.
-			if ( 'toplevel_page_occidg' === $screen->id &&
-				isset( $_GET['tab'] ) && 'bulk-edit' === sanitize_key( $_GET['tab'] ) ) {
-				wp_enqueue_script(
-					$this->plugin_name . '-datatables',
-					plugin_dir_url( __FILE__ ) . 'js/datatables.min.js', // Combined file with Buttons functionality.
-					array( 'jquery' ),
-					'2.2.2', // Version from the combined build.
-					true
-				);
-				wp_enqueue_script(
-					$this->plugin_name . '-bulk-edit',
-					plugin_dir_url( __FILE__ ) . 'js/bulk-edit.js',
-					array(
-						$this->plugin_name . '-datatables',
-						$this->plugin_name . '-settings',
-					),
-					$this->version,
-					true
-				);
-				wp_localize_script(
-					$this->plugin_name . '-bulk-edit',
-					'occidg_bulk_vars',
-					array(
-						'ajax_url' => admin_url( 'admin-ajax.php' ),
-						'nonce'    => wp_create_nonce( 'occidg_bulk_edit' ),
-					)
-				);
-			}
-
-			// Enqueue settings-bulk-generate.js on media edit screens.
-			if ( 'post' === $screen->base && 'attachment' === $screen->post_type && 'edit' === $screen->action ) {
-				wp_enqueue_script(
-					$this->plugin_name . '-settings',
-					plugin_dir_url( __FILE__ ) . 'js/settings-bulk-generate.js',
-					array( 'jquery', $this->plugin_name ),
-					$this->version,
-					true
-				);
-				wp_localize_script(
-					$this->plugin_name . '-settings',
-					'occidg_bulk_vars',
-					array(
-						'ajax_url' => admin_url( 'admin-ajax.php' ),
-						'nonce'    => wp_create_nonce( 'occidg_bulk_edit' ),
-					)
-				);
-			}
-		}
-	}
-
-	/**
-	 * Add a "Generate Metadata" button to the Media Library attachment details.
-	 *
-	 * Modifies the Media Library form to include a button for generating metadata.
-	 *
-	 * @since 1.0.0
-	 * @param array   $form_fields An array of attachment form fields.
-	 * @param WP_Post $post        The attachment post object.
-	 * @return array Modified form fields with the custom button.
-	 */
-	public function add_generate_metadata_button( $form_fields, $post ) {
-		if ( ! preg_match( '/^image\//', $post->post_mime_type ) ) {
-			return $form_fields;
-		}
-
-		$license_key      = get_option( 'occidg_license_key', '' );
-		$origin_url       = home_url();
-		$product_slug     = 'occidg';
-		$is_valid_license = false;
-		$is_trial         = empty( $license_key );
-		$trial_expired    = get_option( 'occidg_trial_expired', false );
-		$trial_limit      = 10;
-		$trial_usage      = (int) get_option( 'occidg_trial_usage', 0 );
-		$usage_data       = array(
-			'used_count'      => $is_trial ? $trial_usage : 0,
-			'total_allowed'   => $is_trial ? $trial_limit : 10,
-			'remaining_count' => $is_trial ? max( $trial_limit - $trial_usage, 0 ) : 0,
-		);
-
-		if ( ! empty( $license_key ) ) {
-			$usage_response = wp_remote_post(
-				rest_url( 'subscriber/v1/check-usage' ),
-				array(
-					'body'    => wp_json_encode(
-						array(
-							'license_key'  => $license_key,
-							'origin_url'   => $origin_url,
-							'product_slug' => $product_slug,
-						)
-					),
-					'headers' => array( 'Content-Type' => 'application/json' ),
-					'timeout' => 10,
-				)
-			);
-
-			if ( ! is_wp_error( $usage_response ) ) {
-				$body = json_decode( wp_remote_retrieve_body( $usage_response ), true );
-				if ( isset( $body['success'] ) && $body['success'] ) {
-					$is_valid_license              = true;
-					$is_trial                      = false;
-					$usage_data['used_count']      = $body['used_count'] ?? 0;
-					$usage_data['total_allowed']   = ( $body['usage_limit'] ?? 0 ) + ( $body['addon_count'] ?? 0 );
-					$usage_data['remaining_count'] = $body['remaining_count'] ?? 0;
-
-					if ( $trial_expired ) {
-						update_option( 'occidg_trial_expired', false );
-						$trial_expired = false;
-					}
-				}
-			}
-		} elseif ( $is_trial && $trial_usage >= $trial_limit ) {
-			$trial_expired = true;
-			update_option( 'occidg_trial_expired', true );
-		}
-
-		$is_disabled  = $trial_expired || ( $is_valid_license && $usage_data['remaining_count'] <= 0 );
-		$button_text  = esc_html__( 'Generate Metadata', 'occidg' );
-		$settings_url = admin_url( 'admin.php?page=occidg' );
-
-		$form_fields['generate_metadata'] = array(
-			'label' => __( 'Generate Metadata', 'occidg' ),
-			'input' => 'html',
-			'html'  => sprintf(
-				'<button type="button" class="button" id="generate_metadata_button" data-image-id="%s" %s>%s</button>' .
-				( $is_disabled ? ' <a href="%s" class="button">%s</a>' : '' ),
-				esc_attr( $post->ID ),
-				$is_disabled ? 'disabled' : '',
-				$button_text,
-				esc_url( $settings_url ),
-				esc_html__( 'Enter License Key', 'occidg' )
-			),
-		);
-
-		wp_localize_script(
-			'occidg-admin',
-			'occidg_admin_vars',
-			array(
-				'ajax_url'          => admin_url( 'admin-ajax.php' ),
-				'occidg_ajax_nonce' => wp_create_nonce( 'occidg_ajax_nonce' ),
-				'is_valid_license'  => $is_valid_license,
-				'is_trial'          => $is_trial,
-				'trial_expired'     => $trial_expired,
-				'usage'             => $usage_data,
-				'settings_url'      => $settings_url,
-			)
-		);
-
-		return $form_fields;
-	}
-
+	
 	/**
 	 * Add "Generate Details" bulk action to the Media Library.
 	 *

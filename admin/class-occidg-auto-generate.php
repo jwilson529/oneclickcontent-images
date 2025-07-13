@@ -51,6 +51,10 @@ class Occidg_Auto_Generate {
 	 * @return array The unmodified metadata.
 	 */
 	public function auto_generate_metadata( $metadata, $attachment_id ) {
+		if ( ! wp_attachment_is_image( $attachment_id ) ) {
+		    return $metadata;
+		}
+
 		$auto_add = get_option( 'occidg_auto_add_details', false );
 
 		if ( $auto_add ) {

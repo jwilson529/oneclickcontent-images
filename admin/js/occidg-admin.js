@@ -29,126 +29,116 @@
             });
         });
 
-        /**
-         * Handles metadata generation for a specific image when the button is clicked.
-         */
-        $(document).on('click', '#generate_metadata_button', function(e) {
-            e.preventDefault();
+        // Handles metadata generation for a specific image when the button is clicked.
+           $(document).on('click', '.generate-metadata', function(e) {
+               e.preventDefault();
 
-            const button = $(this);
-            const imageId = button.data('image-id');
+               const button   = $(this);
+               const imageId  = button.data('image-id');
+               const vars     = occidg_admin_vars;
 
-            if (!imageId) {
-                showGeneralErrorModal('An unexpected error occurred. Please try again.');
-                button.attr('disabled', false).text('Generate Metadata');
-                return;
-            }
+               // Public subscription landing page + UTM helper
+               const subUrl  = 'https://oneclickcontent.com/image-detail-generator/';
+               const utmBase = {
+                   utm_source:   'occidg_plugin',
+                   utm_medium:   'modal',
+                   utm_campaign: 'single_image_generation'
+               };
+               const addUTM = url => url + '?' + new URLSearchParams(utmBase).toString();
 
-            // Base UTM parameters for tracking
-            const utmBase = {
-                utm_source: 'occidg_plugin',
-                utm_medium: 'modal',
-                utm_campaign: 'single_image_generation'
-            };
-            const addUTMParams = (baseUrl) => {
-                const params = new URLSearchParams(utmBase);
-                return `${baseUrl}?${params.toString()}`;
-            };
-            const baseSubscriptionUrl = "https://oneclickcontent.com/image-detail-generator/";
+               if (! imageId) {
+                   showGeneralErrorModal('An unexpected error occurred. Please try again.');
+                   return;
+               }
 
-            // Check trial/license status upfront
-            if (occidg_admin_vars.trial_expired) {
-                showSubscriptionPrompt(
-                    'Free Trial Expired',
-                    'Your free trial has ended. Enter a license key to continue generating metadata.',
-                    addUTMParams(baseSubscriptionUrl)
-                );
-                button.attr('disabled', false).text('Generate Metadata');
-                return;
-            }
-            if (occidg_admin_vars.is_valid_license && occidg_admin_vars.usage.remaining_count <= 0) {
-                showSubscriptionPrompt(
-                    'Usage Limit Reached',
-                    'You’ve used all your credits. Purchase more or enter a new license key.',
-                    addUTMParams(baseSubscriptionUrl)
-                );
-                button.attr('disabled', false).text('Generate Metadata');
-                return;
-            }
+               // Trial expired?
+               if ( vars.trial_expired ) {
+                   showSubscriptionPrompt(
+                       'Free Trial Expired',
+                       'Your free trial has ended. Enter a license key to continue.',
+                       addUTM(subUrl)
+                   );
+                   return;
+               }
 
-            // Disable the button and show processing text
-            button.attr('disabled', true).text('Generating...');
+               // Licensed but no credits left?
+               if ( ! vars.is_trial && vars.usage.remaining_count <= 0 ) {
+                   showSubscriptionPrompt(
+                       'Usage Limit Reached',
+                       'You’ve used all your credits. Purchase more or enter a new license key.',
+                       addUTM(subUrl)
+                   );
+                   return;
+               }
 
-            $.ajax({
-                url: occidg_admin_vars.ajax_url,
-                type: 'POST',
-                data: {
-                    action: 'occidg_generate_metadata',
-                    nonce: occidg_admin_vars.occidg_ajax_nonce,
-                    image_id: imageId,
-                },
-                success: function(response) {
+               // Disable button & show spinner text
+               button.prop('disabled', true).text('Generating...');
 
-                    if (typeof response !== 'object') {
-                        showGeneralErrorModal('An unexpected error occurred. Please try again.');
-                        button.attr('disabled', false).text('Generate Metadata');
-                        return;
-                    }
+               $.ajax({
+                   url:      vars.ajax_url,
+                   type:     'POST',
+                   dataType: 'json',
+                   data: {
+                       action:   'occidg_generate_metadata',
+                       nonce:    vars.occidg_ajax_nonce,
+                       image_id: imageId
+                   }
+               })
+               .done(response => {
+                   if ( response.success && response.data?.metadata ) {
+                       // Got new metadata; update fields
+                       updateMetadataFields(response.data.metadata);
+                   }
+                   else if ( response.data?.error ) {
+                       const err = response.data.error.toString();
 
-                    if (response.success && response.data && response.data.metadata) {
-                        // Successful metadata generation.
-                        const metadata = response.data.metadata;
-                        updateMetadataFields(metadata);
+                       if ( err.includes('Free trial limit reached') ) {
+                           vars.trial_expired = true;
+                           showSubscriptionPrompt(
+                               'Free Trial Limit Reached',
+                               response.data.message || 'Upgrade your subscription to continue.',
+                               addUTM(response.data.ad_url || subUrl)
+                           );
+                       }
+                       else if ( err.includes('Usage limit reached') ) {
+                           showSubscriptionPrompt(
+                               'Usage Limit Reached',
+                               response.data.message || 'Purchase more credits or enter a new license key.',
+                               addUTM(response.data.ad_url || subUrl)
+                           );
+                       }
+                       else if ( err.toLowerCase().includes('license') ) {
+                           showSubscriptionPrompt(
+                               'Invalid License',
+                               err || 'Please enter a valid license key to continue.',
+                               addUTM(subUrl)
+                           );
+                       }
+                       else if ( err.startsWith('Image validation failed') ) {
+                           showImageRejectionModal(err);
+                       }
+                       else if ( err.startsWith('No metadata fields require generation') ) {
+                           showGeneralErrorModal('All selected metadata fields are already filled.');
+                       }
+                       else {
+                           showGeneralErrorModal(err || 'An unexpected error occurred.');
+                       }
+                   }
+                   else {
+                       console.error('Unexpected AJAX response:', response);
+                       showGeneralErrorModal('An unexpected error occurred.');
+                   }
+               })
+               .fail((jqXHR, textStatus, errorThrown) => {
+                   console.error('AJAX error:', textStatus, errorThrown, jqXHR.responseText);
+                   showGeneralErrorModal('An error occurred while processing the request. Please try again.');
+               })
+               .always(() => {
+                   // Re-enable button
+                   button.prop('disabled', false).text('Generate Metadata');
+               });
+           });
 
-                        button.attr('disabled', false).text('Generate Metadata');
-                    } else if (!response.success && response.data && response.data.error) {
-                        const error = response.data.error;
-
-
-                        if (error.includes('Free trial limit reached')) {
-                            showSubscriptionPrompt(
-                                'Free Trial Limit Reached',
-                                response.data.message || 'Upgrade your subscription to access unlimited features.',
-                                response.data.ad_url ? addUTMParams(response.data.ad_url) : addUTMParams(baseSubscriptionUrl)
-                            );
-                            occidg_admin_vars.trial_expired = true;
-                        } else if (error.includes('Usage limit reached')) {
-                            showSubscriptionPrompt(
-                                'Usage Limit Reached',
-                                response.data.message || 'Purchase more credits or enter a new license key.',
-                                response.data.ad_url ? addUTMParams(response.data.ad_url) : addUTMParams(baseSubscriptionUrl)
-                            );
-                            button.attr('disabled', false).text('Generate Metadata');
-                        } else if (error.startsWith('Image validation failed')) {
-                            showImageRejectionModal(error);
-                            button.attr('disabled', false).text('Generate Metadata');
-                        } else if (error.startsWith('No metadata fields require generation')) {
-                            showGeneralErrorModal('The image already has all metadata fields filled, and "Override Metadata" is disabled.');
-                            button.attr('disabled', false).text('Generate Metadata');
-                        } else if (error.includes('license')) {
-                             showSubscriptionPrompt(
-                                 'Invalid License',
-                                 error || 'Please enter a valid license key to continue.',
-                                 addUTMParams(baseSubscriptionUrl)
-                             );
-                             button.attr('disabled', false).text('Generate Metadata');
-                         } else {
-                            showGeneralErrorModal(error || 'An unexpected error occurred.');
-                            button.attr('disabled', false).text('Generate Metadata');
-                        }
-                    } else {
-                        console.error("[AJAX Error Response] Unexpected format:", response); // Keep for debugging
-                        showGeneralErrorModal('An unexpected error occurred.');
-                        button.attr('disabled', false).text('Generate Metadata');
-                    }
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    console.error("[AJAX Error] Status:", textStatus, "Error:", errorThrown, "Response:", jqXHR.responseText); // Keep for debugging
-                    showGeneralErrorModal('An error occurred while processing the request. Please try again.');
-                    button.attr('disabled', false).text('Generate Metadata');
-                }
-            });
-        });
 
         function updateMetadataFields(metadata) {
             try {

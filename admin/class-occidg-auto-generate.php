@@ -13,9 +13,7 @@
  * @link       https://oneclickcontent.com
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly.
-}
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Class Occidg_Auto_Generate
@@ -25,20 +23,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since 1.0.0
  */
 class Occidg_Auto_Generate {
-
-	/**
-	 * Constructor.
-	 *
-	 * Hooks into WordPress to trigger automatic metadata generation on image upload.
-	 *
-	 * @since 1.0.0
-	 */
-	public function __construct() {
-		add_filter( 'wp_generate_attachment_metadata', array( $this, 'auto_generate_metadata' ), 10, 2 );
-		add_action( 'wp_ajax_check_image_error', array( $this, 'check_image_error' ) );
-		add_action( 'wp_ajax_occidg_remove_image_error_transient', array( $this, 'occidg_remove_image_error_transient' ) );
-		add_action( 'wp_ajax_occidg_get_all_media_ids', array( $this, 'occidg_get_all_media_ids' ) );
-	}
 
 	/**
 	 * Automatically generate metadata for an image if the setting is enabled.

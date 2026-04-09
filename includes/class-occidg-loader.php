@@ -20,9 +20,7 @@
  *
  * @since 1.0.0
  */
-if ( ! defined( 'ABSPATH' ) ) {
-	exit( 'No direct access permitted.' );
-}
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Class Occidg_Loader

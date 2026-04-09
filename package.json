@@ -1,22 +1,23 @@
 {
-  "name": "oneclickcontent-image-detail-generator",
-  "version": "1.0.0",
-  "description": "=== Plugin Name === Contributors: (this should be a list of wordpress.org userid's) Donate link: https://oneclickcontent.com/ Tags: comments, spam Requires at least: 3.0.1 Tested up to: 3.4 Stable tag: 4.3 License: GPLv2 or later License URI: http://www.gnu.org/licenses/gpl-2.0.html",
-  "main": "index.js",
+  "name": "oneclickcontent-images",
+  "version": "1.1.15",
+  "description": "Development tooling for the OneClickContent Image Detail Generator WordPress plugin.",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "fix": "phpcbf -d error_reporting=\"E_ALL&~E_DEPRECATED\" --ignore=*/vendor/*,*/node_modules/* --standard=WordPress --extensions=php .",
-    "check": "phpcs -d error_reporting=\"E_ALL&~E_DEPRECATED\" --ignore=*/vendor/*,*/node_modules/* --standard=WordPress --extensions=php . > check.txt",
-    "phpmd": "phpmd . text phpmd.xml --exclude vendor,node_modules > phpmd.txt",
-    "dist": "find . -name '.DS_Store' -type f -delete && zip -r occidg.zip . -x \"node_modules/*\" \"assets/*\" \"*.git/*\" \"*.github/*\" \"*.gitignore\" \"*.zipignore\" \"check.txt\" \"phpmd.txt\" \"package.json\" \"package-lock.json\" \"phpmd.xml\" \"composer.lock\" \"composer.json\" \"README.md\"",
-    "plugin-check": "wp plugin check ."
+    "test": "npm run test:local",
+    "fix": "sh -c 'tool=\"vendor/bin/phpcbf\"; if [ ! -x \"$tool\" ]; then tool=\"$(command -v phpcbf || true)\"; fi; if [ -z \"$tool\" ]; then printf \"PHPCBF not installed. Install Composer dev dependencies or make phpcbf available in PATH.\\n\" >&2; exit 127; fi; \"$tool\" -d memory_limit=512M -d error_reporting=\"E_ALL&~E_DEPRECATED\" --standard=phpcs.xml.dist --extensions=php .'",
+    "check": "sh -c 'tool=\"vendor/bin/phpcs\"; if [ ! -x \"$tool\" ]; then tool=\"$(command -v phpcs || true)\"; fi; if [ -z \"$tool\" ]; then printf \"PHPCS not installed. Install Composer dev dependencies or make phpcs available in PATH.\\n\" > check.txt; cat check.txt >&2; exit 127; fi; \"$tool\" -d memory_limit=512M -d error_reporting=\"E_ALL&~E_DEPRECATED\" --standard=phpcs.xml.dist --extensions=php . > check.txt'",
+    "phpmd": "sh -c 'tool=\"vendor/bin/phpmd\"; if [ ! -x \"$tool\" ]; then tool=\"$(command -v phpmd || true)\"; fi; if [ -z \"$tool\" ]; then printf \"PHPMD not installed. Install Composer dev dependencies or make phpmd available in PATH.\\n\" > phpmd.txt; cat phpmd.txt >&2; exit 127; fi; \"$tool\" . text phpmd.xml --exclude vendor,node_modules,.codex-backups > phpmd.txt'",
+    "dist": "ZIP_NAME=\"${npm_package_name:-plugin}.zip\"; rm -f \"$ZIP_NAME\" && zip -r \"$ZIP_NAME\" . -x \"*/.*\" \"*.log\" \"*.zip\" \"node_modules/*\" \"vendor/*\" \"dist/*\" \"build/*\" \".git/*\" \".github/*\" \".wp-core/*\" \".wp-tests/*\" \".cstn-generator/*\" \".codex\" \".codex/*\" \"codex-yolo\" \"codex-yolo/*\" \".codex-backups/*\" \"check.txt\" \"phpmd.txt\" \"plugin-error.log\" \"AGENTS.md\" \"SPEC.md\" \"MEMORY.md\" \"PLAN.md\" \"PLAYBOOK.md\" \"DESIGN_SYSTEM.md\" \"UI_AUDIT.md\" \"APP_FLOW.md\" \"FRONTEND_GUIDELINES.md\" \"DESIGN_LESSONS.md\" \"package.json\" \"package-lock.json\" \"composer.json\" \"composer.lock\" \"phpcs.xml.dist\" \"phpunit.xml.dist\" \"phpmd.xml\" \".codex_index.json\" \".codex_run_meta.json\" \".codex_tasks.csv\" \"tests/*\"",
+    "plugin-check": "wp plugin check .",
+    "test:local": "sh -c 'tool=\"vendor/bin/phpunit\"; if [ ! -x \"$tool\" ]; then tool=\"$(command -v phpunit || true)\"; fi; if [ -z \"$tool\" ]; then printf \"PHPUnit not installed. Install Composer dev dependencies or make phpunit available in PATH.\\n\" >&2; exit 127; fi; \"$tool\" --configuration phpunit.xml.dist'"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jwilson529/oneclickcontent-image-detail-generator.git"
   },
   "author": "",
-  "license": "ISC",
+  "license": "GPL-2.0-or-later",
   "bugs": {
     "url": "https://github.com/jwilson529/oneclickcontent-image-detail-generator/issues"
   },

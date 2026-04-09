@@ -13,9 +13,7 @@
  * @link       https://oneclickcontent.com
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly.
-}
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Class Occidg_Bulk_Edit
@@ -39,7 +37,7 @@ class Occidg_Bulk_Edit {
 		$fallback_image_url = plugin_dir_url( __FILE__ ) . 'assets/icon.png';
 		$license_cta_html   = '<div class="bulk-edit-license-warning compact">
 	        <div class="cta-left">
-	            <img src="' . esc_url( $fallback_image_url ) . '" alt="One Click Content Icon" style="float: left; margin-right: 10px; width: 50px; height: auto;">
+	            <img src="' . esc_url( $fallback_image_url ) . '" alt="' . esc_attr__( 'OneClickContent icon', 'occidg' ) . '" style="float: left; margin-right: 10px; width: 50px; height: auto;">
 	            <h2>' . esc_html__( 'Never Forget an Alt Tag Again!', 'occidg' ) . '</h2>
 	            <p>' . esc_html__( 'Upgrade now to automatically generate metadata for your images. Save time and boost your site’s SEO, accessibility, and image searchability.', 'occidg' ) . '</p>
 	            <ul class="benefits-list">
@@ -49,7 +47,7 @@ class Occidg_Bulk_Edit {
 	            </ul>
 	        </div>
 	        <div class="cta-right">
-	            <a href="https://oneclickcontent.com/image-detail-generator/" target="_blank" class="btn-license">' . esc_html__( 'Activate License Now', 'occidg' ) . '</a>
+	            <a href="https://oneclickcontent.com/image-detail-generator/" target="_blank" rel="noopener noreferrer" class="btn-license">' . esc_html__( 'Activate License Now', 'occidg' ) . '</a>
 	        </div>
 	    </div>';
 
@@ -163,7 +161,7 @@ class Occidg_Bulk_Edit {
 	public function get_image_metadata() {
 		check_ajax_referer( 'occidg_bulk_edit', 'nonce' );
 		if ( ! current_user_can( 'edit_posts' ) ) {
-			wp_send_json_error( 'Permission denied.' );
+			wp_send_json_error( __( 'Permission denied.', 'occidg' ) );
 		}
 
 		$draw         = isset( $_REQUEST['draw'] ) ? intval( $_REQUEST['draw'] ) : 1;
@@ -257,7 +255,7 @@ class Occidg_Bulk_Edit {
 	public function save_bulk_metadata() {
 		check_ajax_referer( 'occidg_bulk_edit', 'nonce' );
 		if ( false === current_user_can( 'edit_posts' ) ) {
-			wp_send_json_error( 'Permission denied.' );
+			wp_send_json_error( __( 'Permission denied.', 'occidg' ) );
 		}
 		$image_id = isset( $_POST['image_id'] ) ? absint( $_POST['image_id'] ) : 0;
 
@@ -268,7 +266,7 @@ class Occidg_Bulk_Edit {
 		$caption     = ( isset( $_POST['caption'] ) && '' !== $_POST['caption'] ) ? sanitize_textarea_field( wp_unslash( $_POST['caption'] ) ) : '';
 
 		if ( 0 === $image_id ) {
-			wp_send_json_error( 'Invalid image ID.' );
+			wp_send_json_error( __( 'Invalid image ID.', 'occidg' ) );
 		}
 
 		// Update the metadata.

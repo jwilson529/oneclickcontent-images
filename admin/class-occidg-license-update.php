@@ -14,9 +14,7 @@
  * @link       https://oneclickcontent.com
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly.
-}
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Class Occidg_License_Update
@@ -57,11 +55,6 @@ class Occidg_License_Update {
 	public function __construct( $auth_url, $plugin_slug ) {
 		$this->auth_url    = esc_url_raw( $auth_url );
 		$this->plugin_slug = sanitize_text_field( $plugin_slug );
-
-		// Register AJAX handlers for license and usage management.
-		add_action( 'wp_ajax_occidg_validate_license', array( $this, 'ajax_validate_license' ) );
-		add_action( 'wp_ajax_occidg_get_license_status', array( $this, 'ajax_get_license_status' ) );
-		add_action( 'wp_ajax_occidg_check_usage', array( $this, 'occidg_ajax_check_usage' ) );
 	}
 
 	/**
@@ -73,6 +66,8 @@ class Occidg_License_Update {
 	 * @return void Outputs JSON response with validation result.
 	 */
 	public function ajax_validate_license() {
+		check_ajax_referer( 'occidg_ajax_nonce', 'nonce' );
+
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'occidg' ) ) );
 			return;
@@ -107,6 +102,12 @@ class Occidg_License_Update {
 
 		if ( is_wp_error( $response ) ) {
 			update_option( 'occidg_license_status', 'inactive' );
+			Occidg_Logger::error(
+				'License validation request failed.',
+				array(
+					'message' => $response->get_error_message(),
+				)
+			);
 			wp_send_json_error(
 				array(
 					'status'  => 'inactive',
@@ -119,6 +120,12 @@ class Occidg_License_Update {
 		$data = json_decode( wp_remote_retrieve_body( $response ), true );
 		if ( JSON_ERROR_NONE !== json_last_error() || ! isset( $data['status'] ) || 'success' !== $data['status'] ) {
 			update_option( 'occidg_license_status', 'inactive' );
+			Occidg_Logger::warning(
+				'License validation returned an inactive response.',
+				array(
+					'response' => $data,
+				)
+			);
 			wp_send_json_success(
 				array(
 					'status'  => 'inactive',
@@ -147,7 +154,9 @@ class Occidg_License_Update {
 	 * @return void Outputs JSON response with license status.
 	 */
 	public function ajax_get_license_status() {
-		if ( ! current_user_can( 'manage_options' ) ) {
+		check_ajax_referer( 'occidg_ajax_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'edit_posts' ) ) {
 			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'occidg' ) ) );
 			return;
 		}
@@ -180,6 +189,12 @@ class Occidg_License_Update {
 		);
 
 		if ( is_wp_error( $response ) ) {
+			Occidg_Logger::error(
+				'License status request failed.',
+				array(
+					'message' => $response->get_error_message(),
+				)
+			);
 			wp_send_json_error(
 				array(
 					'status'  => 'inactive',
@@ -192,6 +207,12 @@ class Occidg_License_Update {
 		$data = json_decode( wp_remote_retrieve_body( $response ), true );
 		if ( JSON_ERROR_NONE !== json_last_error() || ! isset( $data['status'] ) || 'success' !== $data['status'] ) {
 			update_option( 'occidg_license_status', 'inactive' );
+			Occidg_Logger::warning(
+				'License status request returned an inactive response.',
+				array(
+					'response' => $data,
+				)
+			);
 			wp_send_json_success(
 				array(
 					'status'  => 'inactive',
@@ -220,9 +241,10 @@ class Occidg_License_Update {
 	 * @return void Outputs JSON response with usage data or an error message.
 	 */
 	public function occidg_ajax_check_usage() {
-		$nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) : '';
-		if ( ! wp_verify_nonce( $nonce, 'occidg_ajax_nonce' ) ) {
-			wp_send_json_error( array( 'error' => __( 'Invalid nonce.', 'occidg' ) ) );
+		check_ajax_referer( 'occidg_ajax_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'edit_posts' ) ) {
+			wp_send_json_error( array( 'error' => __( 'Permission denied.', 'occidg' ) ) );
 			return;
 		}
 
@@ -237,7 +259,7 @@ class Occidg_License_Update {
 		$request_data = array(
 			'license_key'  => sanitize_text_field( $license_key ),
 			'origin_url'   => $origin_url,
-			'product_slug' => defined( 'OCCIDG_PRODUCT_SLUG' ) ? OCCIDG_PRODUCT_SLUG : 'demo',
+			'product_slug' => $this->plugin_slug,
 		);
 
 		$response = wp_remote_post(
@@ -250,12 +272,24 @@ class Occidg_License_Update {
 		);
 
 		if ( is_wp_error( $response ) ) {
+			Occidg_Logger::error(
+				'Usage request failed.',
+				array(
+					'message' => $response->get_error_message(),
+				)
+			);
 			wp_send_json_error( array( 'error' => $response->get_error_message() ) );
 			return;
 		}
 
 		$decoded_response = json_decode( wp_remote_retrieve_body( $response ), true );
 		if ( JSON_ERROR_NONE !== json_last_error() ) {
+			Occidg_Logger::error(
+				'Usage request returned invalid JSON.',
+				array(
+					'response' => wp_remote_retrieve_body( $response ),
+				)
+			);
 			wp_send_json_error( array( 'error' => __( 'Invalid response from server.', 'occidg' ) ) );
 			return;
 		}

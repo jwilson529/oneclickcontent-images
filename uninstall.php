@@ -24,7 +24,32 @@
  * @package    One_Click_Images
  */
 
-// If uninstall not called from WordPress, then exit.
-if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
-	exit;
+defined( 'ABSPATH' ) || exit;
+defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
+
+$occidg_options = array(
+	'occidg_activation_redirect',
+	'occidg_ai_model',
+	'occidg_auto_add_details',
+	'occidg_first_time',
+	'occidg_language',
+	'occidg_license_key',
+	'occidg_license_status',
+	'occidg_metadata_fields',
+	'occidg_override_metadata',
+	'occidg_trial_expired',
+	'occidg_trial_usage',
+);
+
+foreach ( $occidg_options as $occidg_option ) {
+	delete_option( $occidg_option );
+}
+
+delete_transient( 'occidg_image_error' );
+delete_transient( 'occidg_trial_salt' );
+delete_transient( 'occidg_usage_data' );
+
+$occidg_log_file = plugin_dir_path( __FILE__ ) . 'plugin-error.log';
+if ( function_exists( 'wp_delete_file' ) && file_exists( $occidg_log_file ) ) {
+	wp_delete_file( $occidg_log_file );
 }

@@ -9,6 +9,8 @@
  * @subpackage Occidg/includes
  */
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Fired during plugin activation.
  *
@@ -34,5 +36,7 @@ class Occidg_Activator {
 		if ( false === get_option( 'occidg_first_time' ) ) {
 			add_option( 'occidg_first_time', true );
 		}
+
+		Occidg_Logger::info( 'Plugin activated.' );
 	}
 }

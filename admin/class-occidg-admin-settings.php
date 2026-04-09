@@ -13,9 +13,7 @@
  * @link       https://oneclickcontent.com
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly.
-}
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Class Occidg_Admin_Settings
@@ -359,7 +357,16 @@ class Occidg_Admin_Settings {
 		</button>
 		<span id="license_status_label" style="margin-left: 10px; font-weight: bold;"></span>
 		<div id="license_status_message" style="margin-top: 10px;"></div>
-		<p class="description"><?php echo wp_kses_post( __( 'Get your OneClickContent License Key <a href="https://oneclickcontent.com/" target="_blank">here</a>.', 'occidg' ) ); ?></p>
+		<p class="description">
+			<?php
+			echo wp_kses_post(
+				sprintf(
+					__( 'Get your OneClickContent License Key <a href="%s" target="_blank" rel="noopener noreferrer">here</a>.', 'occidg' ),
+					esc_url( 'https://oneclickcontent.com/' )
+				)
+			);
+			?>
+		</p>
 		<?php
 	}
 
@@ -444,6 +451,12 @@ class Occidg_Admin_Settings {
 		}
 
 		if ( ! $image_path || ! file_exists( $image_path ) ) {
+			Occidg_Logger::warning(
+				'Metadata generation skipped because the image file could not be resolved.',
+				array(
+					'image_id' => $image_id,
+				)
+			);
 			return false;
 		}
 
@@ -457,8 +470,16 @@ class Occidg_Admin_Settings {
 
 		$image_data = file_get_contents( $image_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 		if ( false === $image_data ) {
+			Occidg_Logger::warning(
+				'Metadata generation skipped because the image file could not be read.',
+				array(
+					'image_id'   => $image_id,
+					'image_path' => $image_path,
+				)
+			);
 			return false;
 		}
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- The remote metadata API accepts image payloads encoded as base64.
 		$image_base64 = base64_encode( $image_data );
 		$image_type   = wp_check_filetype( $image_path )['ext'];
 
@@ -510,6 +531,13 @@ class Occidg_Admin_Settings {
 
 		if ( is_wp_error( $response ) ) {
 			$error_message = $response->get_error_message();
+			Occidg_Logger::error(
+				'Metadata generation request failed.',
+				array(
+					'image_id' => $image_id,
+					'message'  => $error_message,
+				)
+			);
 			return array(
 				'success' => false,
 				'error'   => __( 'Failed to communicate with the metadata service.', 'occidg' ),
@@ -521,6 +549,13 @@ class Occidg_Admin_Settings {
 		$data          = json_decode( $response_body, true );
 		if ( json_last_error() !== JSON_ERROR_NONE ) {
 			$json_error = json_last_error_msg();
+			Occidg_Logger::error(
+				'Metadata generation returned invalid JSON.',
+				array(
+					'image_id' => $image_id,
+					'message'  => $json_error,
+				)
+			);
 			return array(
 				'success' => false,
 				'error'   => __( 'Invalid response from metadata service.', 'occidg' ),
@@ -529,6 +564,13 @@ class Occidg_Admin_Settings {
 		}
 
 		if ( isset( $data['error'] ) ) {
+			Occidg_Logger::warning(
+				'Metadata generation returned an application error.',
+				array(
+					'image_id' => $image_id,
+					'error'    => $data['error'],
+				)
+			);
 			return array(
 				'success' => false,
 				'error'   => $data['error'],
@@ -545,6 +587,13 @@ class Occidg_Admin_Settings {
 				'metadata' => $processed_metadata,
 			);
 		}
+
+		Occidg_Logger::warning(
+			'Metadata processing failed after a successful API response.',
+			array(
+				'image_id' => $image_id,
+			)
+		);
 
 		return array(
 			'success' => false,
@@ -582,6 +631,8 @@ class Occidg_Admin_Settings {
 				return $salt;
 			}
 		}
+
+		Occidg_Logger::warning( 'Falling back to the local trial salt constant.' );
 
 		// 3) Fallback to whatever constant you defined (or empty)
 		return defined( 'OCCIDG_HMAC_SALT' ) ? OCCIDG_HMAC_SALT : '';

@@ -29,14 +29,7 @@
  * @wordpress-plugin
  */
 
-/**
- * Prevent direct access to this file.
- *
- * @since 1.0.0
- */
-if ( ! defined( 'WPINC' ) ) {
-	die( 'No direct access permitted.' );
-}
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Define plugin constants.
@@ -48,6 +41,10 @@ if ( ! defined( 'WPINC' ) ) {
 define( 'OCCIDG_VERSION', '1.1.15' );
 define( 'OCCIDG_PRODUCT_SLUG', 'oneclickcontent-image-meta-generator' );
 define( 'OCCIDG_HMAC_SALT', 'default-salt' );
+define( 'OCCIDG_PLUGIN_FILE', __FILE__ );
+define( 'OCCIDG_LOG_FILE', plugin_dir_path( __FILE__ ) . 'plugin-error.log' );
+
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-occidg-i18n.php';
 
 /**
  * The code that runs during plugin activation.
@@ -57,6 +54,7 @@ define( 'OCCIDG_HMAC_SALT', 'default-salt' );
  * @since 1.0.0
  */
 function occidg_activate() {
+	require_once plugin_dir_path( __FILE__ ) . 'includes/class-occidg-logger.php';
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-occidg-activator.php';
 	Occidg_Activator::activate();
 }
@@ -69,12 +67,26 @@ function occidg_activate() {
  * @since 1.0.0
  */
 function occidg_deactivate() {
+	require_once plugin_dir_path( __FILE__ ) . 'includes/class-occidg-logger.php';
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-occidg-deactivator.php';
 	Occidg_Deactivator::deactivate();
 }
 
 register_activation_hook( __FILE__, 'occidg_activate' );
 register_deactivation_hook( __FILE__, 'occidg_deactivate' );
+
+/**
+ * Load the plugin text domain.
+ *
+ * @since 1.0.0
+ * @return void
+ */
+function occidg_load_textdomain() {
+	$plugin_i18n = new Occidg_I18n();
+	$plugin_i18n->load_plugin_textdomain();
+}
+
+add_action( 'plugins_loaded', 'occidg_load_textdomain' );
 
 /**
  * The core plugin class that defines internationalization, admin-specific hooks,
@@ -96,4 +108,5 @@ function occidg_run() {
 	$plugin = new Occidg();
 	$plugin->run();
 }
+
 occidg_run();

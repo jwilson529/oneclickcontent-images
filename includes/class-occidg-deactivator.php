@@ -9,6 +9,8 @@
  * @subpackage Occidg/includes
  */
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Fired during plugin deactivation.
  *
@@ -32,5 +34,7 @@ class Occidg_Deactivator {
 	public static function deactivate() {
 		delete_option( 'occidg_first_time' );
 		delete_option( 'occidg_trial_expired' );
+
+		Occidg_Logger::info( 'Plugin deactivated.' );
 	}
 }

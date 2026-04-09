@@ -14,9 +14,7 @@
  * @link       https://oneclickcontent.com
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly.
-}
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Class Occidg_Admin
@@ -45,17 +43,37 @@ class Occidg_Admin {
 	private $version;
 
 	/**
+	 * Bulk edit controller instance.
+	 *
+	 * @since 1.0.0
+	 * @var Occidg_Bulk_Edit
+	 */
+	private $bulk_edit;
+
+	/**
+	 * Admin settings controller instance.
+	 *
+	 * @since 1.0.0
+	 * @var Occidg_Admin_Settings
+	 */
+	private $admin_settings;
+
+	/**
 	 * Constructor for the admin class.
 	 *
 	 * Initializes the plugin name and version.
 	 *
 	 * @since 1.0.0
-	 * @param string $plugin_name The name of the plugin.
-	 * @param string $version     The version of this plugin.
+	 * @param string                 $plugin_name    The name of the plugin.
+	 * @param string                 $version        The version of this plugin.
+	 * @param Occidg_Bulk_Edit|null  $bulk_edit      Optional bulk edit controller.
+	 * @param Occidg_Admin_Settings|null $admin_settings Optional settings controller.
 	 */
-	public function __construct( $plugin_name, $version ) {
-		$this->plugin_name = $plugin_name;
-		$this->version     = $version;
+	public function __construct( $plugin_name, $version, $bulk_edit = null, $admin_settings = null ) {
+		$this->plugin_name    = $plugin_name;
+		$this->version        = $version;
+		$this->bulk_edit      = $bulk_edit instanceof Occidg_Bulk_Edit ? $bulk_edit : new Occidg_Bulk_Edit();
+		$this->admin_settings = $admin_settings instanceof Occidg_Admin_Settings ? $admin_settings : new Occidg_Admin_Settings();
 	}
 
 	/**
@@ -83,20 +101,11 @@ class Occidg_Admin {
 	 * @return void
 	 */
 	public function render_admin_page() {
-		// Verify nonce for settings form submission.
-		$nonce = isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '';
-		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'] && ! wp_verify_nonce( $nonce, 'occidg_settings-options' ) ) {
-			wp_die( esc_html__( 'Security check failed.', 'occidg' ) );
-		}
-
-		$tab                   = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'settings';
-		$plugin_admin_settings = new Occidg_Admin_Settings(); // Temporary; ideally injected.
-		$plugin_bulk_edit      = new Occidg_Bulk_Edit(); // Temporary; ideally injected.
-		$license_status        = get_option( 'occidg_license_status', 'unknown' );
-		$header_image_url      = plugin_dir_url( __FILE__ ) . 'assets/header-image.webp';
-		$first_time_key        = 'occidg_first_time';
-		$is_first_time         = get_option( $first_time_key, true );
-		$tab_nonce             = wp_create_nonce( 'oneclickcontent_tab_switch' );
+		$tab            = $this->get_active_tab();
+		$license_status = get_option( 'occidg_license_status', 'unknown' );
+		$first_time_key = 'occidg_first_time';
+		$is_first_time  = get_option( $first_time_key, true );
+		$tab_nonce      = wp_create_nonce( 'oneclickcontent_tab_switch' );
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'OneClickContent Images', 'occidg' ); ?></h1>
@@ -134,7 +143,7 @@ class Occidg_Admin {
 						<!-- License Inactive: Display license warning -->
 						<div class="bulk-edit-license-warning compact">
 							<div class="cta-left">
-								<img src="<?php echo esc_url( plugin_dir_url( __FILE__ ) . 'assets/icon.png' ); ?>" alt="One Click Content Icon" style="float: left; margin-right: 10px; width: 50px; height: auto;">
+								<img src="<?php echo esc_url( plugin_dir_url( __FILE__ ) . 'assets/icon.png' ); ?>" alt="<?php esc_attr_e( 'OneClickContent icon', 'occidg' ); ?>" style="float: left; margin-right: 10px; width: 50px; height: auto;">
 								<h2><?php esc_html_e( 'Never Forget an Alt Tag Again!', 'occidg' ); ?></h2>
 								<p><?php esc_html_e( 'Upgrade now to automatically generate metadata for your images. Save time and boost your site’s SEO, accessibility, and image searchability.', 'occidg' ); ?></p>
 								<ul class="benefits-list">
@@ -144,7 +153,7 @@ class Occidg_Admin {
 								</ul>
 							</div>
 							<div class="cta-right">
-								<a href="https://oneclickcontent.com/image-detail-generator/" target="_blank" class="btn-license">
+								<a href="https://oneclickcontent.com/image-detail-generator/" target="_blank" rel="noopener noreferrer" class="btn-license">
 									<?php esc_html_e( 'Activate License Now', 'occidg' ); ?>
 								</a>
 							</div>
@@ -202,7 +211,7 @@ class Occidg_Admin {
 					</div>
 				</div><!-- End #occidg_images -->
 			<?php elseif ( 'bulk-edit' === $tab ) : ?>
-				<?php $plugin_bulk_edit->render_bulk_edit_tab(); ?>
+				<?php $this->bulk_edit->render_bulk_edit_tab(); ?>
 			<?php endif; ?>
 		</div>
 
@@ -211,7 +220,7 @@ class Occidg_Admin {
 			<div id="occidg-first-time-modal" class="modal" style="display:block;">
 				<div class="modal-content">
 					<div class="modal-header" style="display: flex; align-items: center; gap: 15px;">
-						<img src="<?php echo esc_url( $fallback_image_url ); ?>" alt="Plugin Icon" style="width: 50px; height: 50px;">
+						<img src="<?php echo esc_url( $fallback_image_url ); ?>" alt="<?php esc_attr_e( 'Plugin icon', 'occidg' ); ?>" style="width: 50px; height: 50px;">
 						<h3 style="margin: 0;"><?php esc_html_e( 'Welcome to OneClickContent Image Detail Generator!', 'occidg' ); ?></h3>
 					</div>
 					<p><?php esc_html_e( 'This plugin helps you effortlessly manage image metadata — including alt text, titles, captions, and descriptions — so your site looks great, loads better, and ranks higher.', 'occidg' ); ?></p>
@@ -247,7 +256,7 @@ class Occidg_Admin {
 						<?php esc_html_e( 'Give your media library the attention it deserves — for better SEO, accessibility, and user experience.', 'occidg' ); ?>
 					</p>
 					<div class="modal-buttons" style="margin-top: 20px; text-align: right;">
-						<a href="https://oneclickcontent.com/image-detail-generator/" target="_blank" class="button button-secondary">
+						<a href="https://oneclickcontent.com/image-detail-generator/" target="_blank" rel="noopener noreferrer" class="button button-secondary">
 							<?php esc_html_e( 'Upgrade to Pro', 'occidg' ); ?>
 						</a>
 						<button id="close-first-time-modal" class="button button-primary">
@@ -282,11 +291,7 @@ class Occidg_Admin {
 		);
 
 		// DataTables on Bulk-Edit tab.
-		if (
-			'toplevel_page_occidg' === $screen->id
-			&& isset( $_GET['tab'] )
-			&& 'bulk-edit' === sanitize_key( wp_unslash( $_GET['tab'] ) )
-		) {
+		if ( 'toplevel_page_occidg' === $screen->id && $this->is_bulk_edit_tab() ) {
 			wp_enqueue_style(
 				"{$this->plugin_name}-datatables",
 				plugin_dir_url( __FILE__ ) . 'css/datatables.min.css',
@@ -338,6 +343,7 @@ class Occidg_Admin {
 			array(
 				'ajax_url'          => admin_url( 'admin-ajax.php' ),
 				'occidg_ajax_nonce' => wp_create_nonce( 'occidg_ajax_nonce' ),
+				'dismiss_first_time_nonce' => wp_create_nonce( 'occidg_dismiss_first_time' ),
 				'is_trial'          => empty( get_option( 'occidg_license_key' ) ),
 				'trial_expired'     => get_option( 'occidg_trial_expired', false ),
 				'usage'             => $usage,
@@ -364,7 +370,7 @@ class Occidg_Admin {
 			);
 
 			// Bulk-Edit tab extras.
-			if ( isset( $_GET['tab'] ) && 'bulk-edit' === sanitize_key( wp_unslash( $_GET['tab'] ) ) ) {
+			if ( $this->is_bulk_edit_tab() ) {
 				wp_enqueue_script(
 					"{$this->plugin_name}-datatables",
 					plugin_dir_url( __FILE__ ) . 'js/datatables.min.js',
@@ -468,8 +474,9 @@ class Occidg_Admin {
 
 		$license_key = get_option( 'occidg_license_key', '' );
 		if ( $license_key ) {
+			$usage_endpoint = 'https://oneclickcontent.com/wp-json/subscriber/v1/check-usage';
 			$response = wp_remote_post(
-				rest_url( 'subscriber/v1/check-usage' ),
+				$usage_endpoint,
 				array(
 					'body'    => wp_json_encode(
 						array(
@@ -483,7 +490,14 @@ class Occidg_Admin {
 				)
 			);
 
-			if ( ! is_wp_error( $response ) ) {
+			if ( is_wp_error( $response ) ) {
+				Occidg_Logger::warning(
+					'Usage request failed while priming the admin usage cache.',
+					array(
+						'message' => $response->get_error_message(),
+					)
+				);
+			} else {
 				$body = json_decode( wp_remote_retrieve_body( $response ), true );
 				if ( ! is_array( $body ) ) {
 					$body = array();
@@ -544,12 +558,6 @@ class Occidg_Admin {
 			wp_die( esc_html__( 'Security check failed.', 'occidg' ) );
 		}
 
-		if ( ! class_exists( 'Occidg_Admin_Settings' ) ) {
-			return $redirect_to;
-		}
-
-		$admin_settings = new Occidg_Admin_Settings();
-
 		$image_ids = array();
 		foreach ( $post_ids as $post_id ) {
 			if ( wp_attachment_is_image( $post_id ) ) {
@@ -560,7 +568,7 @@ class Occidg_Admin {
 		$skipped_count = count( $post_ids ) - count( $image_ids );
 
 		foreach ( $image_ids as $image_id ) {
-			$admin_settings->occidg_generate_metadata( $image_id );
+			$this->admin_settings->occidg_generate_metadata( $image_id );
 		}
 
 		$generated_count = count( $image_ids );
@@ -598,21 +606,21 @@ class Occidg_Admin {
 		$generated = intval( wp_unslash( $_REQUEST['generated_details'] ) );
 
 		// Build the base message.
-		if ( 1 === $generated ) {
-			$message = 'Metadata generated for 1 media item.';
-		} else {
-			$message = sprintf( 'Metadata generated for %d media items.', $generated );
-		}
+		$message = sprintf(
+			/* translators: %d: number of media items. */
+			_n( 'Metadata generated for %d media item.', 'Metadata generated for %d media items.', $generated, 'occidg' ),
+			$generated
+		);
 
 		// If any non‑images were skipped, append that count.
 		if ( ! empty( $_REQUEST['skipped_non_images'] ) ) {
 			$skipped = intval( wp_unslash( $_REQUEST['skipped_non_images'] ) );
 
-			if ( 1 === $skipped ) {
-				$message .= ' (Skipped 1 non-image.)';
-			} else {
-				$message .= sprintf( ' (Skipped %d non-images.)', $skipped );
-			}
+			$message .= ' ' . sprintf(
+				/* translators: %d: number of skipped items. */
+				_n( 'Skipped %d non-image.', 'Skipped %d non-images.', $skipped, 'occidg' ),
+				$skipped
+			);
 		}
 
 		// Output the admin notice.
@@ -665,6 +673,11 @@ class Occidg_Admin {
 			return;
 		}
 
+		if ( ! current_user_can( 'upload_files' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'occidg' ) ) );
+			return;
+		}
+
 		$image_id = isset( $_GET['image_id'] ) ? absint( wp_unslash( $_GET['image_id'] ) ) : 0;
 		if ( ! $image_id ) {
 			wp_send_json_error( array( 'message' => __( 'Invalid image ID.', 'occidg' ) ) );
@@ -709,6 +722,11 @@ class Occidg_Admin {
 	public function check_override_metadata() {
 		check_ajax_referer( 'occidg_ajax_nonce', 'nonce' );
 
+		if ( ! current_user_can( 'edit_posts' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'occidg' ) ) );
+			return;
+		}
+
 		$override = get_option( 'occidg_override_metadata', false );
 		wp_send_json_success( array( 'override' => $override ) );
 	}
@@ -727,7 +745,12 @@ class Occidg_Admin {
 	public function dismiss_first_time() {
 		// Verify the nonce for security.
 		if ( ! check_ajax_referer( 'occidg_dismiss_first_time', 'dismiss_first_time_nonce', false ) ) {
-			wp_send_json_error( array( 'message' => 'Security check failed.' ) );
+			wp_send_json_error( array( 'message' => __( 'Security check failed.', 'occidg' ) ) );
+			return;
+		}
+
+		if ( ! current_user_can( 'edit_posts' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'occidg' ) ) );
 			return;
 		}
 
@@ -735,9 +758,43 @@ class Occidg_Admin {
 		$updated = update_option( 'occidg_first_time', false );
 		if ( false === $updated ) {
 			// If update_option fails, try adding the option.
-			$added = add_option( 'occidg_first_time', false );
+			add_option( 'occidg_first_time', false );
 		}
 
 		wp_send_json_success();
+	}
+
+	/**
+	 * Get the active plugin admin tab.
+	 *
+	 * @return string
+	 */
+	private function get_active_tab() {
+		$tab = filter_input( INPUT_GET, 'tab', FILTER_UNSAFE_RAW );
+
+		if ( ! is_string( $tab ) || '' === $tab ) {
+			return 'settings';
+		}
+
+		$tab = sanitize_key( $tab );
+		if ( ! in_array( $tab, array( 'settings', 'bulk-edit' ), true ) ) {
+			return 'settings';
+		}
+
+		$nonce = filter_input( INPUT_GET, '_wpnonce', FILTER_UNSAFE_RAW );
+		if ( ! is_string( $nonce ) || ! wp_verify_nonce( sanitize_text_field( $nonce ), 'oneclickcontent_tab_switch' ) ) {
+			return 'settings';
+		}
+
+		return $tab;
+	}
+
+	/**
+	 * Determine whether the current admin tab is the bulk-edit view.
+	 *
+	 * @return bool
+	 */
+	private function is_bulk_edit_tab() {
+		return 'bulk-edit' === $this->get_active_tab();
 	}
 }

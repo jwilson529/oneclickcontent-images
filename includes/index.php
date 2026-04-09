@@ -2,5 +2,7 @@
 /**
  * Silence is golden.
  *
- * @package    occidg
+ * @package Occidg
  */
+
+defined( 'ABSPATH' ) || exit;

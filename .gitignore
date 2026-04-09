@@ -5,6 +5,8 @@ node_modules/
 
 # Dependency directories
 vendor/
+.wp-core/
+.wp-tests/
 
 # OS generated files
 .DS_Store
@@ -42,4 +44,25 @@ wp-config.php
 
 # Example for ignoring a custom cache directory (replace 'custom_cache/' with your actual directory)
 # custom_cache/
+.cstn-generator/
+.codex
+.codex/
+codex-yolo
+codex-yolo/
 check.txt
+phpmd.txt
+plugin-error.log
+.codex_index.json
+.codex_run_meta.json
+.codex_tasks.csv
+.codex_test_output.log
+AGENTS.md
+SPEC.md
+MEMORY.md
+PLAN.md
+PLAYBOOK.md
+DESIGN_SYSTEM.md
+UI_AUDIT.md
+APP_FLOW.md
+FRONTEND_GUIDELINES.md
+DESIGN_LESSONS.md

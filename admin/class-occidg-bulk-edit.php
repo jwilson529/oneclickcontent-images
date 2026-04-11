@@ -31,42 +31,26 @@ class Occidg_Bulk_Edit {
 	 * @return void
 	 */
 	public function render_bulk_edit_tab() {
-		$license_status   = get_option( 'occidg_license_status', 'unknown' );
-		$is_valid_license = ( 'active' === $license_status );
-
 		$fallback_image_url = plugin_dir_url( __FILE__ ) . 'assets/icon.png';
-		$license_cta_html   = '<div class="bulk-edit-license-warning compact">
+		$provider_help_html = '<div class="bulk-edit-license-warning compact">
 	        <div class="cta-left">
-	            <img src="' . esc_url( $fallback_image_url ) . '" alt="' . esc_attr__( 'OneClickContent icon', 'occidg' ) . '" style="float: left; margin-right: 10px; width: 50px; height: auto;">
-	            <h2>' . esc_html__( 'Never Forget an Alt Tag Again!', 'occidg' ) . '</h2>
-	            <p>' . esc_html__( 'Upgrade now to automatically generate metadata for your images. Save time and boost your site’s SEO, accessibility, and image searchability.', 'occidg' ) . '</p>
+	            <img src="' . esc_url( $fallback_image_url ) . '" alt="' . esc_attr__( 'Plugin icon', 'occidg' ) . '" style="float: left; margin-right: 10px; width: 50px; height: auto;">
+	            <h2>' . esc_html__( 'Bulk-generate metadata with your own AI key', 'occidg' ) . '</h2>
+	            <p>' . esc_html__( 'Set up OpenAI or Gemini in Settings, then generate image title, description, alt text, and caption across your Media Library.', 'occidg' ) . '</p>
 	            <ul class="benefits-list">
-	                <li>' . esc_html__( 'Save time with automated metadata generation', 'occidg' ) . '</li>
-	                <li>' . esc_html__( 'Ensure every image has a descriptive alt tag', 'occidg' ) . '</li>
-	                <li>' . esc_html__( 'Improve SEO, ADA compliance, and user experience', 'occidg' ) . '</li>
+	                <li>' . esc_html__( 'Use your own provider credentials', 'occidg' ) . '</li>
+	                <li>' . esc_html__( 'Generate metadata in bulk without license gates', 'occidg' ) . '</li>
+	                <li>' . esc_html__( 'Review and edit results in one place', 'occidg' ) . '</li>
 	            </ul>
 	        </div>
-	        <div class="cta-right">
-	            <a href="https://oneclickcontent.com/image-detail-generator/" target="_blank" rel="noopener noreferrer" class="btn-license">' . esc_html__( 'Activate License Now', 'occidg' ) . '</a>
-	        </div>
 	    </div>';
-
-		$usage_data = array(
-			'used_count'      => 0,
-			'total_allowed'   => 10,
-			'remaining_count' => 10,
-			'cta_html'        => '',
-		);
 
 		wp_localize_script(
 			'occidg-bulk-edit',
 			'occidg_bulk_vars',
 			array(
-				'ajax_url'         => admin_url( 'admin-ajax.php' ),
-				'nonce'            => wp_create_nonce( 'occidg_bulk_edit' ),
-				'is_valid_license' => $is_valid_license,
-				'license_cta_html' => $license_cta_html,
-				'usage'            => $usage_data,
+				'ajax_url' => admin_url( 'admin-ajax.php' ),
+				'nonce'    => wp_create_nonce( 'occidg_bulk_edit' ),
 			)
 		);
 		?>
@@ -74,36 +58,16 @@ class Occidg_Bulk_Edit {
 			<h2><?php esc_html_e( 'Bulk Edit Image Metadata', 'occidg' ); ?></h2>
 			
 			<div class="usage-info-section">
-				<h2><?php esc_html_e( 'Your Usage', 'occidg' ); ?></h2>
-				<div id="usage_status" class="usage-summary">
-					<?php if ( $is_valid_license ) : ?>
-						<strong id="usage_count"><?php esc_html_e( 'Loading usage data...', 'occidg' ); ?></strong>
-						<div class="progress">
-							<div 
-								id="usage_progress" 
-								class="progress-bar bg-success" 
-								role="progressbar" 
-								aria-valuenow="0" 
-								aria-valuemin="0" 
-								aria-valuemax="100" 
-								style="width: 0%;"
-							>
-								0%
-							</div>
-						</div>
-					<?php else : ?>
-						<?php echo wp_kses_post( $license_cta_html ); ?>
-					<?php endif; ?>
-				</div>
+				<?php echo wp_kses_post( $provider_help_html ); ?>
 
 				<div class="bulk-edit-header">
-					<button id="generate-all-metadata" class="button button-primary button-hero" <?php echo $is_valid_license ? '' : 'disabled'; ?>>
+					<button id="generate-all-metadata" class="button button-primary button-hero">
 						<?php esc_html_e( 'Generate All Metadata', 'occidg' ); ?>
 					</button>
 					<button id="stop-bulk-generation" class="button button-secondary" style="display:none;">
 						<?php esc_html_e( 'Stop Generation', 'occidg' ); ?>
 					</button>
-					<p class="description"><?php esc_html_e( 'Click to generate metadata for all your images.', 'occidg' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Click to generate metadata for all your images using your configured provider.', 'occidg' ); ?></p>
 				</div>
 
 				<div id="bulk-generate-status" class="bulk-generate-status" style="display: none;">

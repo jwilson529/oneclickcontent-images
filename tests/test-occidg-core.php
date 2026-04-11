@@ -61,6 +61,9 @@ final class Test_Occidg_Core extends TestCase {
 		$this->assertContains( 'plugins_loaded', $action_hooks );
 		$this->assertContains( 'admin_menu', $action_hooks );
 		$this->assertContains( 'wp_enqueue_scripts', $action_hooks );
+		$this->assertNotContains( 'wp_ajax_occidg_validate_license', $action_hooks );
+		$this->assertNotContains( 'wp_ajax_occidg_get_license_status', $action_hooks );
+		$this->assertNotContains( 'wp_ajax_occidg_check_usage', $action_hooks );
 		$this->assertContains( 'attachment_fields_to_edit', $filter_hooks );
 		$this->assertContains( 'wp_generate_attachment_metadata', $filter_hooks );
 	}

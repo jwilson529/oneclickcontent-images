@@ -72,7 +72,6 @@ class Occidg {
 		require_once plugin_dir_path( __DIR__ ) . 'admin/class-occidg-admin.php';
 		require_once plugin_dir_path( __DIR__ ) . 'admin/class-occidg-admin-settings.php';
 		require_once plugin_dir_path( __DIR__ ) . 'admin/class-occidg-auto-generate.php';
-		require_once plugin_dir_path( __DIR__ ) . 'admin/class-occidg-license-update.php';
 		require_once plugin_dir_path( __DIR__ ) . 'admin/class-occidg-bulk-edit.php';
 		require_once plugin_dir_path( __DIR__ ) . 'public/class-occidg-public.php';
 
@@ -88,10 +87,6 @@ class Occidg {
 		$plugin_admin_settings = new Occidg_Admin_Settings();
 		$plugin_auto_generate  = new Occidg_Auto_Generate();
 		$plugin_bulk_edit      = new Occidg_Bulk_Edit();
-		$plugin_license_update = new Occidg_License_Update(
-			'https://oneclickcontent.com/wp-json/oneclick/v1/auth/validate-license',
-			'occidg'
-		);
 		$plugin_admin          = new Occidg_Admin(
 			$this->get_occidg_images(),
 			$this->get_version(),
@@ -125,10 +120,6 @@ class Occidg {
 		$this->loader->add_action( 'plugins_loaded', $plugin_admin, 'occidg_register_custom_image_size' );
 		$this->loader->add_filter( 'image_size_names_choose', $plugin_admin, 'occidg_add_custom_image_sizes' );
 		$this->loader->add_action( 'wp_ajax_get_thumbnail', $plugin_admin, 'get_thumbnail' );
-
-		$this->loader->add_action( 'wp_ajax_occidg_validate_license', $plugin_license_update, 'ajax_validate_license' );
-		$this->loader->add_action( 'wp_ajax_occidg_get_license_status', $plugin_license_update, 'ajax_get_license_status' );
-		$this->loader->add_action( 'wp_ajax_occidg_check_usage', $plugin_license_update, 'occidg_ajax_check_usage' );
 
 		$this->loader->add_action( 'wp_ajax_occidg_get_image_metadata', $plugin_bulk_edit, 'get_image_metadata' );
 		$this->loader->add_action( 'wp_ajax_occidg_save_bulk_metadata', $plugin_bulk_edit, 'save_bulk_metadata' );

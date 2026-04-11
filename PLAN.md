@@ -41,6 +41,7 @@ Convert the plugin into a free bring-your-own-key image metadata plugin that no 
 - Add or normalize settings for provider selection.
 - Add local settings for OpenAI API key and Gemini API key.
 - Move generation logic away from OneClickContent endpoints toward provider-specific request handling.
+- Preserve the discovered metadata output contract by normalizing provider responses to the same shape: `title`, `description`, `alt_text`, and `caption`.
 - Make provider errors understandable in the admin UI.
 
 ### 3. UX cleanup

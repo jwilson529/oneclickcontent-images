@@ -136,7 +136,7 @@ class Occidg_Logger {
 	 */
 	private function format_entry( $level, $message, $context ) {
 		$entry = sprintf(
-			"[%s] [%s] %s",
+			'[%s] [%s] %s',
 			gmdate( 'c' ),
 			strtoupper( (string) $level ),
 			(string) $message
@@ -160,6 +160,7 @@ class Occidg_Logger {
 			return (string) wp_json_encode( $context );
 		}
 
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_encode -- Test/runtime fallback when wp_json_encode() is unavailable.
 		return (string) json_encode( $context );
 	}
 }

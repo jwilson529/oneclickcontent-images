@@ -1,1 +1,0 @@
-PHPCS not installed. Install Composer dev dependencies or make phpcs available in PATH.

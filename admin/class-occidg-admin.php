@@ -64,9 +64,9 @@ class Occidg_Admin {
 	 * Initializes the plugin name and version.
 	 *
 	 * @since 1.0.0
-	 * @param string                 $plugin_name    The name of the plugin.
-	 * @param string                 $version        The version of this plugin.
-	 * @param Occidg_Bulk_Edit|null  $bulk_edit      Optional bulk edit controller.
+	 * @param string                     $plugin_name    The name of the plugin.
+	 * @param string                     $version        The version of this plugin.
+	 * @param Occidg_Bulk_Edit|null      $bulk_edit      Optional bulk edit controller.
 	 * @param Occidg_Admin_Settings|null $admin_settings Optional settings controller.
 	 */
 	public function __construct( $plugin_name, $version, $bulk_edit = null, $admin_settings = null ) {
@@ -102,7 +102,6 @@ class Occidg_Admin {
 	 */
 	public function render_admin_page() {
 		$tab            = $this->get_active_tab();
-		$license_status = get_option( 'occidg_license_status', 'unknown' );
 		$first_time_key = 'occidg_first_time';
 		$is_first_time  = get_option( $first_time_key, true );
 		$tab_nonce      = wp_create_nonce( 'oneclickcontent_tab_switch' );
@@ -121,39 +120,18 @@ class Occidg_Admin {
 			<?php if ( 'settings' === $tab ) : ?>
 				<!-- All settings output is encapsulated within #occidg_images -->
 				<div id="occidg_images" class="wrap">
-					<?php if ( 'active' === $license_status ) : ?>
-						<!-- License Active: Display usage info -->
-						<div class="usage-info-section">
-							<h2><?php esc_html_e( 'Your Usage', 'occidg' ); ?></h2>
-							<div id="usage_status" class="usage-summary">
-								<strong id="usage_count"><?php esc_html_e( 'Loading usage data...', 'occidg' ); ?></strong>
-								<div class="progress">
-									<div id="usage_progress" class="progress-bar bg-success"
-										role="progressbar"
-										aria-valuenow="0"
-										aria-valuemin="0"
-										aria-valuemax="100"
-										style="width: 0%;">
-										0%
-									</div>
-								</div>
-							</div>
+					<div class="bulk-edit-license-warning compact">
+						<div class="cta-left">
+							<img src="<?php echo esc_url( plugin_dir_url( __FILE__ ) . 'assets/icon.png' ); ?>" alt="<?php esc_attr_e( 'Plugin icon', 'occidg' ); ?>" style="float: left; margin-right: 10px; width: 50px; height: auto;">
+							<h2><?php esc_html_e( 'Bring your own AI provider', 'occidg' ); ?></h2>
+							<p><?php esc_html_e( 'Configure OpenAI or Gemini, choose which metadata fields to fill, and generate title, description, alt text, and caption directly from your own account.', 'occidg' ); ?></p>
+							<ul class="benefits-list">
+								<li><?php esc_html_e( 'Use your own API key', 'occidg' ); ?></li>
+								<li><?php esc_html_e( 'Keep metadata generation focused on your Media Library', 'occidg' ); ?></li>
+								<li><?php esc_html_e( 'Control which fields get updated', 'occidg' ); ?></li>
+							</ul>
 						</div>
-					<?php else : ?>
-						<!-- License Inactive: Display license warning -->
-						<div class="bulk-edit-license-warning compact">
-							<div class="cta-left">
-								<img src="<?php echo esc_url( plugin_dir_url( __FILE__ ) . 'assets/icon.png' ); ?>" alt="<?php esc_attr_e( 'OneClickContent icon', 'occidg' ); ?>" style="float: left; margin-right: 10px; width: 50px; height: auto;">
-								<h2><?php esc_html_e( 'Never Forget an Alt Tag Again!', 'occidg' ); ?></h2>
-								<p><?php esc_html_e( 'Upgrade now to automatically generate metadata for your images. Save time and boost your site’s SEO, accessibility, and image searchability.', 'occidg' ); ?></p>
-								<ul class="benefits-list">
-									<li><?php esc_html_e( 'Save time with automated metadata generation', 'occidg' ); ?></li>
-									<li><?php esc_html_e( 'Ensure every image has a descriptive alt tag', 'occidg' ); ?></li>
-									<li><?php esc_html_e( 'Improve SEO, ADA compliance, and user experience', 'occidg' ); ?></li>
-								</ul>
-							</div>
-						</div>
-					<?php endif; ?>
+					</div>
 
 					<!-- Bulk generation options (shown regardless of license status) -->
 					<div class="bulk-edit-header">
@@ -164,7 +142,7 @@ class Occidg_Admin {
 							<?php esc_html_e( 'Stop Generation', 'occidg' ); ?>
 						</button>
 						<p class="description">
-							<?php esc_html_e( 'Click to generate metadata for all your images. Free trial users get 10 generations!', 'occidg' ); ?>
+							<?php esc_html_e( 'Click to generate metadata for all your images using your configured provider.', 'occidg' ); ?>
 						</p>
 					</div>
 					<div id="bulk-generate-status-settings" class="bulk-generate-status" style="display: none;">
@@ -220,16 +198,12 @@ class Occidg_Admin {
 					</div>
 					<p><?php esc_html_e( 'This plugin helps you effortlessly manage image metadata — including alt text, titles, captions, and descriptions — so your site looks great, loads better, and ranks higher.', 'occidg' ); ?></p>
 					<p>
-						<strong><?php esc_html_e( 'No license? No problem.', 'occidg' ); ?></strong><br>
-						<?php esc_html_e( 'You can still use the Bulk Edit tab to search and edit all your images in a beautiful, lightning-fast table. It’s perfect for cleanup, audits, or just staying on top of things.', 'occidg' ); ?>
+						<strong><?php esc_html_e( 'Use your own provider.', 'occidg' ); ?></strong><br>
+						<?php esc_html_e( 'Add an OpenAI or Gemini API key in Settings, then use AI generation wherever you need it.', 'occidg' ); ?>
 					</p>
 					<p>
-						<strong><?php esc_html_e( 'Free Trial Included!', 'occidg' ); ?></strong><br>
-						<?php esc_html_e( 'Try it out right now with 10 free image detail generations — no license required. You can test the full automation experience risk-free.', 'occidg' ); ?>
-					</p>
-					<p>
-						<strong><?php esc_html_e( 'Want to save even more time?', 'occidg' ); ?></strong><br>
-						<?php esc_html_e( 'With a license, the plugin automatically generates metadata for every new image you upload — no more manual editing. Set it once and forget it.', 'occidg' ); ?>
+						<strong><?php esc_html_e( 'Bulk Edit stays useful too.', 'occidg' ); ?></strong><br>
+						<?php esc_html_e( 'You can still review, clean up, and edit all image metadata in one fast table whenever you want.', 'occidg' ); ?>
 					</p>
 					<p><?php esc_html_e( 'Here’s how to get started:', 'occidg' ); ?></p>
 					<ol>
@@ -243,7 +217,7 @@ class Occidg_Admin {
 						</li>
 						<li>
 							<strong><?php esc_html_e( 'Automatic Generation:', 'occidg' ); ?></strong>
-							<?php esc_html_e( 'Activate a license to generate metadata for every new image as it’s uploaded — no clicks needed.', 'occidg' ); ?>
+							<?php esc_html_e( 'Turn on auto-generation to create metadata for new uploads using your selected provider.', 'occidg' ); ?>
 						</li>
 					</ol>
 					<p>
@@ -251,9 +225,6 @@ class Occidg_Admin {
 						<?php esc_html_e( 'Give your media library the attention it deserves — for better SEO, accessibility, and user experience.', 'occidg' ); ?>
 					</p>
 					<div class="modal-buttons" style="margin-top: 20px; text-align: right;">
-						<a href="https://oneclickcontent.com/image-detail-generator/" target="_blank" rel="noopener noreferrer" class="button button-secondary">
-							<?php esc_html_e( 'Upgrade to Pro', 'occidg' ); ?>
-						</a>
 						<button id="close-first-time-modal" class="button button-primary">
 							<?php esc_html_e( 'Let’s Get Started', 'occidg' ); ?>
 						</button>
@@ -321,28 +292,20 @@ class Occidg_Admin {
 			$this->version,
 			true
 		);
-		wp_enqueue_script(
-			"{$this->plugin_name}-error-check",
-			plugin_dir_url( __FILE__ ) . 'js/one-click-error-check.js',
-			array( 'jquery' ),
-			$this->version,
-			true
-		);
 		wp_enqueue_media();
 
-		// Localize with cached usage.
-		$usage = $this->get_usage_data();
 		wp_localize_script(
 			$this->plugin_name,
 			'occidg_admin_vars',
 			array(
-				'ajax_url'          => admin_url( 'admin-ajax.php' ),
-				'occidg_ajax_nonce' => wp_create_nonce( 'occidg_ajax_nonce' ),
+				'ajax_url'                 => admin_url( 'admin-ajax.php' ),
+				'occidg_ajax_nonce'        => wp_create_nonce( 'occidg_ajax_nonce' ),
 				'dismiss_first_time_nonce' => wp_create_nonce( 'occidg_dismiss_first_time' ),
-				'is_trial'          => empty( get_option( 'occidg_license_key' ) ),
-				'trial_expired'     => get_option( 'occidg_trial_expired', false ),
-				'usage'             => $usage,
-				'settings_url'      => admin_url( 'admin.php?page=occidg' ),
+				'provider'                 => get_option( 'occidg_provider', 'openai' ),
+				'has_openai_key'           => ! empty( get_option( 'occidg_openai_api_key', '' ) ),
+				'has_gemini_key'           => ! empty( get_option( 'occidg_gemini_api_key', '' ) ),
+				'fallback_image_url'       => plugin_dir_url( __FILE__ ) . 'assets/icon.png',
+				'settings_url'             => admin_url( 'admin.php?page=occidg' ),
 			)
 		);
 
@@ -443,80 +406,19 @@ class Occidg_Admin {
 	}
 
 	/**
-	 * Retrieve and cache license usage data.
-	 *
-	 * Hits the remote endpoint at most once per hour and falls back to trial data.
+	 * Retrieve placeholder usage data for the BYO-key version.
 	 *
 	 * @since 1.0.0
 	 * @return array Usage metrics.
 	 */
 	protected function get_usage_data() {
-		$cache_key = 'occidg_usage_data';
-		$data      = get_transient( $cache_key );
-
-		if ( false !== $data ) {
-			return $data;
-		}
-
-		$trial_usage = (int) get_option( 'occidg_trial_usage', 0 );
-		$data        = array(
-			'success'         => false,
-			'used_count'      => $trial_usage,
-			'usage_limit'     => 10,
+		return array(
+			'success'         => true,
+			'used_count'      => 0,
+			'usage_limit'     => 0,
 			'addon_count'     => 0,
-			'remaining_count' => max( 10 - $trial_usage, 0 ),
+			'remaining_count' => 0,
 		);
-
-		$license_key = get_option( 'occidg_license_key', '' );
-		if ( $license_key ) {
-			$usage_endpoint = 'https://oneclickcontent.com/wp-json/subscriber/v1/check-usage';
-			$response = wp_remote_post(
-				$usage_endpoint,
-				array(
-					'body'    => wp_json_encode(
-						array(
-							'license_key'  => $license_key,
-							'origin_url'   => home_url(),
-							'product_slug' => 'occidg',
-						)
-					),
-					'headers' => array( 'Content-Type' => 'application/json' ),
-					'timeout' => 5,
-				)
-			);
-
-			if ( is_wp_error( $response ) ) {
-				Occidg_Logger::warning(
-					'Usage request failed while priming the admin usage cache.',
-					array(
-						'message' => $response->get_error_message(),
-					)
-				);
-			} else {
-				$body = json_decode( wp_remote_retrieve_body( $response ), true );
-				if ( ! is_array( $body ) ) {
-					$body = array();
-				}
-
-				if ( ! empty( $body['success'] ) ) {
-					$data = array(
-						'success'         => true,
-						'used_count'      => isset( $body['used_count'] ) ? (int) $body['used_count'] : $data['used_count'],
-						'usage_limit'     => isset( $body['usage_limit'] ) ? (int) $body['usage_limit'] : $data['usage_limit'],
-						'addon_count'     => isset( $body['addon_count'] ) ? (int) $body['addon_count'] : 0,
-						'remaining_count' => isset( $body['remaining_count'] ) ? (int) $body['remaining_count'] : $data['remaining_count'],
-					);
-
-					if ( get_option( 'occidg_trial_expired', false ) ) {
-						update_option( 'occidg_trial_expired', false );
-					}
-				}
-			}
-		}
-
-		set_transient( $cache_key, $data, HOUR_IN_SECONDS );
-
-		return $data;
 	}
 
 

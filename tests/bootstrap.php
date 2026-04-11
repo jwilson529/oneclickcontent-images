@@ -232,6 +232,18 @@ if ( ! function_exists( 'sanitize_text_field' ) ) {
 	}
 }
 
+if ( ! function_exists( 'sanitize_textarea_field' ) ) {
+	/**
+	 * Test double for sanitize_textarea_field().
+	 *
+	 * @param mixed $value Value to sanitize.
+	 * @return string
+	 */
+	function sanitize_textarea_field( $value ) {
+		return is_scalar( $value ) ? trim( (string) $value ) : '';
+	}
+}
+
 if ( ! function_exists( 'esc_url_raw' ) ) {
 	/**
 	 * Test double for esc_url_raw().
@@ -281,15 +293,15 @@ if ( ! function_exists( 'get_option' ) ) {
 	 * Test double for get_option().
 	 *
 	 * @param string $option  Option name.
-	 * @param mixed  $default Default value.
+	 * @param mixed  $default_value Default value.
 	 * @return mixed
 	 */
-	function get_option( $option, $default = false ) {
+	function get_option( $option, $default_value = false ) {
 		if ( isset( $GLOBALS['occidg_options'][ $option ] ) ) {
 			return $GLOBALS['occidg_options'][ $option ];
 		}
 
-		return $default;
+		return $default_value;
 	}
 }
 

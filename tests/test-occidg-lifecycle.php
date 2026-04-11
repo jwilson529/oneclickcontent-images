@@ -58,7 +58,7 @@ final class Test_Occidg_Lifecycle extends TestCase {
 		$log_file = tempnam( sys_get_temp_dir(), 'occidg-deactivate-' );
 
 		$GLOBALS['occidg_options'] = array(
-			'occidg_first_time'   => true,
+			'occidg_first_time'    => true,
 			'occidg_trial_expired' => true,
 		);
 

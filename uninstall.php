@@ -29,14 +29,16 @@ defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
 $occidg_options = array(
 	'occidg_activation_redirect',
-	'occidg_ai_model',
 	'occidg_auto_add_details',
 	'occidg_first_time',
+	'occidg_gemini_api_key',
+	'occidg_gemini_model',
 	'occidg_language',
-	'occidg_license_key',
-	'occidg_license_status',
 	'occidg_metadata_fields',
+	'occidg_openai_api_key',
+	'occidg_openai_model',
 	'occidg_override_metadata',
+	'occidg_provider',
 	'occidg_trial_expired',
 	'occidg_trial_usage',
 );
@@ -46,7 +48,6 @@ foreach ( $occidg_options as $occidg_option ) {
 }
 
 delete_transient( 'occidg_image_error' );
-delete_transient( 'occidg_trial_salt' );
 delete_transient( 'occidg_usage_data' );
 
 $occidg_log_file = plugin_dir_path( __FILE__ ) . 'plugin-error.log';

@@ -7,11 +7,11 @@
  *
  * @package    One_Click_Images
  * @subpackage One_Click_Images/admin
- * @author     OneClickContent <support@oneclickcontent.com>
+ * @author     James Wilson
  * @since      1.0.0
  * @copyright  2025 OneClickContent
  * @license    GPL-2.0+
- * @link       https://oneclickcontent.com
+ * @link       https://github.com/jwilson529/oneclickcontent-images
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -120,7 +120,7 @@ class Occidg_Admin {
 			<?php if ( 'settings' === $tab ) : ?>
 				<!-- All settings output is encapsulated within #occidg_images -->
 				<div id="occidg_images" class="wrap">
-					<div class="bulk-edit-license-warning compact">
+					<div class="bulk-edit-provider-help compact">
 						<div class="cta-left">
 							<img src="<?php echo esc_url( plugin_dir_url( __FILE__ ) . 'assets/icon.png' ); ?>" alt="<?php esc_attr_e( 'Plugin icon', 'occidg' ); ?>" style="float: left; margin-right: 10px; width: 50px; height: auto;">
 							<h2><?php esc_html_e( 'Bring your own AI provider', 'occidg' ); ?></h2>

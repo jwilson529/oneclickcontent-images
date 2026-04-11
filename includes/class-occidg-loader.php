@@ -12,7 +12,7 @@
  * @since      1.0.0
  * @copyright  2025 OneClickContent
  * @license    GPL-2.0+
- * @link       https://oneclickcontent.com
+ * @link       https://github.com/jwilson529/oneclickcontent-images
  */
 
 /**

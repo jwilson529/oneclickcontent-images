@@ -6,11 +6,11 @@
  *
  * @package    One_Click_Images
  * @subpackage One_Click_Images/admin
- * @author     OneClickContent <support@oneclickcontent.com>
+ * @author     James Wilson
  * @since      1.0.0
  * @copyright  2025 OneClickContent
  * @license    GPL-2.0+
- * @link       https://oneclickcontent.com
+ * @link       https://github.com/jwilson529/oneclickcontent-images
  */
 
 defined( 'ABSPATH' ) || exit;

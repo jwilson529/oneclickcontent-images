@@ -2,7 +2,7 @@
 /**
  * Fired during plugin deactivation
  *
- * @link       https://oneclickcontent.com
+ * @link       https://github.com/jwilson529/oneclickcontent-images
  * @since      1.0.0
  *
  * @package    Occidg

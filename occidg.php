@@ -7,7 +7,7 @@
  * registers the activation and deactivation functions, and defines a function
  * that starts the plugin.
  *
- * @link       https://oneclickcontent.com
+ * @link       https://github.com/jwilson529/oneclickcontent-images
  * @since      1.0.0
  *
  * @package    Occidg
@@ -16,11 +16,11 @@
 
 /**
  * Plugin Name:       OneClickContent - Image Detail Generator
- * Plugin URI:        https://oneclickcontent.com
- * Description:       Boost images with OneClickContent AI: auto titles, descs, captions & alt text!
+ * Plugin URI:        https://github.com/jwilson529/oneclickcontent-images
+ * Description:       Generate AI-powered titles, descriptions, captions, and alt text for Media Library images using your own API key.
  * Version:           1.1.15
  * Author:            James Wilson
- * Author URI:        https://oneclickcontent.com/
+ * Author URI:        https://github.com/jwilson529
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       occidg
@@ -40,7 +40,6 @@ defined( 'ABSPATH' ) || exit;
  */
 define( 'OCCIDG_VERSION', '1.1.15' );
 define( 'OCCIDG_PRODUCT_SLUG', 'oneclickcontent-image-meta-generator' );
-define( 'OCCIDG_HMAC_SALT', 'default-salt' );
 define( 'OCCIDG_PLUGIN_FILE', __FILE__ );
 define( 'OCCIDG_LOG_FILE', plugin_dir_path( __FILE__ ) . 'plugin-error.log' );
 

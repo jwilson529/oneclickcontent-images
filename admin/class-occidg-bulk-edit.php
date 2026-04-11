@@ -6,11 +6,11 @@
  *
  * @package    One_Click_Images
  * @subpackage One_Click_Images/admin
- * @author     OneClickContent <support@oneclickcontent.com>
+ * @author     James Wilson
  * @since      1.0.0
  * @copyright  2025 OneClickContent
  * @license    GPL-2.0+
- * @link       https://oneclickcontent.com
+ * @link       https://github.com/jwilson529/oneclickcontent-images
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -32,14 +32,14 @@ class Occidg_Bulk_Edit {
 	 */
 	public function render_bulk_edit_tab() {
 		$fallback_image_url = plugin_dir_url( __FILE__ ) . 'assets/icon.png';
-		$provider_help_html = '<div class="bulk-edit-license-warning compact">
+		$provider_help_html = '<div class="bulk-edit-provider-help compact">
 	        <div class="cta-left">
 	            <img src="' . esc_url( $fallback_image_url ) . '" alt="' . esc_attr__( 'Plugin icon', 'occidg' ) . '" style="float: left; margin-right: 10px; width: 50px; height: auto;">
 	            <h2>' . esc_html__( 'Bulk-generate metadata with your own AI key', 'occidg' ) . '</h2>
 	            <p>' . esc_html__( 'Set up OpenAI or Gemini in Settings, then generate image title, description, alt text, and caption across your Media Library.', 'occidg' ) . '</p>
 	            <ul class="benefits-list">
 	                <li>' . esc_html__( 'Use your own provider credentials', 'occidg' ) . '</li>
-	                <li>' . esc_html__( 'Generate metadata in bulk without license gates', 'occidg' ) . '</li>
+	                <li>' . esc_html__( 'Generate metadata in bulk without hosted-service gates', 'occidg' ) . '</li>
 	                <li>' . esc_html__( 'Review and edit results in one place', 'occidg' ) . '</li>
 	            </ul>
 	        </div>

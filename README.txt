@@ -1,6 +1,5 @@
 === OneClickContent - Image Detail Generator ===
 Contributors: jwilson529
-Donate link: https://oneclickcontent.com/donate
 Tags: images, seo, alt text, OpenAI, Gemini, AI, accessibility, WordPress plugins
 Requires at least: 5.0
 Tested up to: 6.8

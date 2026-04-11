@@ -8,9 +8,9 @@
  *
  * @package    Occidg
  * @subpackage Occidg/includes
- * @author     James Wilson <james@oneclickcontent.com>
+ * @author     James Wilson
  * @since      1.0.0
- * @copyright  2025 OneClickContent
+ * @copyright  2025 James Wilson
  * @license    GPL-2.0+
  * @link       https://github.com/jwilson529/oneclickcontent-images
  */

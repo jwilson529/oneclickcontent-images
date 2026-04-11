@@ -19,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
  * @since      1.0.0
  * @package    Occidg
  * @subpackage Occidg/includes
- * @author     James Wilson <james@oneclickcontent.com>
+ * @author     James Wilson
  */
 class Occidg_Activator {
 

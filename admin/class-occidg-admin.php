@@ -133,7 +133,7 @@ class Occidg_Admin {
 						</div>
 					</div>
 
-					<!-- Bulk generation options (shown regardless of license status) -->
+					<!-- Bulk generation options -->
 					<div class="bulk-edit-header">
 						<button id="generate-all-metadata-settings" class="button button-primary button-hero">
 							<?php esc_html_e( 'Generate All Metadata', 'occidg' ); ?>

@@ -152,11 +152,6 @@ class Occidg_Admin {
 									<li><?php esc_html_e( 'Improve SEO, ADA compliance, and user experience', 'occidg' ); ?></li>
 								</ul>
 							</div>
-							<div class="cta-right">
-								<a href="https://oneclickcontent.com/image-detail-generator/" target="_blank" rel="noopener noreferrer" class="btn-license">
-									<?php esc_html_e( 'Activate License Now', 'occidg' ); ?>
-								</a>
-							</div>
 						</div>
 					<?php endif; ?>
 

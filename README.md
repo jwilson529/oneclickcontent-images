@@ -83,6 +83,34 @@ The plugin includes configurable language support for the existing language opti
 3. Bulk Edit mode for existing images
 4. Generated metadata preview and editing flow
 
+## Current Migration Status
+
+The plugin is actively being migrated away from the old OneClickContent hosted-service model.
+
+Completed so far:
+- BYO provider settings for OpenAI and Gemini
+- direct provider request handling with normalized metadata output
+- removal of core license, trial, credits, and upsell UI flows
+- bulk and single-image flows updated toward provider-based generation
+
+Still in progress:
+- deeper provider response hardening and edge-case handling
+- final browser-level admin verification on the local site
+- PHPUnit rerun once the local PHP CLI has `mbstring` enabled
+
+## Handoff Notes
+
+If you resume work in a new session, start here:
+- tracked repo: `/home/jameswilson/.openclaw/workspace/projects/oneclickcontent/repos/oneclickcontent-images`
+- local deployed plugin copy: `/home/jameswilson/sites/siteground/oneclickcontent-com/code/wp-content/plugins/occidg`
+- legacy hosted-service inventory: `/home/jameswilson/.openclaw/workspace/projects/oneclickcontent/inventory/occidg-azure-proxy-inventory.md`
+
+Important:
+- OCCIDG is the metadata plugin for existing Media Library images. Keep it separate from the image-generation plugin.
+- The local deployed copy is separate from the tracked repo copy.
+- A partial manual sync caused a fatal local site error because `includes/class-occidg-i18n.php` and the `public/` directory were missed.
+- For future deploy-sync steps, prefer a full-plugin sync or an explicit runtime-file checklist instead of copying only a few changed files.
+
 ## Developers
 
 - Source code: [GitHub Repository](https://github.com/jwilson529/oneclickcontent-images)

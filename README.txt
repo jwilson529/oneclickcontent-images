@@ -129,7 +129,26 @@ The plugin supports the language options currently provided in the admin setting
 3. **Bulk Edit Mode:** Bulk generate metadata across multiple images.
 4. **Generated Image Details:** Preview and edit AI-generated titles, captions, alt texts, and descriptions.
 
+== Development Notes ==
+
+This plugin is in the middle of a product migration from the old hosted OneClickContent model to a free bring-your-own-key metadata workflow.
+
+Current implementation status:
+- OpenAI and Gemini provider settings are in place.
+- Metadata generation is being normalized to the stable `title`, `description`, `alt_text`, and `caption` contract.
+- Old license, trial, credits, and upsell flows have been removed from the main admin experience.
+
+Important handoff notes for future development:
+- Tracked repo copy and deployed local plugin copy are separate.
+- Local deployed path: `/home/jameswilson/sites/siteground/oneclickcontent-com/code/wp-content/plugins/occidg`
+- A partial manual sync previously caused a fatal error because required runtime files were skipped.
+- Prefer full-plugin syncs, or use an explicit runtime-file checklist before testing the local site.
+
 == Changelog ==
+
+= Unreleased =
+* Documented the active BYO-key migration status and local deploy-sync handoff notes.
+* Noted the safe sync requirement after a partial local plugin copy caused a fatal bootstrap error.
 
 = 1.1.15 =
 * Update to media library API calls

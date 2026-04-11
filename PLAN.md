@@ -29,6 +29,7 @@ Convert the plugin into a free bring-your-own-key image metadata plugin that no 
 ## Questions (non-blocking)
 - Confirm the preferred provider order and fallback logic once the first BYO key pass is in place. For now, implement explicit OpenAI and Gemini settings without automatic fallback.
 - Decide later whether model selection should be global, provider-specific, or both. For now, provider-specific settings are acceptable.
+- Decide whether to add a scripted repo-to-local deploy command so future sessions do not rely on manual selective file copies.
 
 ## Workstreams
 
@@ -94,6 +95,19 @@ Convert the plugin into a free bring-your-own-key image metadata plugin that no 
 5. Replace hosted generation and usage endpoints with provider-specific request handling.
 6. Update tests, smoke checks, docs, and repo memory to match the new product contract.
 7. Run `npm run fix`, `npm run check`, and relevant tests where tooling exists, then continue iterating until the repo is stable.
+
+## Current handoff status
+- Repo cleanup pass removed the remaining obvious hosted-service, sales, support, and upsell remnants from runtime files and readmes.
+- Latest cleanup commit before this handoff: `2ec2d65` (`Remove final OCCIDG upsell remnants`).
+- The local site fatal that followed was caused by a bad partial deploy sync, not by the BYO-provider runtime logic itself.
+- Missing local runtime files were restored: `includes/class-occidg-i18n.php` and the `public/` directory.
+- Local site recovered to HTTP 200 after those files were restored.
+
+## Next recommended steps
+1. Add a safer full-plugin sync workflow from repo to local deployed copy.
+2. Browser-test the local OCCIDG admin screens to confirm the remaining UX is clean.
+3. Harden provider error handling and malformed-response recovery in `admin/class-occidg-admin-settings.php`.
+4. Re-run PHPUnit once PHP CLI `mbstring` is available.
 
 ## Commands to run
 - npm run fix

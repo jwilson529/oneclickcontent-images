@@ -29,6 +29,7 @@ This file captures reusable lessons from building WordPress plugins in this repo
 ## Packaging and Distribution
 - Exclude `tests/`, local runner artifacts, logs, and tool config files from distributable zips so production installs only receive runtime plugin assets.
 - Keep release packaging rules explicit in the build script even if `.gitignore` also filters local noise.
+- When syncing this repo into a separate local WordPress plugin copy, do not rely on selective one-off file copies unless you verify every required runtime path. Missing bootstrap files like `includes/class-occidg-i18n.php` or a whole runtime directory like `public/` can fatal the site even when repo lint and syntax checks pass.
 
 ## Plugin Architecture Expectations
 - Use a loader class to register actions and filters.
@@ -38,6 +39,7 @@ This file captures reusable lessons from building WordPress plugins in this repo
 - Make internationalization explicit with a text domain and `load_plugin_textdomain` in the main bootstrap.
 - Provide a logger early and make it configurable via a constant or filter so tests can redirect logs to a temp file.
 - For OCCIDG specifically, treat provider abstractions as first-class architecture and treat old license or hosted-service layers as removable migration debt.
+- For OCCIDG local deployment work, treat the tracked repo and the deployed local site copy as separate artifacts that need disciplined sync steps.
 
 ## Caching and Performance
 - Use object cache + transients with a cache-buster option for invalidation.

@@ -80,3 +80,9 @@ Append a brief recap after each run:
 - Notable changes: Updated `SPEC.md` and `PLAN.md` to define OCCIDG as a free bring-your-own-key metadata plugin, kept it separate from the image-generation plugin, and explicitly marked license, trial, credits, and hosted OneClickContent service logic as migration targets.
 - Tool results: Documentation-only contract pass; code migration work remains ahead.
 - Remaining gaps: The actual PHP, JS, settings, and generation flows still contain hosted-service and licensing logic that must be replaced in follow-up implementation passes.
+
+- Date: 2026-04-11
+- Summary: Started the first real BYO-provider migration slices and removed a large chunk of the old license/trial scaffolding from both the repo and the local deployed plugin copy.
+- Notable changes: Added provider settings for OpenAI and Gemini, rewired metadata generation toward direct provider calls while preserving the normalized `title` / `description` / `alt_text` / `caption` contract, removed the old license AJAX hooks and dead license updater/error-check files, simplified the admin and bulk-edit UI away from credits/trial messaging, updated readmes to describe the BYO-key product, improved provider error handling, and synced the current code pass into `/home/jameswilson/sites/siteground/oneclickcontent-com/code/wp-content/plugins/occidg`.
+- Tool results: `npm run fix` passed; `npm run check` passed with an empty `check.txt`; `php -l` passed on the changed PHP files in both the repo and the synced local plugin copy; `npm test` remains blocked because the local PHP CLI is missing `mbstring`; pushed commits `17b040c`, `4ef7c7e`, and `850eef2` to `origin/main`.
+- Remaining gaps: Provider request/response handling still needs deeper hardening, README/changelog/version polish remains, local site behavior still needs browser-level verification, and PHPUnit cannot run until `mbstring` is available.

@@ -49,12 +49,11 @@ class Occidg_Auto_Generate {
 			$occidg_admin = new Occidg_Admin_Settings();
 			$result       = $occidg_admin->occidg_generate_metadata( $attachment_id );
 
-			if ( isset( $result['error'] ) && false !== strpos( $result['error'], 'Usage limit reached' ) ) {
+			if ( isset( $result['error'] ) ) {
 				set_transient(
 					'occidg_image_error',
 					array(
-						'message' => sanitize_text_field( $result['message'] ),
-						'ad_url'  => esc_url_raw( $result['ad_url'] ),
+						'message' => sanitize_text_field( $result['error'] ),
 					),
 					5 * MINUTE_IN_SECONDS // 5 minutes.
 				);
@@ -67,7 +66,7 @@ class Occidg_Auto_Generate {
 	/**
 	 * Handle AJAX request to check for image upload API errors.
 	 *
-	 * Retrieves transient data about API errors, such as usage limit reached.
+	 * Retrieves transient data about provider or generation errors.
 	 *
 	 * @since 1.0.0
 	 * @return void Outputs JSON response with error data or an error message.

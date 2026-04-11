@@ -58,8 +58,7 @@ final class Test_Occidg_Lifecycle extends TestCase {
 		$log_file = tempnam( sys_get_temp_dir(), 'occidg-deactivate-' );
 
 		$GLOBALS['occidg_options'] = array(
-			'occidg_first_time'    => true,
-			'occidg_trial_expired' => true,
+			'occidg_first_time' => true,
 		);
 
 		add_filter(
@@ -72,7 +71,6 @@ final class Test_Occidg_Lifecycle extends TestCase {
 		Occidg_Deactivator::deactivate();
 
 		$this->assertFalse( get_option( 'occidg_first_time' ) );
-		$this->assertFalse( get_option( 'occidg_trial_expired' ) );
 		$this->assertStringContainsString( 'Plugin deactivated.', $this->read_file_contents( $log_file ) );
 	}
 

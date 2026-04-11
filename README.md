@@ -1,153 +1,93 @@
-# 📄 OneClickContent – Image Detail Generator
+# OneClickContent – Image Detail Generator
 
-**Generate SEO-optimized alt text, titles, captions, and descriptions for your WordPress images automatically.**  
-Save time, improve accessibility, and boost search rankings — with one click.
+Generate AI-powered alt text, titles, captions, and descriptions for existing WordPress Media Library images using your own OpenAI or Gemini API key.
 
 ![OneClickContent Banner](assets/banner-1544x500.png)
 
----
+## Overview
 
-## 🚀 Overview
+OneClickContent Image Detail Generator helps you enrich existing images in your Media Library with structured metadata.
 
-**OneClickContent – Image Detail Generator** automatically enhances your WordPress images with AI-powered metadata.
+Use it to generate:
+- alt text
+- image titles
+- captions
+- descriptions
 
-Boost your SEO, improve accessibility, and save hours of manual editing by generating **alt text**, **titles**, **captions**, and **descriptions** automatically — powered by **OpenAI’s GPT-4o-mini model**.
+The plugin is designed for image metadata generation only. It does not create images.
 
-**Perfect for:**  
-✅ Bloggers  
-✅ WooCommerce store owners  
-✅ SEO agencies  
-✅ Content creators  
-✅ WordPress developers
+## Key Benefits
 
----
+- Improve SEO for image search and page relevance
+- Improve accessibility with better alt text
+- Save time on repetitive metadata work
+- Use your own OpenAI or Gemini account
+- Bulk-generate metadata across your library
+- Choose which metadata fields should be updated
 
-## ✨ Key Benefits
+## Features
 
-- **SEO Optimization**: Boost your site's rankings in Google Search and Google Images.
-- **Accessibility Compliance**: Meet WCAG and ADA accessibility standards automatically.
-- **One-Click Simplicity**: Instantly generate metadata directly in your WordPress Media Library.
-- **Multilingual Support**: Create metadata in English, Spanish, French, German, Italian, Chinese, and Japanese.
-- **Bulk Editing**: Manage and optimize hundreds of images at once.
-- **No OpenAI API Key Required**: Everything handled securely through the OneClickContent service.
+- Bring-your-own-key support for OpenAI and Gemini
+- Single-image generation from the Media Library
+- Bulk generation for existing image attachments
+- Auto-generate on upload
+- Multilingual output based on plugin settings
+- Editable metadata after generation
 
----
+## Provider Model
 
-## ⚙️ Features
+This plugin sends image data directly to the provider you configure in WordPress:
+- OpenAI
+- Gemini
 
-- **Automatic Metadata Generation**: Titles, descriptions, alt texts, and captions.
-- **Auto-Add on Upload**: Automatically generate metadata for newly uploaded images.
-- **Bulk Edit Mode**: Generate details for multiple images at once.
-- **Multilingual Capabilities**: 7 languages available.
-- **Built-In Free Trial**: Process up to 5 images without a subscription.
-- **License-Based Unlimited Use**: Unlock unlimited generation with a OneClickContent license key.
+You are responsible for your own provider account, API key, and usage costs.
 
----
+## Installation
 
-## 🔒 Transparency
+1. Upload the `occidg` folder to `/wp-content/plugins/`
+2. Activate the plugin in WordPress
+3. Open **Image Metadata** in wp-admin
+4. Choose a provider
+5. Enter your OpenAI or Gemini API key
+6. Choose your preferred model and metadata settings
+7. Generate metadata from the Media Library or Bulk Edit tab
 
-To generate metadata, OneClickContent securely sends:
-- Image data (file or URL)
-- Website URL (for licensing and diagnostics)
-- License key (for usage validation)
+## FAQ
 
-Processing is done securely through OpenAI models via OneClickContent servers.  
-**You do not need your own OpenAI account or key.**
+### Does this plugin create images?
+No. This plugin generates metadata for images that already exist in the Media Library.
 
-- [Terms of Service](https://oneclickcontent.com/terms/)  
-- [Privacy Policy](https://oneclickcontent.com/privacy/)
+### Do I need my own API key?
+Yes. This is a bring-your-own-key plugin. Configure OpenAI or Gemini in plugin settings.
 
----
+### Which fields can it generate?
+The plugin can generate:
+- title
+- description
+- alt text
+- caption
 
-## 🧩 External Services
+### Can I control which fields are overwritten?
+Yes. Use the metadata field and override settings in the plugin configuration.
 
-- **Usage Verification API Endpoint**:  
-  `https://oneclickcontent.com/wp-json/subscriber/v1/check-usage`
+### Does it support bulk operations?
+Yes. You can bulk-generate metadata for existing Media Library images.
 
-- **OpenAI Processing**: Metadata generation is powered by OpenAI GPT models via the OneClickContent API.
+### What languages are supported?
+The plugin includes configurable language support for the existing language options in the plugin settings.
 
----
+## Screenshots
 
-## 📦 Installation
+1. Settings screen with provider configuration
+2. Media Library integration with one-click generation
+3. Bulk Edit mode for existing images
+4. Generated metadata preview and editing flow
 
-1. **Upload the Plugin**
-   - Upload the `occidg` folder to your `/wp-content/plugins/` directory.
+## Developers
 
-2. **Activate**
-   - Activate the plugin through your WordPress Plugins menu.
+- Source code: [GitHub Repository](https://github.com/jwilson529/oneclickcontent-images)
+- Built with DataTables v2.2.2
 
-3. **Configure Settings**
-   - Navigate to **Image Metadata** in the WordPress admin menu.
-   - Enter your OneClickContent license key.
-   - Select your preferred language.
-   - (Optional) Enable **Auto Add on Upload** to generate metadata automatically.
+## License
 
-4. **Generate Image Details**
-   - Go to the WordPress **Media Library**.
-   - Select an image and click **"Generate Details"**, or use the **Bulk Edit** tab for multiple images.
-
----
-
-## ❓ Frequently Asked Questions
-
-### Do I need an OpenAI API key?
-No. All AI integration is handled by the OneClickContent servers. You only need a license key from [oneclickcontent.com](https://oneclickcontent.com).
-
-### How does the free trial work?
-You can generate metadata for **5 images** for free — no credit card, no signup required.
-
-### Which AI model is used?
-The plugin currently uses **OpenAI’s GPT-4o-mini** model for detail generation.
-
-### Is my image data secure?
-Yes. Data is transmitted securely, processed by OpenAI, and never retained unnecessarily.
-
-### Can I edit the generated metadata?
-Absolutely. You can edit titles, alt texts, captions, and descriptions manually after generation.
-
-### Does it work with WooCommerce product images?
-Yes! It’s perfect for optimizing product SEO automatically.
-
-### What happens if I enable "Auto Add on Upload"?
-Newly uploaded images will automatically have metadata generated without manual action.
-
-### Which languages are supported?
-Currently supported:
-- English
-- Spanish
-- French
-- German
-- Italian
-- Chinese
-- Japanese
-
----
-
-## 🖼️ Screenshots
-
-1. **Settings Screen** – Configure license, language, and auto-add settings.
-2. **Media Library Integration** – Generate metadata in one click.
-3. **Bulk Edit Mode** – Manage multiple images at once.
-4. **Generated Details View** – Preview and edit generated content.
-5. **Language Selection Panel** – Choose metadata language easily.
-
-> _Screenshots are available in the `/assets/` folder if using GitHub._
-
----
-
-## 🛠️ Developers
-
-- Source code available: [GitHub Repository](https://github.com/jwilson529/oneclickcontent-images)
-- Built using:
-  - **DataTables v2.2.2** + **Buttons v3.2.2** ([Source](https://github.com/DataTables/DataTablesSrc/releases/tag/2.2.2))
-
----
-
-## 📜 License
-
-This plugin is licensed under the [GPLv2 or later](https://www.gnu.org/licenses/gpl-2.0.html).
-
----
-
-# 🎯 Short Summary
-> "**OneClickContent – Instantly generate SEO-optimized image alt text, titles, captions, and descriptions in WordPress using GPT-4o. Save hours. Boost SEO. Improve accessibility.**"
+GPLv2 or later

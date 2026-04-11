@@ -39,8 +39,6 @@ $occidg_options = array(
 	'occidg_openai_model',
 	'occidg_override_metadata',
 	'occidg_provider',
-	'occidg_trial_expired',
-	'occidg_trial_usage',
 );
 
 foreach ( $occidg_options as $occidg_option ) {
@@ -48,7 +46,6 @@ foreach ( $occidg_options as $occidg_option ) {
 }
 
 delete_transient( 'occidg_image_error' );
-delete_transient( 'occidg_usage_data' );
 
 $occidg_log_file = plugin_dir_path( __FILE__ ) . 'plugin-error.log';
 if ( function_exists( 'wp_delete_file' ) && file_exists( $occidg_log_file ) ) {

@@ -804,6 +804,8 @@ class Occidg_Admin_Settings {
 			);
 		}
 
+		$status_code = wp_remote_retrieve_response_code( $response );
+
 		$body = json_decode( wp_remote_retrieve_body( $response ), true );
 		if ( JSON_ERROR_NONE !== json_last_error() ) {
 			return array(
@@ -814,6 +816,18 @@ class Occidg_Admin_Settings {
 					ucfirst( $provider )
 				),
 				'details' => json_last_error_msg(),
+			);
+		}
+
+		if ( $status_code < 200 || $status_code >= 300 ) {
+			return array(
+				'success' => false,
+				'error'   => sprintf(
+					/* translators: %s: provider name */
+					__( '%s returned an error response.', 'occidg' ),
+					ucfirst( $provider )
+				),
+				'details' => $this->extract_provider_error_message( $body, $provider ),
 			);
 		}
 
@@ -830,6 +844,26 @@ class Occidg_Admin_Settings {
 		}
 
 		return $metadata;
+	}
+
+	/**
+	 * Extract a useful error message from a provider response body.
+	 *
+	 * @since 1.1.16
+	 * @param array  $body     Provider response body.
+	 * @param string $provider Provider slug.
+	 * @return string
+	 */
+	private function extract_provider_error_message( $body, $provider ) {
+		if ( 'gemini' === $provider && ! empty( $body['error']['message'] ) ) {
+			return sanitize_text_field( $body['error']['message'] );
+		}
+
+		if ( 'openai' === $provider && ! empty( $body['error']['message'] ) ) {
+			return sanitize_text_field( $body['error']['message'] );
+		}
+
+		return __( 'Unknown provider error.', 'occidg' );
 	}
 
 	/**
@@ -884,43 +918,6 @@ class Occidg_Admin_Settings {
 		}
 
 		return false;
-	}
-
-	/**
-	 * Fetch (and cache) the free‑trial HMAC salt from our server.
-	 *
-	 * @return string
-	 */
-	private function get_trial_salt() {
-		$salt = get_transient( 'occidg_trial_salt' );
-		if ( $salt ) {
-			return $salt;
-		}
-
-		$response = wp_remote_post(
-			'https://oneclickcontent.com/wp-json/free-trial/v1/get-trial-salt',
-			array(
-				'timeout' => 10,
-				'body'    => array(
-					'site_url'    => home_url(),
-					'plugin_slug' => 'occidg',
-				),
-			)
-		);
-
-		if ( ! is_wp_error( $response ) ) {
-			$body = json_decode( wp_remote_retrieve_body( $response ), true );
-			if ( ! empty( $body['salt'] ) && is_string( $body['salt'] ) ) {
-				$salt = sanitize_text_field( $body['salt'] );
-				set_transient( 'occidg_trial_salt', $salt, 6 * HOUR_IN_SECONDS );
-				return $salt;
-			}
-		}
-
-		Occidg_Logger::warning( 'Falling back to the local trial salt constant.' );
-
-		// 3) Fallback to whatever constant you defined (or empty)
-		return defined( 'OCCIDG_HMAC_SALT' ) ? OCCIDG_HMAC_SALT : '';
 	}
 
 	/**

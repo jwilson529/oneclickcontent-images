@@ -1029,15 +1029,9 @@
     }
 }
 
-button#validate_license_button {
-    margin: 0 !important;
-    margin-top: 1rem !important;
-}
-
-
 @media (min-width: 1024px) {
-    #image-metadata-table_wrapper,
-    #image-metadata-table {
+	#image-metadata-table_wrapper,
+	#image-metadata-table {
         width: 100% !important;
     }
 }

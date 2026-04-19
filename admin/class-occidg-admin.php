@@ -1,6 +1,6 @@
 <?php
 /**
- * Admin-specific functionality for the OneClickContent Image Details plugin.
+ * Admin-specific functionality for the AI image metadata plugin.
  *
  * Defines admin-specific hooks and functions to enqueue styles, scripts, and add
  * custom functionality to the Media Library.
@@ -19,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class Occidg_Admin
  *
- * Handles admin-specific functionality for the OneClickContent Image Details plugin,
+ * Handles admin-specific functionality for the AI image metadata plugin,
  * including enqueuing scripts/styles and adding Media Library enhancements.
  *
  * @since 1.0.0
@@ -84,7 +84,7 @@ class Occidg_Admin {
 	 */
 	public function register_admin_menu() {
 		add_menu_page(
-			__( 'OneClickContent Image Metadata', 'occidg' ), // Page title (detailed for context).
+			__( 'AI Image Metadata', 'occidg' ), // Page title (detailed for context).
 			__( 'Image Metadata', 'occidg' ),         // Menu title (shortened to avoid wrapping).
 			'edit_posts',                                             // Capability (minimum for bulk edit; settings will check manage_options).
 			'occidg',                                 // Menu slug.
@@ -105,9 +105,16 @@ class Occidg_Admin {
 		$first_time_key = 'occidg_first_time';
 		$is_first_time  = get_option( $first_time_key, true );
 		$tab_nonce      = wp_create_nonce( 'oneclickcontent_tab_switch' );
+		$gate_state     = Occidg_Admin_Settings::get_generation_gate_state();
+		$generate_attrs = $gate_state['has_selected_provider_key']
+			? ''
+			: sprintf(
+				' disabled="disabled" aria-disabled="true" title="%s"',
+				esc_attr( $gate_state['missing_key_message'] )
+			);
 		?>
 		<div class="wrap">
-			<h1><?php esc_html_e( 'OneClickContent Images', 'occidg' ); ?></h1>
+			<h1><?php esc_html_e( 'AI Image Metadata', 'occidg' ); ?></h1>
 			<h2 class="nav-tab-wrapper">
 				<a href="<?php echo esc_url( admin_url( 'admin.php?page=occidg&tab=settings&_wpnonce=' . $tab_nonce ) ); ?>" class="nav-tab <?php echo 'settings' === $tab ? 'nav-tab-active' : ''; ?>">
 					<?php esc_html_e( 'Settings', 'occidg' ); ?>
@@ -123,44 +130,72 @@ class Occidg_Admin {
 					<div class="bulk-edit-provider-help compact">
 						<div class="cta-left">
 							<img src="<?php echo esc_url( plugin_dir_url( __FILE__ ) . 'assets/icon.png' ); ?>" alt="<?php esc_attr_e( 'Plugin icon', 'occidg' ); ?>" style="float: left; margin-right: 10px; width: 50px; height: auto;">
-							<h2><?php esc_html_e( 'Bring your own AI provider', 'occidg' ); ?></h2>
-							<p><?php esc_html_e( 'Configure OpenAI or Gemini, choose which metadata fields to fill, and generate title, description, alt text, and caption directly from your own account.', 'occidg' ); ?></p>
+							<h2><?php esc_html_e( 'Free, bring-your-own-key image metadata', 'occidg' ); ?></h2>
+							<p><?php esc_html_e( 'Configure OpenAI or Gemini, choose which metadata fields to fill, and generate title, description, alt text, and caption directly from your own provider account.', 'occidg' ); ?></p>
 							<ul class="benefits-list">
 								<li><?php esc_html_e( 'Use your own API key', 'occidg' ); ?></li>
+								<li><?php esc_html_e( 'Run the plugin for free with the provider account you choose', 'occidg' ); ?></li>
 								<li><?php esc_html_e( 'Keep metadata generation focused on your Media Library', 'occidg' ); ?></li>
 								<li><?php esc_html_e( 'Control which fields get updated', 'occidg' ); ?></li>
 							</ul>
 						</div>
 					</div>
 
-					<!-- Bulk generation options -->
-					<div class="bulk-edit-header">
-						<button id="generate-all-metadata-settings" class="button button-primary button-hero">
-							<?php esc_html_e( 'Generate All Metadata', 'occidg' ); ?>
-						</button>
-						<button id="stop-bulk-generation-settings" class="button button-secondary" style="display:none;">
-							<?php esc_html_e( 'Stop Generation', 'occidg' ); ?>
-						</button>
-						<p class="description">
-							<?php esc_html_e( 'Click to generate metadata for all your images using your configured provider.', 'occidg' ); ?>
-						</p>
-					</div>
-					<div id="bulk-generate-status-settings" class="bulk-generate-status" style="display: none;">
-						<h3><?php esc_html_e( 'Bulk Generation Progress', 'occidg' ); ?></h3>
-						<div id="bulk-generate-progress-container-settings" class="bulk-generate-progress-container">
-							<div id="bulk-generate-progress-bar-settings" class="bulk-generate-progress-bar"></div>
-						</div>
-						<div id="bulk-generate-message-settings" class="bulk-generate-message"></div>
-					</div>
+					<div class="occidg-settings-layout">
+						<div class="occidg-settings-main">
+								<!-- Bulk generation options -->
+								<div class="bulk-edit-header">
+									<button id="generate-all-metadata-settings" class="button button-primary button-hero"<?php echo wp_kses_post( $generate_attrs ); ?>>
+										<?php esc_html_e( 'Generate All Metadata', 'occidg' ); ?>
+									</button>
+									<p class="description">
+										<?php esc_html_e( 'Click to generate metadata for all your images using your configured provider.', 'occidg' ); ?>
+									</p>
+									<?php if ( ! $gate_state['has_selected_provider_key'] ) : ?>
+										<p class="occidg-generation-gate-message">
+											<?php echo esc_html( $gate_state['missing_key_message'] ); ?>
+										</p>
+									<?php endif; ?>
+								</div>
+							<div id="bulk-generate-status-settings" class="bulk-generate-status" style="display: none;">
+								<h3><?php esc_html_e( 'Bulk Generation Progress', 'occidg' ); ?></h3>
+								<div id="bulk-generate-progress-container-settings" class="bulk-generate-progress-container">
+									<div id="bulk-generate-progress-bar-settings" class="bulk-generate-progress-bar"></div>
+								</div>
+								<div class="occidg-job-toolbar">
+									<div id="bulk-generate-message-settings" class="bulk-generate-message" aria-live="polite"></div>
+									<div class="occidg-job-actions">
+										<button id="pause-bulk-generation-settings" class="button button-secondary" style="display:none;">
+											<?php esc_html_e( 'Pause', 'occidg' ); ?>
+										</button>
+										<button id="resume-bulk-generation-settings" class="button button-secondary" style="display:none;">
+											<?php esc_html_e( 'Resume', 'occidg' ); ?>
+										</button>
+										<button id="cancel-bulk-generation-settings" class="button button-link-delete" style="display:none;">
+											<?php esc_html_e( 'Cancel', 'occidg' ); ?>
+										</button>
+										<button id="retry-bulk-generation-settings" class="button button-secondary" style="display:none;">
+											<?php esc_html_e( 'Retry Failed', 'occidg' ); ?>
+										</button>
+									</div>
+								</div>
+								<div id="bulk-generate-summary-settings" class="occidg-job-summary" aria-live="polite"></div>
+								<div id="bulk-generate-failures-settings" class="occidg-job-failures"></div>
+							</div>
 
-					<!-- Settings Form: Always inside #occidg_images -->
-					<form method="post" action="options.php" id="occidg_settings_form">
-						<?php
-						settings_fields( 'occidg_settings' );
-						do_settings_sections( 'occidg_settings' );
-						submit_button();
-						?>
-					</form>
+							<!-- Settings Form: Always inside #occidg_images -->
+							<form method="post" action="options.php" id="occidg_settings_form" class="occidg-settings-form">
+								<?php
+								settings_fields( 'occidg_settings' );
+								do_settings_sections( 'occidg_settings' );
+								submit_button( __( 'Save Settings', 'occidg' ) );
+								?>
+							</form>
+						</div>
+						<aside class="occidg-settings-sidebar" aria-label="<?php esc_attr_e( 'Settings overview', 'occidg' ); ?>">
+							<?php $this->render_settings_sidebar(); ?>
+						</aside>
+					</div>
 
 					<!-- Bulk Generate Modal (within the same container) -->
 					<div id="bulk-generate-modal" class="modal" style="display:none;">
@@ -172,8 +207,13 @@ class Occidg_Admin {
 									<?php esc_html_e( 'This will overwrite any existing image metadata.', 'occidg' ); ?>
 								</p>
 							</div>
+							<?php if ( ! $gate_state['has_selected_provider_key'] ) : ?>
+								<p class="occidg-generation-gate-message occidg-generation-gate-message-modal">
+									<?php echo esc_html( $gate_state['missing_key_message'] ); ?>
+								</p>
+							<?php endif; ?>
 							<div class="modal-buttons">
-								<button id="confirm-bulk-generate" class="button button-primary">
+								<button id="confirm-bulk-generate" class="button button-primary"<?php echo wp_kses_post( $generate_attrs ); ?>>
 									<?php esc_html_e( 'Yes, Generate', 'occidg' ); ?>
 								</button>
 								<button id="cancel-bulk-generate" class="button button-secondary">
@@ -194,26 +234,26 @@ class Occidg_Admin {
 				<div class="modal-content">
 					<div class="modal-header" style="display: flex; align-items: center; gap: 15px;">
 						<img src="<?php echo esc_url( $fallback_image_url ); ?>" alt="<?php esc_attr_e( 'Plugin icon', 'occidg' ); ?>" style="width: 50px; height: 50px;">
-						<h3 style="margin: 0;"><?php esc_html_e( 'Welcome to OneClickContent Image Detail Generator!', 'occidg' ); ?></h3>
+						<h3 style="margin: 0;"><?php esc_html_e( 'Welcome to free AI image metadata generation', 'occidg' ); ?></h3>
 					</div>
-					<p><?php esc_html_e( 'This plugin helps you effortlessly manage image metadata — including alt text, titles, captions, and descriptions — so your site looks great, loads better, and ranks higher.', 'occidg' ); ?></p>
+					<p><?php esc_html_e( 'This plugin helps you generate alt text, titles, captions, and descriptions for existing Media Library images using your own OpenAI or Gemini API key.', 'occidg' ); ?></p>
 					<p>
 						<strong><?php esc_html_e( 'Use your own provider.', 'occidg' ); ?></strong><br>
-						<?php esc_html_e( 'Add an OpenAI or Gemini API key in Settings, then use AI generation wherever you need it.', 'occidg' ); ?>
+						<?php esc_html_e( 'Add an OpenAI or Gemini API key in Settings, choose a model, and start generating metadata with your own account.', 'occidg' ); ?>
 					</p>
 					<p>
-						<strong><?php esc_html_e( 'Bulk Edit stays useful too.', 'occidg' ); ?></strong><br>
-						<?php esc_html_e( 'You can still review, clean up, and edit all image metadata in one fast table whenever you want.', 'occidg' ); ?>
+						<strong><?php esc_html_e( 'Bulk Edit is ready when you are.', 'occidg' ); ?></strong><br>
+						<?php esc_html_e( 'Review, generate, and clean up image metadata across your library in one table whenever you want.', 'occidg' ); ?>
 					</p>
 					<p><?php esc_html_e( 'Here’s how to get started:', 'occidg' ); ?></p>
 					<ol>
 						<li>
 							<strong><?php esc_html_e( 'Settings Tab:', 'occidg' ); ?></strong>
-							<?php esc_html_e( 'Choose which fields to automatically generate. Alt text, titles, captions, descriptions — your choice.', 'occidg' ); ?>
+							<?php esc_html_e( 'Choose your provider, enter your API key, and decide which metadata fields to generate.', 'occidg' ); ?>
 						</li>
 						<li>
 							<strong><?php esc_html_e( 'Bulk Edit Tab:', 'occidg' ); ?></strong>
-							<?php esc_html_e( 'Instantly view and update all your images in one place. Edit any field inline and it saves automatically.', 'occidg' ); ?>
+							<?php esc_html_e( 'View your images in one place, generate metadata in bulk, and edit fields inline.', 'occidg' ); ?>
 						</li>
 						<li>
 							<strong><?php esc_html_e( 'Automatic Generation:', 'occidg' ); ?></strong>
@@ -221,18 +261,139 @@ class Occidg_Admin {
 						</li>
 					</ol>
 					<p>
-						<strong><?php esc_html_e( 'Your images deserve better.', 'occidg' ); ?></strong><br>
-						<?php esc_html_e( 'Give your media library the attention it deserves — for better SEO, accessibility, and user experience.', 'occidg' ); ?>
+						<strong><?php esc_html_e( 'Built for existing media.', 'occidg' ); ?></strong><br>
+						<?php esc_html_e( 'This plugin focuses on image metadata only. It does not generate new images.', 'occidg' ); ?>
 					</p>
 					<div class="modal-buttons" style="margin-top: 20px; text-align: right;">
 						<button id="close-first-time-modal" class="button button-primary">
-							<?php esc_html_e( 'Let’s Get Started', 'occidg' ); ?>
+							<?php esc_html_e( 'Start Setup', 'occidg' ); ?>
 						</button>
 					</div>
 				</div>
 			</div>
 			<?php
 		endif;
+	}
+
+	/**
+	 * Render the sidebar cards for the settings screen.
+	 *
+	 * @since 1.2.0
+	 * @return void
+	 */
+	private function render_settings_sidebar() {
+		$provider                    = get_option( 'occidg_provider', 'openai' );
+		$provider_label              = $this->get_provider_label( $provider );
+		$has_openai_key              = ! empty( get_option( 'occidg_openai_api_key', '' ) );
+		$has_gemini_key              = ! empty( get_option( 'occidg_gemini_api_key', '' ) );
+		$selected_provider_key_ready = 'gemini' === $provider ? $has_gemini_key : $has_openai_key;
+		$key_status_class            = $selected_provider_key_ready ? 'is-ready' : 'is-missing';
+		$key_status_text             = $selected_provider_key_ready
+			? sprintf(
+				/* translators: %s: provider name. */
+				__( '%s API key saved in WordPress.', 'occidg' ),
+				$provider_label
+			)
+			: sprintf(
+				/* translators: %s: provider name. */
+				__( '%s API key still needs to be added.', 'occidg' ),
+				$provider_label
+			);
+		$enabled_metadata = $this->get_enabled_metadata_labels( get_option( 'occidg_metadata_fields', array() ) );
+		?>
+		<div class="occidg-sidebar-card occidg-sidebar-card-primary">
+			<p class="occidg-sidebar-eyebrow"><?php esc_html_e( 'Current setup', 'occidg' ); ?></p>
+			<div class="occidg-sidebar-stack">
+				<span id="occidg-sidebar-provider-pill" class="occidg-status-pill is-<?php echo esc_attr( $provider ); ?>">
+					<?php echo esc_html( $provider_label ); ?>
+				</span>
+				<p
+					id="occidg-sidebar-key-status"
+					class="occidg-sidebar-note <?php echo esc_attr( $key_status_class ); ?>"
+					data-openai-ready="<?php echo $has_openai_key ? '1' : '0'; ?>"
+					data-gemini-ready="<?php echo $has_gemini_key ? '1' : '0'; ?>"
+				>
+					<?php echo esc_html( $key_status_text ); ?>
+				</p>
+			</div>
+			<div class="occidg-sidebar-metrics">
+				<div class="occidg-sidebar-metric">
+					<span><?php esc_html_e( 'Enabled fields', 'occidg' ); ?></span>
+					<strong><?php echo esc_html( count( $enabled_metadata ) ); ?>/4</strong>
+				</div>
+				<div class="occidg-sidebar-metric">
+					<span><?php esc_html_e( 'Auto on upload', 'occidg' ); ?></span>
+					<strong><?php echo get_option( 'occidg_auto_add_details', false ) ? esc_html__( 'On', 'occidg' ) : esc_html__( 'Off', 'occidg' ); ?></strong>
+				</div>
+				<div class="occidg-sidebar-metric">
+					<span><?php esc_html_e( 'Overwrite existing', 'occidg' ); ?></span>
+					<strong><?php echo get_option( 'occidg_override_metadata', false ) ? esc_html__( 'On', 'occidg' ) : esc_html__( 'Off', 'occidg' ); ?></strong>
+				</div>
+			</div>
+		</div>
+
+		<div class="occidg-sidebar-card">
+			<h3><?php esc_html_e( 'Before You Generate', 'occidg' ); ?></h3>
+			<ol class="occidg-sidebar-list occidg-sidebar-list-ordered">
+				<li><?php esc_html_e( 'Choose OpenAI or Gemini, then save the matching API key.', 'occidg' ); ?></li>
+				<li><?php esc_html_e( 'Pick only the metadata fields you actually want to fill.', 'occidg' ); ?></li>
+				<li><?php esc_html_e( 'Turn on overwrite only when you want AI to replace existing text.', 'occidg' ); ?></li>
+			</ol>
+		</div>
+
+		<div class="occidg-sidebar-card">
+			<h3><?php esc_html_e( 'Selected Fields', 'occidg' ); ?></h3>
+			<?php if ( ! empty( $enabled_metadata ) ) : ?>
+				<ul class="occidg-sidebar-list">
+					<?php foreach ( $enabled_metadata as $enabled_label ) : ?>
+						<li><?php echo esc_html( $enabled_label ); ?></li>
+					<?php endforeach; ?>
+				</ul>
+			<?php else : ?>
+				<p class="occidg-sidebar-note"><?php esc_html_e( 'No fields are enabled yet. Pick at least one field before generating metadata.', 'occidg' ); ?></p>
+			<?php endif; ?>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Return the provider label for a saved provider slug.
+	 *
+	 * @since 1.2.0
+	 * @param string $provider Provider slug.
+	 * @return string
+	 */
+	private function get_provider_label( $provider ) {
+		if ( 'gemini' === $provider ) {
+			return __( 'Gemini', 'occidg' );
+		}
+
+		return __( 'OpenAI', 'occidg' );
+	}
+
+	/**
+	 * Return the enabled metadata labels for the sidebar summary.
+	 *
+	 * @since 1.2.0
+	 * @param array $metadata_fields Saved metadata settings.
+	 * @return array
+	 */
+	private function get_enabled_metadata_labels( $metadata_fields ) {
+		$labels  = array();
+		$choices = array(
+			'title'       => __( 'Title', 'occidg' ),
+			'description' => __( 'Description', 'occidg' ),
+			'alt_text'    => __( 'Alt Text', 'occidg' ),
+			'caption'     => __( 'Caption', 'occidg' ),
+		);
+
+		foreach ( $choices as $field_key => $field_label ) {
+			if ( isset( $metadata_fields[ $field_key ] ) && '1' === $metadata_fields[ $field_key ] ) {
+				$labels[] = $field_label;
+			}
+		}
+
+		return $labels;
 	}
 
 	/**
@@ -284,6 +445,8 @@ class Occidg_Admin {
 			return;
 		}
 
+		$gate_state = Occidg_Admin_Settings::get_generation_gate_state();
+
 		// Core admin scripts.
 		wp_enqueue_script(
 			$this->plugin_name,
@@ -298,14 +461,52 @@ class Occidg_Admin {
 			$this->plugin_name,
 			'occidg_admin_vars',
 			array(
-				'ajax_url'                 => admin_url( 'admin-ajax.php' ),
-				'occidg_ajax_nonce'        => wp_create_nonce( 'occidg_ajax_nonce' ),
-				'dismiss_first_time_nonce' => wp_create_nonce( 'occidg_dismiss_first_time' ),
-				'provider'                 => get_option( 'occidg_provider', 'openai' ),
-				'has_openai_key'           => ! empty( get_option( 'occidg_openai_api_key', '' ) ),
-				'has_gemini_key'           => ! empty( get_option( 'occidg_gemini_api_key', '' ) ),
-				'fallback_image_url'       => plugin_dir_url( __FILE__ ) . 'assets/icon.png',
-				'settings_url'             => admin_url( 'admin.php?page=occidg' ),
+				'ajax_url'                            => admin_url( 'admin-ajax.php' ),
+				'occidg_ajax_nonce'                   => wp_create_nonce( 'occidg_ajax_nonce' ),
+				'dismiss_first_time_nonce'            => wp_create_nonce( 'occidg_dismiss_first_time' ),
+				'provider'                            => $gate_state['provider'],
+				'has_openai_key'                      => $gate_state['has_openai_key'],
+				'has_gemini_key'                      => $gate_state['has_gemini_key'],
+				'selected_provider_ready'             => $gate_state['has_selected_provider_key'],
+				'missing_key_message'                 => $gate_state['missing_key_message'],
+				/* translators: %s: provider name. */
+				'missing_key_message_template'        => __( 'Add and save a %s API key in Settings to enable metadata generation.', 'occidg' ),
+				'openai_label'                        => __( 'OpenAI', 'occidg' ),
+				'gemini_label'                        => __( 'Gemini', 'occidg' ),
+				'fallback_image_url'                  => plugin_dir_url( __FILE__ ) . 'assets/icon.png',
+				'settings_url'                        => admin_url( 'admin.php?page=occidg' ),
+				'checking_key_message'                => __( 'Checking API key...', 'occidg' ),
+				'clearing_key_message'                => __( 'Clearing saved API key...', 'occidg' ),
+				'loading_models_message'              => __( 'Loading available models...', 'occidg' ),
+				'models_updated_message'              => __( 'Available models updated.', 'occidg' ),
+				'saving_model_message'                => __( 'Saving model...', 'occidg' ),
+				'empty_models_message'                => __( 'No compatible models were returned for this provider key.', 'occidg' ),
+				'model_placeholder_message'           => __( 'Add and save a key to load available models.', 'occidg' ),
+				'provider_request_error'              => __( 'Unable to validate the provider key right now.', 'occidg' ),
+				'model_save_error'                    => __( 'Unable to save the selected model right now.', 'occidg' ),
+				'wait_for_validation_message'         => __( 'Finish API key validation before saving settings.', 'occidg' ),
+				'creating_background_job'             => __( 'Creating background job...', 'occidg' ),
+				'background_job_create_error'         => __( 'Unable to create a background job right now.', 'occidg' ),
+				'background_job_poll_error'           => __( 'Unable to refresh the background job status right now.', 'occidg' ),
+				'background_job_pause_error'          => __( 'Unable to pause the background job right now.', 'occidg' ),
+				'background_job_resume_error'         => __( 'Unable to resume the background job right now.', 'occidg' ),
+				'background_job_cancel_error'         => __( 'Unable to cancel the background job right now.', 'occidg' ),
+				'background_job_retry_error'          => __( 'Unable to retry the background job right now.', 'occidg' ),
+				'background_job_active'               => __( 'Background job active', 'occidg' ),
+				'background_job_paused'               => __( 'Metadata generation is paused.', 'occidg' ),
+				'background_job_cancelled'            => __( 'Metadata generation was cancelled.', 'occidg' ),
+				'background_job_complete'             => __( 'All metadata generation complete.', 'occidg' ),
+				'background_job_complete_with_errors' => __( 'Metadata generation finished with some errors.', 'occidg' ),
+				'background_job_retrying'             => __( 'Creating retry job...', 'occidg' ),
+				/* translators: 1: succeeded image count, 2: failed image count, 3: skipped image count. */
+				'background_job_summary'              => __( '%1$d succeeded, %2$d failed, %3$d skipped.', 'occidg' ),
+				/* translators: 1: queue state label, 2: processed image count, 3: total image count. */
+				'background_job_progress'             => __( '%1$s: %2$d of %3$d images processed.', 'occidg' ),
+				'background_job_failures'             => __( 'Recent failures', 'occidg' ),
+				'background_job_no_failures'          => __( 'No recent failures recorded.', 'occidg' ),
+				/* translators: %d: WordPress attachment ID. */
+				'background_job_image_label'          => __( 'Image %d', 'occidg' ),
+				'background_job_queueing_label'       => __( 'Queueing...', 'occidg' ),
 			)
 		);
 
@@ -377,8 +578,8 @@ class Occidg_Admin {
 	/**
 	 * Add a "Generate Metadata" button to the Media Library attachment details.
 	 *
-	 * Only outputs the button HTML—enable/disable and usage counts
-	 * are handled in occidg-admin.js via occidg_admin_vars.
+	 * Outputs only the button HTML; runtime state and messaging are handled by
+	 * admin JavaScript.
 	 *
 	 * @since 1.0.0
 	 *
@@ -392,33 +593,33 @@ class Occidg_Admin {
 			return $form_fields;
 		}
 
+		$gate_state       = Occidg_Admin_Settings::get_generation_gate_state();
+		$disabled_attrs   = $gate_state['has_selected_provider_key']
+			? ''
+			: sprintf(
+				' disabled="disabled" aria-disabled="true" title="%s"',
+				esc_attr( $gate_state['missing_key_message'] )
+			);
+		$description_html = $gate_state['has_selected_provider_key']
+			? ''
+			: sprintf(
+				'<p class="description occidg-generation-gate-message">%s</p>',
+				esc_html( $gate_state['missing_key_message'] )
+			);
+
 		$form_fields['generate_metadata'] = array(
 			'label' => __( 'Generate Metadata', 'occidg' ),
 			'input' => 'html',
 			'html'  => sprintf(
-				'<button type="button" class="button generate-metadata" data-image-id="%d">%s</button>',
+				'<button type="button" class="button generate-metadata" data-image-id="%d"%s>%s</button>%s',
 				(int) $post->ID,
-				esc_html__( 'Generate Metadata', 'occidg' )
+				$disabled_attrs,
+				esc_html__( 'Generate Metadata', 'occidg' ),
+				$description_html
 			),
 		);
 
 		return $form_fields;
-	}
-
-	/**
-	 * Retrieve placeholder usage data for the BYO-key version.
-	 *
-	 * @since 1.0.0
-	 * @return array Usage metrics.
-	 */
-	protected function get_usage_data() {
-		return array(
-			'success'         => true,
-			'used_count'      => 0,
-			'usage_limit'     => 0,
-			'addon_count'     => 0,
-			'remaining_count' => 0,
-		);
 	}
 
 

@@ -78,8 +78,8 @@ jQuery(document).ready(function($) {
                     }
 
                     return `<div class="action-wrapper">
-                        <button class="generate-metadata button" data-image-id="${parseInt(row.id, 10)}">Generate</button>
-                        <span class="action-status"></span>
+                        <button class="generate-metadata button" data-image-id="${parseInt(row.id, 10)}"${getGenerateButtonAttributes()}>Generate</button>
+                        <span class="action-status" aria-live="polite"></span>
                     </div>`;
                 },
             },
@@ -91,19 +91,45 @@ jQuery(document).ready(function($) {
     function renderEditableInput(field, value, imageId) {
         return `<div class="input-wrapper">
             <input type="text" value="${escapeHtml(value || '')}" data-field="${field}" data-image-id="${parseInt(imageId, 10)}" style="width: 100%;">
-            <span class="save-status"></span>
+            <span class="save-status" aria-live="polite"></span>
         </div>`;
     }
 
     function renderEditableTextarea(field, value, imageId) {
         return `<div class="input-wrapper">
             <textarea data-field="${field}" data-image-id="${parseInt(imageId, 10)}" style="width: 100%; height: 60px;">${escapeHtml(value || '')}</textarea>
-            <span class="save-status"></span>
+            <span class="save-status" aria-live="polite"></span>
         </div>`;
     }
 
     function escapeHtml(value) {
         return $('<div/>').text(value).html();
+    }
+
+    function escapeAttribute(value) {
+        return escapeHtml(value);
+    }
+
+    function isGenerationAllowed() {
+        return !!(window.occidg_admin_vars && (
+            true === occidg_admin_vars.selected_provider_ready ||
+            1 === occidg_admin_vars.selected_provider_ready ||
+            '1' === occidg_admin_vars.selected_provider_ready
+        ));
+    }
+
+    function getGenerationGateMessage() {
+        return window.occidg_admin_vars && occidg_admin_vars.missing_key_message
+            ? occidg_admin_vars.missing_key_message
+            : 'Add and save an API key in Settings to enable metadata generation.';
+    }
+
+    function getGenerateButtonAttributes() {
+        if (isGenerationAllowed()) {
+            return '';
+        }
+
+        return ` disabled="disabled" aria-disabled="true" title="${escapeAttribute(getGenerationGateMessage())}"`;
     }
 
     $('#image-metadata-table').on('focus', 'input, textarea', function() {
@@ -126,8 +152,13 @@ jQuery(document).ready(function($) {
         const $status = $button.siblings('.action-status');
         const row = table.row($button.closest('tr'));
 
+        if ($button.is(':disabled') || !isGenerationAllowed()) {
+            setInlineStatus($status, 'action', 'error', getGenerationGateMessage(), true);
+            return;
+        }
+
         $button.prop('disabled', true).text('Generating...');
-        $status.text('');
+        setInlineStatus($status, 'action', 'working', 'Generating...', true);
 
         $.ajax({
             url: occidg_bulk_vars.ajax_url,
@@ -149,15 +180,19 @@ jQuery(document).ready(function($) {
                 rowData.caption = metadata.caption || rowData.caption;
 
                 row.data(rowData).invalidate().draw(false);
-                $status.text('Generated');
+                setInlineStatus($status, 'action', 'success', 'Generated');
                 return;
             }
 
-            $status.text(response && response.data && response.data.error ? response.data.error : 'Error');
+            setInlineStatus($status, 'action', 'error', getAjaxErrorMessage(response, 'Error'), true);
         }).fail(function() {
-            $status.text('Error');
+            setInlineStatus($status, 'action', 'error', 'Error', true);
         }).always(function() {
-            $button.prop('disabled', false).text('Generate');
+            $button
+                .prop('disabled', !isGenerationAllowed())
+                .attr('aria-disabled', isGenerationAllowed() ? null : 'true')
+                .attr('title', isGenerationAllowed() ? null : getGenerationGateMessage())
+                .text('Generate');
         });
     });
 
@@ -169,7 +204,7 @@ jQuery(document).ready(function($) {
         const rowData = row.data();
 
         rowData[field] = $input.val();
-        $status.text('Saving...');
+        setInlineStatus($status, 'save', 'saving', 'Saving...', true);
 
         $.ajax({
             url: occidg_bulk_vars.ajax_url,
@@ -187,13 +222,59 @@ jQuery(document).ready(function($) {
         }).done(function(response) {
             if (response.success && response.data) {
                 row.data(response.data).invalidate().draw(false);
-                $status.text('Saved');
+                setInlineStatus($status, 'save', 'saved', 'Saved');
                 return;
             }
 
-            $status.text('Error');
+            setInlineStatus($status, 'save', 'error', 'Error', true);
         }).fail(function() {
-            $status.text('Error');
+            setInlineStatus($status, 'save', 'error', 'Error', true);
         });
+    }
+
+    function setInlineStatus($status, type, state, message, persist) {
+        const classes = 'save-status-saving save-status-saved save-status-error save-status-nochange action-status-working action-status-success action-status-error';
+        const stateClass = `${type}-status-${state}`;
+        const timeoutId = $status.data('occidgTimeoutId');
+
+        if (timeoutId) {
+            window.clearTimeout(timeoutId);
+        }
+
+        $status
+            .stop(true, true)
+            .removeClass(classes)
+            .addClass(stateClass)
+            .text(message)
+            .css('display', 'inline-flex');
+
+        if (persist) {
+            return;
+        }
+
+        const newTimeoutId = window.setTimeout(function() {
+            $status.fadeOut(200, function() {
+                $status.removeClass(classes).text('');
+            });
+        }, 'error' === state ? 4500 : 1800);
+
+        $status.data('occidgTimeoutId', newTimeoutId);
+    }
+
+    function getAjaxErrorMessage(response, fallbackMessage) {
+        if (response && response.data) {
+            if (response.data.message || response.data.error) {
+                const baseMessage = response.data.message || response.data.error;
+                return response.data.details
+                    ? `${baseMessage} ${response.data.details}`
+                    : baseMessage;
+            }
+
+            if ('string' === typeof response.data) {
+                return response.data;
+            }
+        }
+
+        return fallbackMessage;
     }
 });

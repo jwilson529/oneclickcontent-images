@@ -47,11 +47,15 @@ wp-config.php
 .cstn-generator/
 .codex
 .codex/
+.codex-backups/
 codex-yolo
 codex-yolo/
 check.txt
 phpmd.txt
 plugin-error.log
+.phpunit.result.cache
+.phpunit.cache/
+coverage/
 .codex_index.json
 .codex_run_meta.json
 .codex_tasks.csv

@@ -1,21 +1,112 @@
 /**
- * Bulk generation JavaScript functionality for OCCIDG.
+ * Background bulk generation JavaScript functionality for OCCIDG.
  *
  * @package One_Click_Images
  */
 jQuery(document).ready(function($) {
     'use strict';
 
-    let stopBulkGeneration = false;
+    const contexts = buildContexts();
+    let currentJob = null;
+    let pollTimer = null;
+    let pendingContextKey = '';
 
-    $('#generate-all-metadata-settings, #generate-all-metadata').on('click', function() {
-        const $button = $(this);
-        const isSettingsTab = 'generate-all-metadata-settings' === $button.attr('id');
-        const statusContainer = isSettingsTab ? '#bulk-generate-status-settings' : '#bulk-generate-status';
-        const stopButton = isSettingsTab ? '#stop-bulk-generation-settings' : '#stop-bulk-generation';
-        const progressBar = isSettingsTab ? '#bulk-generate-progress-bar-settings' : '#bulk-generate-progress-bar';
-        const messageContainer = isSettingsTab ? '#bulk-generate-message-settings' : '#bulk-generate-message';
+    if (!Object.keys(contexts).length) {
+        return;
+    }
 
+    syncBulkGenerateControls();
+    restoreLatestJob();
+
+    Object.keys(contexts).forEach(function(contextKey) {
+        const context = contexts[contextKey];
+
+        context.generateButton.on('click', function() {
+            if (shouldBlockGeneration(context)) {
+                return;
+            }
+
+            pendingContextKey = contextKey;
+            openBulkGenerateModal();
+        });
+
+        context.pauseButton.on('click', function() {
+            updateBackgroundJobState('pause', contextKey);
+        });
+
+        context.resumeButton.on('click', function() {
+            updateBackgroundJobState('resume', contextKey);
+        });
+
+        context.cancelButton.on('click', function() {
+            updateBackgroundJobState('cancel', contextKey);
+        });
+
+        context.retryButton.on('click', function() {
+            updateBackgroundJobState('retry', contextKey);
+        });
+    });
+
+    $('#confirm-bulk-generate').on('click', function() {
+        if (!pendingContextKey || !contexts[pendingContextKey]) {
+            closeBulkGenerateModal();
+            return;
+        }
+
+        const contextKey = pendingContextKey;
+        const context = contexts[contextKey];
+        if (shouldBlockGeneration(context)) {
+            closeBulkGenerateModal();
+            return;
+        }
+
+        closeBulkGenerateModal();
+        queueBackgroundJob(contextKey);
+    });
+
+    $('#cancel-bulk-generate').on('click', closeBulkGenerateModal);
+
+    function buildContexts() {
+        const availableContexts = {};
+
+        if ($('#generate-all-metadata-settings').length) {
+            availableContexts.settings = {
+                key: 'settings',
+                generateButton: $('#generate-all-metadata-settings'),
+                header: $('.bulk-edit-header').first(),
+                statusContainer: $('#bulk-generate-status-settings'),
+                progressBar: $('#bulk-generate-progress-bar-settings'),
+                message: $('#bulk-generate-message-settings'),
+                summary: $('#bulk-generate-summary-settings'),
+                failures: $('#bulk-generate-failures-settings'),
+                pauseButton: $('#pause-bulk-generation-settings'),
+                resumeButton: $('#resume-bulk-generation-settings'),
+                cancelButton: $('#cancel-bulk-generation-settings'),
+                retryButton: $('#retry-bulk-generation-settings'),
+            };
+        }
+
+        if ($('#generate-all-metadata').length) {
+            availableContexts.bulk = {
+                key: 'bulk',
+                generateButton: $('#generate-all-metadata'),
+                header: $('.bulk-edit-header').first(),
+                statusContainer: $('#bulk-generate-status'),
+                progressBar: $('#bulk-generate-progress-bar'),
+                message: $('#bulk-generate-message'),
+                summary: $('#bulk-generate-summary'),
+                failures: $('#bulk-generate-failures'),
+                pauseButton: $('#pause-bulk-generation'),
+                resumeButton: $('#resume-bulk-generation'),
+                cancelButton: $('#cancel-bulk-generation'),
+                retryButton: $('#retry-bulk-generation'),
+            };
+        }
+
+        return availableContexts;
+    }
+
+    function openBulkGenerateModal() {
         $('#bulk-generate-modal').show();
 
         $.ajax({
@@ -34,161 +125,481 @@ jQuery(document).ready(function($) {
         }).fail(function() {
             $('#bulk-generate-warning').hide();
         });
+    }
 
-        $('#confirm-bulk-generate').off('click').on('click', function() {
-            $('#bulk-generate-modal').hide();
-            startBulkGeneration($button, statusContainer, stopButton, progressBar, messageContainer);
-        });
+    function closeBulkGenerateModal() {
+        $('#bulk-generate-modal').hide();
+        pendingContextKey = '';
+    }
 
-        $('#cancel-bulk-generate').off('click').on('click', function() {
-            $('#bulk-generate-modal').hide();
-        });
-    });
+    function queueBackgroundJob(contextKey) {
+        const context = contexts[contextKey];
+        const queueingLabel = occidg_admin_vars.background_job_queueing_label || 'Queueing...';
 
-    $('#stop-bulk-generation-settings, #stop-bulk-generation').on('click', function() {
-        stopBulkGeneration = true;
-        const isSettingsTab = 'stop-bulk-generation-settings' === $(this).attr('id');
-        const messageContainer = isSettingsTab ? '#bulk-generate-message-settings' : '#bulk-generate-message';
-        const generateButton = isSettingsTab ? '#generate-all-metadata-settings' : '#generate-all-metadata';
-
-        $(messageContainer).text('Generation stopped.');
-        $(this).hide();
-        $(generateButton).prop('disabled', false).text('Generate All Metadata');
-    });
-
-    function startBulkGeneration($button, statusContainer, stopButton, progressBar, messageContainer) {
-        stopBulkGeneration = false;
-        $(stopButton).show();
-        $button.prop('disabled', true).html('<span class="generate-spinner"></span> Generating...');
-        $(statusContainer).show();
-        $(progressBar).css('width', '0%');
-        $(messageContainer).text('');
+        setCurrentJob(null);
+        context.statusContainer.show();
+        context.generateButton.prop('disabled', true).text(queueingLabel);
+        context.progressBar.css('width', '0%');
+        context.message.text(occidg_admin_vars.creating_background_job || 'Creating background job...');
+        context.summary.empty();
+        context.failures.empty();
+        context.pauseButton.hide();
+        context.resumeButton.hide();
+        context.cancelButton.hide();
+        context.retryButton.hide();
 
         $.ajax({
             url: occidg_admin_vars.ajax_url,
             type: 'POST',
+            dataType: 'json',
             data: {
-                action: 'occidg_get_all_media_ids',
+                action: 'occidg_create_background_job',
                 nonce: occidg_admin_vars.occidg_ajax_nonce,
             },
         }).done(function(response) {
-            if (response.success && response.data.ids.length > 0) {
-                processBulkGeneration(response.data.ids, 0, $button, response.data.ids.length, statusContainer, stopButton, progressBar, messageContainer);
-            } else {
-                $(messageContainer).text('No media items found.');
-                $button.prop('disabled', false).text('Generate All Metadata');
-                $(stopButton).hide();
+            if (response.success && response.data) {
+                setCurrentJob(response.data);
+                applyJobToContexts(response.data);
+                startPolling();
+                return;
             }
+
+            context.message.text(getAjaxErrorMessage(response, occidg_admin_vars.background_job_create_error || 'Unable to create a background job right now.'));
+            context.generateButton.text('Generate All Metadata');
+            syncBulkGenerateControls();
         }).fail(function(xhr) {
-            $(messageContainer).text('Error fetching media IDs: ' + xhr.responseText);
-            $button.prop('disabled', false).text('Generate All Metadata');
-            $(stopButton).hide();
+            context.message.text(getAjaxErrorMessage(xhr, occidg_admin_vars.background_job_create_error || 'Unable to create a background job right now.'));
+            context.generateButton.text('Generate All Metadata');
+            syncBulkGenerateControls();
         });
     }
 
-    function processBulkGeneration(ids, index, $button, total, statusContainer, stopButton, progressBar, messageContainer) {
-        if (stopBulkGeneration) {
-            $(messageContainer).text('Generation stopped.');
-            $(stopButton).hide();
-            $button.prop('disabled', false).text('Generate All Metadata');
+    function updateBackgroundJobState(actionName, contextKey) {
+        const context = contexts[contextKey];
+
+        if (!currentJob || !currentJob.id) {
             return;
         }
 
-        if (index >= ids.length) {
-            $(messageContainer).text('All metadata generation complete.');
-            $(progressBar).css('width', '100%');
-            $button.prop('disabled', false).text('Generate All Metadata');
-            $(stopButton).hide();
-            return;
-        }
-
-        const imageId = ids[index];
-        const percent = Math.round(((index + 1) / total) * 100);
-        $(messageContainer).text(`Processing image ${index + 1} of ${total} (ID: ${imageId})`);
-        $(progressBar).css('width', percent + '%');
+        context.message.text(getBusyMessageForAction(actionName));
 
         $.ajax({
             url: occidg_admin_vars.ajax_url,
             type: 'POST',
+            dataType: 'json',
             data: {
-                action: 'occidg_generate_metadata',
+                action: `occidg_${actionName}_background_job`,
                 nonce: occidg_admin_vars.occidg_ajax_nonce,
-                image_id: imageId,
+                job_id: currentJob.id,
             },
         }).done(function(response) {
-            if (response.success && response.data && response.data.metadata) {
-                renderMetadataUI(imageId, response.data.metadata, statusContainer);
-            } else {
-                const errorMessage = response && response.data && response.data.error ? response.data.error : 'Unknown error';
-                $(messageContainer).text(`Image ${imageId} - Error: ${errorMessage}`);
+            if (response.success && response.data) {
+                setCurrentJob(response.data);
+                applyJobToContexts(response.data);
+                if (isJobPollable(response.data)) {
+                    startPolling();
+                } else {
+                    stopPolling();
+                }
+                return;
             }
 
-            processBulkGeneration(ids, index + 1, $button, total, statusContainer, stopButton, progressBar, messageContainer);
+            context.message.text(getAjaxErrorMessage(response, getActionErrorMessage(actionName)));
         }).fail(function(xhr) {
-            $(messageContainer).text(`Image ${imageId} - AJAX error: ${xhr.responseText}`);
-            processBulkGeneration(ids, index + 1, $button, total, statusContainer, stopButton, progressBar, messageContainer);
+            context.message.text(getAjaxErrorMessage(xhr, getActionErrorMessage(actionName)));
         });
     }
 
-    function renderMetadataUI(imageId, metadata, statusContainer) {
-        const mediaLibraryUrl = `/wp-admin/post.php?post=${imageId}&action=edit`;
+    function restoreLatestJob() {
+        $.ajax({
+            url: occidg_admin_vars.ajax_url,
+            type: 'GET',
+            dataType: 'json',
+            data: {
+                action: 'occidg_get_background_job_status',
+                nonce: occidg_admin_vars.occidg_ajax_nonce,
+            },
+        }).done(function(response) {
+            if (response.success && response.data) {
+                setCurrentJob(response.data);
+                applyJobToContexts(response.data);
+                startPolling();
+                return;
+            }
+
+            syncBulkGenerateControls();
+        }).fail(function() {
+            syncBulkGenerateControls();
+        });
+    }
+
+    function startPolling() {
+        stopPolling();
+
+        if (!currentJob || !currentJob.id || !isJobPollable(currentJob)) {
+            return;
+        }
+
+        pollTimer = window.setTimeout(function() {
+            pollJobStatus(currentJob.id);
+        }, 3000);
+    }
+
+    function stopPolling() {
+        if (!pollTimer) {
+            return;
+        }
+
+        window.clearTimeout(pollTimer);
+        pollTimer = null;
+    }
+
+    function pollJobStatus(jobId) {
+        if (!jobId) {
+            return;
+        }
 
         $.ajax({
             url: occidg_admin_vars.ajax_url,
             type: 'GET',
+            dataType: 'json',
             data: {
-                action: 'get_thumbnail',
-                image_id: imageId,
-                occidg_ajax_nonce: occidg_admin_vars.occidg_ajax_nonce,
+                action: 'occidg_get_background_job_status',
+                nonce: occidg_admin_vars.occidg_ajax_nonce,
+                job_id: jobId,
             },
-        }).done(function(thumbnailResponse) {
-            const thumbnailUrl = thumbnailResponse.success && thumbnailResponse.data && thumbnailResponse.data.thumbnail ? thumbnailResponse.data.thumbnail : occidg_admin_vars.fallback_image_url;
-            buildMetadataDisplay(mediaLibraryUrl, thumbnailUrl, metadata, imageId, statusContainer);
-        }).fail(function() {
-            buildMetadataDisplay(mediaLibraryUrl, occidg_admin_vars.fallback_image_url, metadata, imageId, statusContainer);
+        }).done(function(response) {
+            if (response.success && response.data) {
+                setCurrentJob(response.data);
+                applyJobToContexts(response.data);
+
+                if (isJobPollable(response.data)) {
+                    startPolling();
+                } else {
+                    stopPolling();
+                }
+
+                return;
+            }
+
+            setJobMessageAcrossContexts(getAjaxErrorMessage(response, occidg_admin_vars.background_job_poll_error || 'Unable to refresh the background job status right now.'));
+            startPolling();
+        }).fail(function(xhr) {
+            setJobMessageAcrossContexts(getAjaxErrorMessage(xhr, occidg_admin_vars.background_job_poll_error || 'Unable to refresh the background job status right now.'));
+            startPolling();
         });
     }
 
-    function buildMetadataDisplay(mediaLibraryUrl, thumbnailUrl, metadata, imageId, statusContainer) {
-        const safeThumbnailUrl = $('<div/>').text(thumbnailUrl).html();
-        const safeMediaLibraryUrl = $('<div/>').text(mediaLibraryUrl).html();
-        const safeImageId = parseInt(imageId, 10);
-        const displayMetadata = metadata && metadata.metadata ? metadata.metadata : metadata || {};
+    function applyJobToContexts(job) {
+        Object.keys(contexts).forEach(function(contextKey) {
+            renderJob(contexts[contextKey], job);
+        });
 
-        let metadataRows = '<tr><td colspan="2">No metadata available</td></tr>';
-        if (displayMetadata && typeof displayMetadata === 'object' && !Array.isArray(displayMetadata) && Object.keys(displayMetadata).length > 0) {
-            metadataRows = Object.entries(displayMetadata).map(function(entry) {
-                const key = entry[0];
-                let value = entry[1];
-                let displayKey = 'alt_text' === key ? 'Alt Tag' : key.charAt(0).toUpperCase() + key.slice(1);
+        syncBulkGenerateControls();
+    }
 
-                if (null === value || undefined === value) {
-                    value = '';
-                } else if (typeof value === 'object') {
-                    value = JSON.stringify(value);
-                }
+    function renderJob(context, job) {
+        const percent = Math.max(0, Math.min(100, parseInt(job.percent_complete || 0, 10)));
 
-                if ('title' === key) {
-                    value = `<a href="${safeMediaLibraryUrl}" target="_blank">${$('<div/>').text(value).html()} <span class="dashicons dashicons-external"></span></a>`;
-                } else {
-                    value = $('<div/>').text(value).html();
-                }
+        context.statusContainer.show();
+        context.progressBar.css('width', `${percent}%`);
+        context.message.text(getJobMessage(job));
+        context.summary.html(buildSummaryMarkup(job));
+        context.failures.html(buildFailuresMarkup(job));
 
-                return `<tr><td>${displayKey}</td><td>${value}</td></tr>`;
-            }).join('');
-        }
+        context.pauseButton.toggle(isPauseAvailable(job));
+        context.resumeButton.toggle(isResumeAvailable(job));
+        context.cancelButton.toggle(isCancelAvailable(job));
+        context.retryButton.toggle(isRetryAvailable(job));
+        context.generateButton.text('Generate All Metadata');
+    }
 
-        $(statusContainer).append(`
-            <div class="status-item">
-                <div class="thumbnail-container">
-                    <img src="${safeThumbnailUrl}" alt="Thumbnail for ${safeImageId}" class="thumbnail-preview attachment-thumbnail size-thumbnail" onerror="this.src='${occidg_admin_vars.fallback_image_url}';" />
+    function buildSummaryMarkup(job) {
+        const counts = formatTemplate(
+            occidg_admin_vars.background_job_summary || '%1$d succeeded, %2$d failed, %3$d skipped.',
+            [job.succeeded || 0, job.failed || 0, job.skipped || 0]
+        );
+
+        return `
+            <div class="occidg-job-summary-grid">
+                <div class="occidg-job-summary-card">
+                    <span class="occidg-status-pill ${getStatusPillClass(job.status)}">${escapeHtml(job.status_label || job.status || '')}</span>
+                    <strong>${escapeHtml(job.provider_label || '')}</strong>
+                    <span>${escapeHtml(job.model || '')}</span>
                 </div>
-                <div class="metadata-container">
-                    <table id="image-metadata-table" class="metadata-table">
-                        ${metadataRows}
-                    </table>
+                <div class="occidg-job-summary-card">
+                    <strong>${escapeHtml(counts)}</strong>
+                    <span>${escapeHtml(job.label || '')}</span>
                 </div>
             </div>
-        `);
+        `;
+    }
+
+    function buildFailuresMarkup(job) {
+        const failures = Array.isArray(job.recent_failures) ? job.recent_failures : [];
+
+        if (!failures.length) {
+            if (parseInt(job.processed || 0, 10) < 1 && isJobPollable(job)) {
+                return '';
+            }
+
+            return `
+                <div class="status-item occidg-job-failure-card occidg-job-empty-state">
+                    <p>${escapeHtml(occidg_admin_vars.background_job_no_failures || 'No recent failures recorded.')}</p>
+                </div>
+            `;
+        }
+
+        const items = failures.map(function(failure) {
+            const imageId = parseInt(failure.image_id || 0, 10);
+            const imageLabel = formatTemplate(
+                occidg_admin_vars.background_job_image_label || 'Image %d',
+                [imageId]
+            );
+            const imageUrl = `/wp-admin/post.php?post=${imageId}&action=edit`;
+
+            return `
+                <li class="occidg-job-failure-item">
+                    <a href="${escapeHtml(imageUrl)}" class="occidg-job-failure-link" target="_blank" rel="noopener noreferrer">${escapeHtml(imageLabel)}</a>
+                    <span>${escapeHtml(failure.message || '')}</span>
+                </li>
+            `;
+        }).join('');
+
+        return `
+            <div class="status-item occidg-job-failure-card">
+                <div class="status-item__header">
+                    <span class="occidg-status-pill is-error">${escapeHtml(occidg_admin_vars.background_job_failures || 'Recent failures')}</span>
+                </div>
+                <ul class="occidg-job-failure-list">${items}</ul>
+            </div>
+        `;
+    }
+
+    function syncBulkGenerateControls() {
+        const isBusy = hasBlockingJob();
+        const message = isBusy
+            ? (occidg_admin_vars.background_job_active || 'Background job active')
+            : getGenerationGateMessage();
+        const isReady = !isBusy && isGenerationReady();
+
+        Object.keys(contexts).forEach(function(contextKey) {
+            syncGenerateButton(contexts[contextKey].generateButton, isReady, message);
+        });
+
+        syncGenerateButton($('#confirm-bulk-generate'), isReady, message);
+    }
+
+    function syncGenerateButton($button, isReady, message) {
+        if (!$button.length) {
+            return;
+        }
+
+        if (isReady) {
+            $button.prop('disabled', false).removeAttr('aria-disabled').removeAttr('title');
+            return;
+        }
+
+        $button
+            .prop('disabled', true)
+            .attr('aria-disabled', 'true')
+            .attr('title', message);
+    }
+
+    function shouldBlockGeneration(context) {
+        if (hasBlockingJob()) {
+            context.statusContainer.show();
+            context.message.text(occidg_admin_vars.background_job_active || 'Background job active');
+            return true;
+        }
+
+        if (!context.generateButton.is(':disabled') && isGenerationReady()) {
+            return false;
+        }
+
+        const message = getGenerationGateMessage();
+        const $modalContent = $('#bulk-generate-modal .modal-content');
+
+        syncGenerateButton(context.generateButton, false, message);
+        syncGenerationGateMessage(context.header, message, 'occidg-generation-gate-message');
+        syncGenerationGateMessage($modalContent, message, 'occidg-generation-gate-message occidg-generation-gate-message-modal');
+
+        return true;
+    }
+
+    function syncGenerationGateMessage($container, message, className) {
+        if (!$container.length) {
+            return;
+        }
+
+        let $message = $container.find('.occidg-generation-gate-message').first();
+
+        if (!$message.length) {
+            $message = $('<p />', { class: className });
+            $container.append($message);
+        }
+
+        $message.text(message);
+    }
+
+    function setCurrentJob(job) {
+        currentJob = job && job.id ? job : null;
+    }
+
+    function setJobMessageAcrossContexts(message) {
+        Object.keys(contexts).forEach(function(contextKey) {
+            contexts[contextKey].message.text(message);
+        });
+    }
+
+    function isPauseAvailable(job) {
+        return !!(job && job.can_pause);
+    }
+
+    function isResumeAvailable(job) {
+        return !!(job && job.can_resume);
+    }
+
+    function isCancelAvailable(job) {
+        return !!(job && job.can_cancel);
+    }
+
+    function isRetryAvailable(job) {
+        return !!(job && job.can_retry);
+    }
+
+    function isJobPollable(job) {
+        return !!(job && (job.status === 'queued' || job.status === 'running' || job.status === 'paused'));
+    }
+
+    function hasBlockingJob() {
+        return !!(currentJob && (currentJob.status === 'queued' || currentJob.status === 'running' || currentJob.status === 'paused'));
+    }
+
+    function getJobMessage(job) {
+        const progressMessage = formatTemplate(
+            occidg_admin_vars.background_job_progress || '%1$s: %2$d of %3$d images processed.',
+            [job.status_label || job.status || '', job.processed || 0, job.total || 0]
+        );
+
+        if ('completed' === job.status) {
+            return occidg_admin_vars.background_job_complete || 'All metadata generation complete.';
+        }
+
+        if ('completed_with_errors' === job.status) {
+            return occidg_admin_vars.background_job_complete_with_errors || 'Metadata generation finished with some errors.';
+        }
+
+        if ('cancelled' === job.status) {
+            return occidg_admin_vars.background_job_cancelled || 'Metadata generation was cancelled.';
+        }
+
+        if ('paused' === job.status) {
+            return occidg_admin_vars.background_job_paused || 'Metadata generation is paused.';
+        }
+
+        return progressMessage;
+    }
+
+    function getBusyMessageForAction(actionName) {
+        if ('pause' === actionName) {
+            return occidg_admin_vars.background_job_paused || 'Metadata generation is paused.';
+        }
+
+        if ('resume' === actionName) {
+            return occidg_admin_vars.background_job_active || 'Background job active';
+        }
+
+        if ('retry' === actionName) {
+            return occidg_admin_vars.background_job_retrying || 'Creating retry job...';
+        }
+
+        return occidg_admin_vars.background_job_cancelled || 'Metadata generation was cancelled.';
+    }
+
+    function getActionErrorMessage(actionName) {
+        if ('pause' === actionName) {
+            return occidg_admin_vars.background_job_pause_error || 'Unable to pause the background job right now.';
+        }
+
+        if ('resume' === actionName) {
+            return occidg_admin_vars.background_job_resume_error || 'Unable to resume the background job right now.';
+        }
+
+        if ('retry' === actionName) {
+            return occidg_admin_vars.background_job_retry_error || 'Unable to retry the background job right now.';
+        }
+
+        return occidg_admin_vars.background_job_cancel_error || 'Unable to cancel the background job right now.';
+    }
+
+    function getStatusPillClass(status) {
+        if ('completed' === status) {
+            return 'is-success';
+        }
+
+        if ('completed_with_errors' === status || 'failed' === status || 'cancelled' === status) {
+            return 'is-error';
+        }
+
+        if ('paused' === status) {
+            return 'is-paused';
+        }
+
+        return 'is-openai';
+    }
+
+    function isGenerationReady() {
+        return !!(window.occidg_admin_vars && (
+            true === occidg_admin_vars.selected_provider_ready ||
+            1 === occidg_admin_vars.selected_provider_ready ||
+            '1' === occidg_admin_vars.selected_provider_ready
+        ));
+    }
+
+    function getGenerationGateMessage() {
+        return window.occidg_admin_vars && occidg_admin_vars.missing_key_message
+            ? occidg_admin_vars.missing_key_message
+            : 'Add and save an API key in Settings to enable metadata generation.';
+    }
+
+    function getAjaxErrorMessage(response, fallbackMessage) {
+        if (response && response.responseJSON && response.responseJSON.data) {
+            return getAjaxErrorMessage(response.responseJSON, fallbackMessage);
+        }
+
+        if (response && response.data) {
+            if (response.data.message || response.data.error) {
+                const baseMessage = response.data.message || response.data.error;
+                return response.data.details
+                    ? `${baseMessage} ${response.data.details}`
+                    : baseMessage;
+            }
+
+            if ('string' === typeof response.data) {
+                return response.data;
+            }
+        }
+
+        return fallbackMessage;
+    }
+
+    function formatTemplate(template, values) {
+        let output = template;
+
+        values.forEach(function(value, index) {
+            const placeholder = new RegExp(`%${index + 1}\\$[sd]`, 'g');
+            output = output.replace(placeholder, value);
+        });
+
+        output = output.replace(/%d|%s/g, function() {
+            return values.length ? values.shift() : '';
+        });
+
+        return output;
+    }
+
+    function escapeHtml(value) {
+        return $('<div/>').text(value || '').html();
     }
 });

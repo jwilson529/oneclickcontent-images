@@ -4,15 +4,15 @@ Tags: images, seo, alt text, OpenAI, Gemini, AI, accessibility, WordPress plugin
 Requires at least: 5.0
 Tested up to: 6.8
 Requires PHP: 7.2
-Stable tag: 1.1.15
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Generate AI-powered alt text, titles, captions, and descriptions for existing Media Library images using your own OpenAI or Gemini API key.
+Free AI-powered image metadata generation for existing Media Library images using your own OpenAI or Gemini API key.
 
 == Description ==
 
-**OneClickContent - Image Detail Generator** enhances existing WordPress images with AI-generated metadata.
+**OneClickContent - Image Detail Generator** is a free, bring-your-own-key plugin for enhancing existing WordPress images with AI-generated metadata.
 
 Use your own **OpenAI** or **Gemini** API key to generate:
 - alt text
@@ -100,7 +100,7 @@ Yes. This is a bring-your-own-key plugin. Add your OpenAI or Gemini API key in t
 
 = Which AI providers are supported? =
 
-The current migration target supports OpenAI and Gemini.
+OpenAI and Gemini.
 
 = Which fields can it generate? =
 
@@ -129,26 +129,19 @@ The plugin supports the language options currently provided in the admin setting
 3. **Bulk Edit Mode:** Bulk generate metadata across multiple images.
 4. **Generated Image Details:** Preview and edit AI-generated titles, captions, alt texts, and descriptions.
 
-== Development Notes ==
+== Upgrade Notice ==
 
-This plugin is in the middle of a product migration from the old hosted OneClickContent model to a free bring-your-own-key metadata workflow.
+= 1.2.0 =
 
-Current implementation status:
-- OpenAI and Gemini provider settings are in place.
-- Metadata generation is being normalized to the stable `title`, `description`, `alt_text`, and `caption` contract.
-- Old license, trial, credits, and upsell flows have been removed from the main admin experience.
-
-Important handoff notes for future development:
-- Tracked repo copy and deployed local plugin copy are separate.
-- Local deployed path: `/home/jameswilson/sites/siteground/oneclickcontent-com/code/wp-content/plugins/occidg`
-- A partial manual sync previously caused a fatal error because required runtime files were skipped.
-- Prefer full-plugin syncs, or use an explicit runtime-file checklist before testing the local site.
+This release repositions the plugin as a free, bring-your-own-key AI metadata generator for the Media Library with OpenAI and Gemini support.
 
 == Changelog ==
 
-= Unreleased =
-* Documented the active BYO-key migration status and local deploy-sync handoff notes.
-* Noted the safe sync requirement after a partial local plugin copy caused a fatal bootstrap error.
+= 1.2.0 =
+* Re-released the plugin as a free, bring-your-own-key AI image metadata solution.
+* Centered the user experience on OpenAI and Gemini provider settings.
+* Removed public-facing migration and handoff notes from the plugin readme.
+* Cleaned up release packaging so the distributable zip stays focused on runtime files.
 
 = 1.1.15 =
 * Update to media library API calls

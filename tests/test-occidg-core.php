@@ -23,7 +23,7 @@ final class Test_Occidg_Core extends TestCase {
 	 */
 	public static function setUpBeforeClass(): void {
 		if ( ! defined( 'OCCIDG_VERSION' ) ) {
-			define( 'OCCIDG_VERSION', '1.1.15' );
+			define( 'OCCIDG_VERSION', '1.2.0' );
 		}
 
 		if ( ! defined( 'OCCIDG_PLUGIN_FILE' ) ) {
@@ -50,7 +50,7 @@ final class Test_Occidg_Core extends TestCase {
 		$plugin = new Occidg();
 
 		$this->assertSame( 'occidg', $plugin->get_occidg_images() );
-		$this->assertSame( '1.1.15', $plugin->get_version() );
+		$this->assertSame( '1.2.0', $plugin->get_version() );
 		$this->assertInstanceOf( Occidg_Loader::class, $plugin->get_loader() );
 
 		$plugin->run();
@@ -60,6 +60,13 @@ final class Test_Occidg_Core extends TestCase {
 
 		$this->assertContains( 'plugins_loaded', $action_hooks );
 		$this->assertContains( 'admin_menu', $action_hooks );
+		$this->assertContains( Occidg_Background_Worker::CRON_HOOK, $action_hooks );
+		$this->assertContains( 'wp_ajax_occidg_create_background_job', $action_hooks );
+		$this->assertContains( 'wp_ajax_occidg_get_background_job_status', $action_hooks );
+		$this->assertContains( 'wp_ajax_occidg_pause_background_job', $action_hooks );
+		$this->assertContains( 'wp_ajax_occidg_resume_background_job', $action_hooks );
+		$this->assertContains( 'wp_ajax_occidg_cancel_background_job', $action_hooks );
+		$this->assertContains( 'wp_ajax_occidg_retry_background_job', $action_hooks );
 		$this->assertContains( 'wp_enqueue_scripts', $action_hooks );
 		$this->assertNotContains( 'wp_ajax_occidg_validate_license', $action_hooks );
 		$this->assertNotContains( 'wp_ajax_occidg_get_license_status', $action_hooks );

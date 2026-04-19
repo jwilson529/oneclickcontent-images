@@ -1,6 +1,6 @@
 <?php
 /**
- * Bulk edit functionality for the OneClickContent Image Details plugin.
+ * Bulk edit functionality for the AI image metadata plugin.
  *
  * Handles the bulk edit tab and related AJAX actions for editing and generating image metadata.
  *
@@ -32,14 +32,21 @@ class Occidg_Bulk_Edit {
 	 */
 	public function render_bulk_edit_tab() {
 		$fallback_image_url = plugin_dir_url( __FILE__ ) . 'assets/icon.png';
+		$gate_state         = Occidg_Admin_Settings::get_generation_gate_state();
+		$generate_attrs     = $gate_state['has_selected_provider_key']
+			? ''
+			: sprintf(
+				' disabled="disabled" aria-disabled="true" title="%s"',
+				esc_attr( $gate_state['missing_key_message'] )
+			);
 		$provider_help_html = '<div class="bulk-edit-provider-help compact">
 	        <div class="cta-left">
 	            <img src="' . esc_url( $fallback_image_url ) . '" alt="' . esc_attr__( 'Plugin icon', 'occidg' ) . '" style="float: left; margin-right: 10px; width: 50px; height: auto;">
-	            <h2>' . esc_html__( 'Bulk-generate metadata with your own AI key', 'occidg' ) . '</h2>
+	            <h2>' . esc_html__( 'Free, bring-your-own-key bulk metadata', 'occidg' ) . '</h2>
 	            <p>' . esc_html__( 'Set up OpenAI or Gemini in Settings, then generate image title, description, alt text, and caption across your Media Library.', 'occidg' ) . '</p>
 	            <ul class="benefits-list">
 	                <li>' . esc_html__( 'Use your own provider credentials', 'occidg' ) . '</li>
-	                <li>' . esc_html__( 'Generate metadata in bulk without hosted-service gates', 'occidg' ) . '</li>
+	                <li>' . esc_html__( 'Run the plugin for free with the provider account you choose', 'occidg' ) . '</li>
 	                <li>' . esc_html__( 'Review and edit results in one place', 'occidg' ) . '</li>
 	            </ul>
 	        </div>
@@ -61,13 +68,15 @@ class Occidg_Bulk_Edit {
 				<?php echo wp_kses_post( $provider_help_html ); ?>
 
 				<div class="bulk-edit-header">
-					<button id="generate-all-metadata" class="button button-primary button-hero">
+					<button id="generate-all-metadata" class="button button-primary button-hero"<?php echo wp_kses_post( $generate_attrs ); ?>>
 						<?php esc_html_e( 'Generate All Metadata', 'occidg' ); ?>
 					</button>
-					<button id="stop-bulk-generation" class="button button-secondary" style="display:none;">
-						<?php esc_html_e( 'Stop Generation', 'occidg' ); ?>
-					</button>
 					<p class="description"><?php esc_html_e( 'Click to generate metadata for all your images using your configured provider.', 'occidg' ); ?></p>
+					<?php if ( ! $gate_state['has_selected_provider_key'] ) : ?>
+						<p class="occidg-generation-gate-message">
+							<?php echo esc_html( $gate_state['missing_key_message'] ); ?>
+						</p>
+					<?php endif; ?>
 				</div>
 
 				<div id="bulk-generate-status" class="bulk-generate-status" style="display: none;">
@@ -75,7 +84,25 @@ class Occidg_Bulk_Edit {
 					<div id="bulk-generate-progress-container" class="bulk-generate-progress-container">
 						<div id="bulk-generate-progress-bar" class="bulk-generate-progress-bar"></div>
 					</div>
-					<div id="bulk-generate-message" class="bulk-generate-message"></div>
+					<div class="occidg-job-toolbar">
+						<div id="bulk-generate-message" class="bulk-generate-message" aria-live="polite"></div>
+						<div class="occidg-job-actions">
+							<button id="pause-bulk-generation" class="button button-secondary" style="display:none;">
+								<?php esc_html_e( 'Pause', 'occidg' ); ?>
+							</button>
+							<button id="resume-bulk-generation" class="button button-secondary" style="display:none;">
+								<?php esc_html_e( 'Resume', 'occidg' ); ?>
+							</button>
+							<button id="cancel-bulk-generation" class="button button-link-delete" style="display:none;">
+								<?php esc_html_e( 'Cancel', 'occidg' ); ?>
+							</button>
+							<button id="retry-bulk-generation" class="button button-secondary" style="display:none;">
+								<?php esc_html_e( 'Retry Failed', 'occidg' ); ?>
+							</button>
+						</div>
+					</div>
+					<div id="bulk-generate-summary" class="occidg-job-summary" aria-live="polite"></div>
+					<div id="bulk-generate-failures" class="occidg-job-failures"></div>
 				</div>
 			</div>
 
@@ -88,8 +115,13 @@ class Occidg_Bulk_Edit {
 							<?php esc_html_e( 'This will overwrite any existing image metadata.', 'occidg' ); ?>
 						</p>
 					</div>
+					<?php if ( ! $gate_state['has_selected_provider_key'] ) : ?>
+						<p class="occidg-generation-gate-message occidg-generation-gate-message-modal">
+							<?php echo esc_html( $gate_state['missing_key_message'] ); ?>
+						</p>
+					<?php endif; ?>
 					<div class="modal-buttons">
-						<button id="confirm-bulk-generate" class="button button-primary">
+						<button id="confirm-bulk-generate" class="button button-primary"<?php echo wp_kses_post( $generate_attrs ); ?>>
 							<?php esc_html_e( 'Yes, Generate', 'occidg' ); ?>
 						</button>
 						<button id="cancel-bulk-generate" class="button button-secondary">

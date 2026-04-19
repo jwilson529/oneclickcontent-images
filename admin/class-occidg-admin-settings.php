@@ -1,8 +1,9 @@
 <?php
 /**
- * Admin Settings for OneClickContent Image Details Plugin
+ * Admin settings for the AI image metadata plugin.
  *
- * Handles the admin settings page, including generating image metadata using the OneClickContent API.
+ * Handles the admin settings page, including generating image metadata from
+ * configured AI providers.
  *
  * @package    One_Click_Images
  * @subpackage One_Click_Images/admin
@@ -18,8 +19,8 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class Occidg_Admin_Settings
  *
- * Manages the admin settings page for the OneClickContent Image Details plugin,
- * including metadata generation via the OneClickContent API.
+ * Manages the admin settings page for the AI image metadata plugin,
+ * including metadata generation via OpenAI and Gemini.
  *
  * @since 1.0.0
  */
@@ -64,7 +65,7 @@ class Occidg_Admin_Settings {
 			'occidg_openai_api_key',
 			array(
 				'type'              => 'string',
-				'sanitize_callback' => 'sanitize_text_field',
+				'sanitize_callback' => array( $this, 'sanitize_api_key' ),
 				'default'           => '',
 			)
 		);
@@ -74,7 +75,7 @@ class Occidg_Admin_Settings {
 			'occidg_openai_model',
 			array(
 				'type'              => 'string',
-				'sanitize_callback' => 'sanitize_text_field',
+				'sanitize_callback' => array( $this, 'sanitize_openai_model' ),
 				'default'           => 'gpt-4o-mini',
 			)
 		);
@@ -84,7 +85,7 @@ class Occidg_Admin_Settings {
 			'occidg_gemini_api_key',
 			array(
 				'type'              => 'string',
-				'sanitize_callback' => 'sanitize_text_field',
+				'sanitize_callback' => array( $this, 'sanitize_api_key' ),
 				'default'           => '',
 			)
 		);
@@ -94,7 +95,7 @@ class Occidg_Admin_Settings {
 			'occidg_gemini_model',
 			array(
 				'type'              => 'string',
-				'sanitize_callback' => 'sanitize_text_field',
+				'sanitize_callback' => array( $this, 'sanitize_gemini_model' ),
 				'default'           => 'gemini-1.5-flash',
 			)
 		);
@@ -139,7 +140,7 @@ class Occidg_Admin_Settings {
 			'occidg_language',
 			array(
 				'type'              => 'string',
-				'sanitize_callback' => 'sanitize_text_field',
+				'sanitize_callback' => array( $this, 'sanitize_language' ),
 				'default'           => 'en',
 			)
 		);
@@ -263,7 +264,44 @@ class Occidg_Admin_Settings {
 	 * @return void
 	 */
 	public function occidg_language_callback() {
-		$languages = array(
+		$languages = $this->get_supported_languages();
+
+		$selected_language = get_option( 'occidg_language', 'en' );
+
+		echo '<select id="occidg_language" name="occidg_language" class="occidg-select-field">';
+		foreach ( $languages as $key => $label ) {
+			printf(
+				'<option value="%s" %s>%s</option>',
+				esc_attr( $key ),
+				selected( $selected_language, $key, false ),
+				esc_html( $label )
+			);
+		}
+		echo '</select>';
+		echo '<p class="description">' . esc_html__( 'Generate metadata in the language that best fits the site or audience you are optimizing for.', 'occidg' ) . '</p>';
+	}
+
+	/**
+	 * Get the label for a language code.
+	 *
+	 * @since 1.0.0
+	 * @param string $language_code The language code.
+	 * @return string The human-readable label.
+	 */
+	private function get_language_label( $language_code ) {
+		$languages = $this->get_supported_languages();
+
+		return isset( $languages[ $language_code ] ) ? $languages[ $language_code ] : $languages['en'];
+	}
+
+	/**
+	 * Return all supported language options.
+	 *
+	 * @since 1.1.16
+	 * @return array<string, string> Supported language code-to-label map.
+	 */
+	private function get_supported_languages() {
+		return array(
 			'en' => __( 'English', 'occidg' ),
 			'es' => __( 'Spanish', 'occidg' ),
 			'fr' => __( 'French', 'occidg' ),
@@ -281,40 +319,6 @@ class Occidg_Admin_Settings {
 			'sv' => __( 'Swedish', 'occidg' ),
 			'hi' => __( 'Hindi', 'occidg' ),
 		);
-
-		$selected_language = get_option( 'occidg_language', 'en' );
-
-		echo '<select id="occidg_language" name="occidg_language">';
-		foreach ( $languages as $key => $label ) {
-			printf(
-				'<option value="%s" %s>%s</option>',
-				esc_attr( $key ),
-				selected( $selected_language, $key, false ),
-				esc_html( $label )
-			);
-		}
-		echo '</select>';
-	}
-
-	/**
-	 * Get the label for a language code.
-	 *
-	 * @since 1.0.0
-	 * @param string $language_code The language code.
-	 * @return string The human-readable label.
-	 */
-	private function get_language_label( $language_code ) {
-		$languages = array(
-			'en' => 'English',
-			'es' => 'Spanish',
-			'fr' => 'French',
-			'de' => 'German',
-			'it' => 'Italian',
-			'zh' => 'Chinese',
-			'ja' => 'Japanese',
-		);
-
-		return isset( $languages[ $language_code ] ) ? $languages[ $language_code ] : 'English';
 	}
 
 	/**
@@ -337,8 +341,13 @@ class Occidg_Admin_Settings {
 		$checked       = get_option( 'occidg_override_metadata', false );
 		$checked_value = $checked ? 1 : 0;
 		?>
-		<input type="checkbox" id="occidg_override_metadata" name="occidg_override_metadata" value="1" <?php checked( 1, esc_attr( $checked_value ) ); ?> />
-		<p class="description"><?php esc_html_e( 'Check this box if you want to override existing metadata details when generating new metadata.', 'occidg' ); ?></p>
+		<label class="occidg-toggle-card" for="occidg_override_metadata">
+			<input type="checkbox" id="occidg_override_metadata" name="occidg_override_metadata" value="1" <?php checked( 1, esc_attr( $checked_value ) ); ?> />
+			<span class="occidg-toggle-copy">
+				<span class="occidg-toggle-title"><?php esc_html_e( 'Overwrite existing metadata', 'occidg' ); ?></span>
+				<span class="occidg-toggle-description"><?php esc_html_e( 'Replace titles, alt text, descriptions, and captions that already exist on attachments.', 'occidg' ); ?></span>
+			</span>
+		</label>
 		<?php
 	}
 
@@ -351,26 +360,48 @@ class Occidg_Admin_Settings {
 	public function occidg_metadata_fields_callback() {
 		$options = get_option( 'occidg_metadata_fields', array() );
 		$fields  = array(
-			'title'       => __( 'Title', 'occidg' ),
-			'description' => __( 'Description', 'occidg' ),
-			'alt_text'    => __( 'Alt Text', 'occidg' ),
-			'caption'     => __( 'Caption', 'occidg' ),
+			'title'       => array(
+				'label'       => __( 'Title', 'occidg' ),
+				'description' => __( 'Update the attachment title used throughout the Media Library.', 'occidg' ),
+			),
+			'description' => array(
+				'label'       => __( 'Description', 'occidg' ),
+				'description' => __( 'Fill the longer attachment description with richer context.', 'occidg' ),
+			),
+			'alt_text'    => array(
+				'label'       => __( 'Alt Text', 'occidg' ),
+				'description' => __( 'Improve accessibility and image SEO for screen readers and search.', 'occidg' ),
+			),
+			'caption'     => array(
+				'label'       => __( 'Caption', 'occidg' ),
+				'description' => __( 'Generate the visible caption field shown alongside the image.', 'occidg' ),
+			),
 		);
 
+		echo '<div class="occidg-choice-grid">';
 		foreach ( $fields as $key => $label ) {
-			$checked = ( isset( $options[ $key ] ) && '1' === $options[ $key ] ) ? 'checked="checked"' : '';
+			$is_checked = isset( $options[ $key ] ) && '1' === $options[ $key ];
 			printf(
-				'<input type="checkbox" class="metadata-field-checkbox" id="occidg_metadata_fields_%s" name="occidg_metadata_fields[%s]" value="1" %s>',
+				'<label class="occidg-choice-card%1$s" for="occidg_metadata_fields_%2$s">',
+				$is_checked ? ' is-checked' : '',
 				esc_attr( $key ),
-				esc_attr( $key ),
-				esc_attr( $checked )
 			);
 			printf(
-				'<label for="occidg_metadata_fields_%s"> %s</label><br>',
+				'<input type="checkbox" class="metadata-field-checkbox" id="occidg_metadata_fields_%1$s" name="occidg_metadata_fields[%1$s]" value="1" %2$s>',
 				esc_attr( $key ),
-				esc_html( $label )
+				checked( true, $is_checked, false )
 			);
+			printf(
+				'<span class="occidg-choice-title">%s</span>',
+				esc_html( $label['label'] )
+			);
+			printf(
+				'<span class="occidg-choice-description">%s</span>',
+				esc_html( $label['description'] )
+			);
+			echo '</label>';
 		}
+		echo '</div>';
 	}
 
 	/**
@@ -412,6 +443,34 @@ class Occidg_Admin_Settings {
 	}
 
 	/**
+	 * Return the current provider generation gate state.
+	 *
+	 * @since 1.2.0
+	 * @return array
+	 */
+	public static function get_generation_gate_state() {
+		$provider                  = get_option( 'occidg_provider', 'openai' );
+		$provider                  = 'gemini' === $provider ? 'gemini' : 'openai';
+		$provider_label            = 'gemini' === $provider ? __( 'Gemini', 'occidg' ) : __( 'OpenAI', 'occidg' );
+		$has_openai_key            = ! empty( get_option( 'occidg_openai_api_key', '' ) );
+		$has_gemini_key            = ! empty( get_option( 'occidg_gemini_api_key', '' ) );
+		$has_selected_provider_key = 'gemini' === $provider ? $has_gemini_key : $has_openai_key;
+
+		return array(
+			'provider'                  => $provider,
+			'provider_label'            => $provider_label,
+			'has_openai_key'            => $has_openai_key,
+			'has_gemini_key'            => $has_gemini_key,
+			'has_selected_provider_key' => $has_selected_provider_key,
+			'missing_key_message'       => sprintf(
+				/* translators: %s: provider name. */
+				__( 'Add and save a %s API key in Settings to enable metadata generation.', 'occidg' ),
+				$provider_label
+			),
+		);
+	}
+
+	/**
 	 * Sanitize the selected provider.
 	 *
 	 * @since 1.1.16
@@ -425,6 +484,40 @@ class Occidg_Admin_Settings {
 	}
 
 	/**
+	 * Sanitize a selected language code.
+	 *
+	 * @since 1.1.16
+	 * @param string $language Raw language code.
+	 * @return string
+	 */
+	public function sanitize_language( $language ) {
+		$language  = strtolower( trim( (string) $language ) );
+		$languages = array_keys( $this->get_supported_languages() );
+
+		return in_array( $language, $languages, true ) ? $language : 'en';
+	}
+
+	/**
+	 * Sanitize an API key.
+	 *
+	 * Keeps keys local-only and strips whitespace while preserving valid token characters.
+	 *
+	 * @since 1.1.16
+	 * @param string $api_key Raw API key value.
+	 * @return string
+	 */
+	public function sanitize_api_key( $api_key ) {
+		if ( ! is_scalar( $api_key ) ) {
+			return '';
+		}
+
+		$api_key = wp_unslash( $api_key );
+		$api_key = preg_replace( '/\s+/', '', $api_key );
+
+		return is_string( $api_key ) ? trim( $api_key ) : '';
+	}
+
+	/**
 	 * Render the provider dropdown.
 	 *
 	 * @since 1.1.16
@@ -433,7 +526,7 @@ class Occidg_Admin_Settings {
 	public function occidg_provider_callback() {
 		$provider = get_option( 'occidg_provider', 'openai' );
 		?>
-		<select id="occidg_provider" name="occidg_provider">
+		<select id="occidg_provider" name="occidg_provider" class="occidg-select-field">
 			<option value="openai" <?php selected( $provider, 'openai' ); ?>><?php esc_html_e( 'OpenAI', 'occidg' ); ?></option>
 			<option value="gemini" <?php selected( $provider, 'gemini' ); ?>><?php esc_html_e( 'Gemini', 'occidg' ); ?></option>
 		</select>
@@ -450,8 +543,13 @@ class Occidg_Admin_Settings {
 	public function occidg_auto_add_details_callback() {
 		$checked = get_option( 'occidg_auto_add_details', false );
 		?>
-		<input type="checkbox" id="occidg_auto_add_details" name="occidg_auto_add_details" value="1" <?php checked( 1, $checked ); ?> />
-		<p class="description"><?php esc_html_e( 'Automatically generate and add metadata details when images are added to the Media Library.', 'occidg' ); ?></p>
+		<label class="occidg-toggle-card" for="occidg_auto_add_details">
+			<input type="checkbox" id="occidg_auto_add_details" name="occidg_auto_add_details" value="1" <?php checked( 1, $checked ); ?> />
+			<span class="occidg-toggle-copy">
+				<span class="occidg-toggle-title"><?php esc_html_e( 'Generate metadata on upload', 'occidg' ); ?></span>
+				<span class="occidg-toggle-description"><?php esc_html_e( 'Apply your selected provider and field rules as soon as new images enter the Media Library.', 'occidg' ); ?></span>
+			</span>
+		</label>
 		<?php
 	}
 
@@ -462,11 +560,7 @@ class Occidg_Admin_Settings {
 	 * @return void
 	 */
 	public function occidg_openai_api_key_callback() {
-		$value = get_option( 'occidg_openai_api_key', '' );
-		?>
-		<input type="password" id="occidg_openai_api_key" name="occidg_openai_api_key" value="<?php echo esc_attr( $value ); ?>" class="regular-text" autocomplete="off" />
-		<p class="description"><?php esc_html_e( 'Paste your OpenAI API key. It is used only for metadata generation requests from this site.', 'occidg' ); ?></p>
-		<?php
+		$this->render_provider_api_key_field( 'openai' );
 	}
 
 	/**
@@ -476,11 +570,7 @@ class Occidg_Admin_Settings {
 	 * @return void
 	 */
 	public function occidg_openai_model_callback() {
-		$value = get_option( 'occidg_openai_model', 'gpt-4o-mini' );
-		?>
-		<input type="text" id="occidg_openai_model" name="occidg_openai_model" value="<?php echo esc_attr( $value ); ?>" class="regular-text" />
-		<p class="description"><?php esc_html_e( 'Recommended: gpt-4o-mini or another multimodal model that can return structured JSON.', 'occidg' ); ?></p>
-		<?php
+		$this->render_provider_model_field( 'openai' );
 	}
 
 	/**
@@ -490,11 +580,7 @@ class Occidg_Admin_Settings {
 	 * @return void
 	 */
 	public function occidg_gemini_api_key_callback() {
-		$value = get_option( 'occidg_gemini_api_key', '' );
-		?>
-		<input type="password" id="occidg_gemini_api_key" name="occidg_gemini_api_key" value="<?php echo esc_attr( $value ); ?>" class="regular-text" autocomplete="off" />
-		<p class="description"><?php esc_html_e( 'Paste your Gemini API key. OCCIDG will call Gemini directly when Gemini is the selected provider.', 'occidg' ); ?></p>
-		<?php
+		$this->render_provider_api_key_field( 'gemini' );
 	}
 
 	/**
@@ -504,15 +590,673 @@ class Occidg_Admin_Settings {
 	 * @return void
 	 */
 	public function occidg_gemini_model_callback() {
-		$value = get_option( 'occidg_gemini_model', 'gemini-1.5-flash' );
+		$this->render_provider_model_field( 'gemini' );
+	}
+
+	/**
+	 * Return the settings config for a provider.
+	 *
+	 * @since 1.2.0
+	 * @param string $provider Provider slug.
+	 * @return array
+	 */
+	private function get_provider_settings_config( $provider ) {
+		$provider = $this->sanitize_provider( $provider );
+
+		if ( 'gemini' === $provider ) {
+			return array(
+				'provider'           => 'gemini',
+				'label'              => __( 'Gemini', 'occidg' ),
+				'api_key_option'     => 'occidg_gemini_api_key',
+				'model_option'       => 'occidg_gemini_model',
+				'model_cache_option' => 'occidg_gemini_models_cache',
+				'default_model'      => 'gemini-1.5-flash',
+				'key_description'    => __( 'Paste your Gemini API key. OCCIDG will validate it, save it, and load the available Gemini models for this site.', 'occidg' ),
+				'model_description'  => __( 'Choose from the Gemini models returned for your saved key. Only Gemini models that support content generation are listed.', 'occidg' ),
+			);
+		}
+
+		return array(
+			'provider'           => 'openai',
+			'label'              => __( 'OpenAI', 'occidg' ),
+			'api_key_option'     => 'occidg_openai_api_key',
+			'model_option'       => 'occidg_openai_model',
+			'model_cache_option' => 'occidg_openai_models_cache',
+			'default_model'      => 'gpt-4o-mini',
+			'key_description'    => __( 'Paste your OpenAI API key. OCCIDG will validate it, save it, and load the available multimodal OpenAI models for this site.', 'occidg' ),
+			'model_description'  => __( 'Choose from the compatible OpenAI models returned for your saved key. OCCIDG lists supported image-capable chat models only.', 'occidg' ),
+		);
+	}
+
+	/**
+	 * Render the AJAX-enabled API key field for a provider.
+	 *
+	 * @since 1.2.0
+	 * @param string $provider Provider slug.
+	 * @return void
+	 */
+	private function render_provider_api_key_field( $provider ) {
+		$config = $this->get_provider_settings_config( $provider );
+		$value  = get_option( $config['api_key_option'], '' );
 		?>
-		<input type="text" id="occidg_gemini_model" name="occidg_gemini_model" value="<?php echo esc_attr( $value ); ?>" class="regular-text" />
-		<p class="description"><?php esc_html_e( 'Recommended: gemini-1.5-flash or another image-capable Gemini model that supports JSON output.', 'occidg' ); ?></p>
+		<div class="occidg-provider-setting-field" data-provider="<?php echo esc_attr( $config['provider'] ); ?>">
+			<input
+				type="password"
+				id="<?php echo esc_attr( $config['api_key_option'] ); ?>"
+				name="<?php echo esc_attr( $config['api_key_option'] ); ?>"
+				value="<?php echo esc_attr( $value ); ?>"
+				class="regular-text occidg-api-key-field"
+				autocomplete="off"
+				data-provider="<?php echo esc_attr( $config['provider'] ); ?>"
+			/>
+			<p class="description"><?php echo esc_html( $config['key_description'] ); ?></p>
+			<p
+				id="<?php echo esc_attr( $config['api_key_option'] ); ?>_status"
+				class="occidg-provider-field-status"
+				aria-live="polite"
+			></p>
+		</div>
 		<?php
 	}
 
 	/**
-	 * Handles saving settings for the OneClickContent Images plugin via AJAX.
+	 * Render the provider model select field.
+	 *
+	 * @since 1.2.0
+	 * @param string $provider Provider slug.
+	 * @return void
+	 */
+	private function render_provider_model_field( $provider ) {
+		$config         = $this->get_provider_settings_config( $provider );
+		$current_model  = get_option( $config['model_option'], $config['default_model'] );
+		$model_choices  = $this->get_provider_model_field_choices( $provider, $current_model );
+		$has_saved_key  = ! empty( get_option( $config['api_key_option'], '' ) );
+		$disabled_attrs = $has_saved_key ? '' : ' disabled="disabled" aria-disabled="true"';
+		?>
+		<div class="occidg-provider-setting-field" data-provider="<?php echo esc_attr( $config['provider'] ); ?>">
+			<select
+				id="<?php echo esc_attr( $config['model_option'] ); ?>"
+				name="<?php echo esc_attr( $config['model_option'] ); ?>"
+				class="occidg-select-field occidg-model-select"
+				data-provider="<?php echo esc_attr( $config['provider'] ); ?>"
+				data-model-count="<?php echo esc_attr( count( $model_choices ) ); ?>"<?php echo wp_kses_post( $disabled_attrs ); ?>
+			>
+				<?php foreach ( $model_choices as $model_choice ) : ?>
+					<option value="<?php echo esc_attr( $model_choice['value'] ); ?>" <?php selected( $current_model, $model_choice['value'] ); ?>>
+						<?php echo esc_html( $model_choice['label'] ); ?>
+					</option>
+				<?php endforeach; ?>
+			</select>
+			<p class="description"><?php echo esc_html( $config['model_description'] ); ?></p>
+			<p
+				id="<?php echo esc_attr( $config['model_option'] ); ?>_status"
+				class="occidg-provider-field-status occidg-provider-field-status-model"
+				aria-live="polite"
+			></p>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Return model choices for rendering the provider select.
+	 *
+	 * @since 1.2.0
+	 * @param string $provider       Provider slug.
+	 * @param string $selected_model Current selected model.
+	 * @return array
+	 */
+	private function get_provider_model_field_choices( $provider, $selected_model ) {
+		$config         = $this->get_provider_settings_config( $provider );
+		$choices        = $this->get_cached_provider_models( $provider );
+		$selected_model = $this->sanitize_text_model( $selected_model, $config['default_model'] );
+
+		if ( empty( $choices ) ) {
+			return array(
+				array(
+					'value' => $selected_model,
+					'label' => $selected_model,
+				),
+			);
+		}
+
+		$choice_values = wp_list_pluck( $choices, 'value' );
+		if ( ! in_array( $selected_model, $choice_values, true ) ) {
+			array_unshift(
+				$choices,
+				array(
+					'value' => $selected_model,
+					'label' => $selected_model,
+				)
+			);
+		}
+
+		return $choices;
+	}
+
+	/**
+	 * Return cached provider model choices.
+	 *
+	 * @since 1.2.0
+	 * @param string $provider Provider slug.
+	 * @return array
+	 */
+	private function get_cached_provider_models( $provider ) {
+		$config = $this->get_provider_settings_config( $provider );
+
+		return $this->normalize_cached_model_choices( get_option( $config['model_cache_option'], array() ) );
+	}
+
+	/**
+	 * Normalize model choices loaded from the options table.
+	 *
+	 * @since 1.2.0
+	 * @param mixed $choices Raw choices value.
+	 * @return array
+	 */
+	private function normalize_cached_model_choices( $choices ) {
+		if ( ! is_array( $choices ) ) {
+			return array();
+		}
+
+		$normalized_choices = array();
+
+		foreach ( $choices as $choice ) {
+			if ( ! is_array( $choice ) ) {
+				continue;
+			}
+
+			$value = isset( $choice['value'] ) ? $this->sanitize_model_identifier( $choice['value'] ) : '';
+			$label = isset( $choice['label'] ) ? sanitize_text_field( $choice['label'] ) : '';
+
+			if ( '' === $value || '' === $label ) {
+				continue;
+			}
+
+			$normalized_choices[] = array(
+				'value' => $value,
+				'label' => $label,
+			);
+		}
+
+		return $normalized_choices;
+	}
+
+	/**
+	 * Validate and save a provider API key, then return the available models.
+	 *
+	 * @since 1.2.0
+	 * @return void
+	 */
+	public function occidg_ajax_validate_provider_key() {
+		if ( ! check_ajax_referer( 'occidg_ajax_nonce', 'nonce', false ) ) {
+			wp_send_json_error(
+				array(
+					'message' => __( 'Nonce verification failed.', 'occidg' ),
+				)
+			);
+			return;
+		}
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error(
+				array(
+					'message' => __( 'Permission denied.', 'occidg' ),
+				)
+			);
+			return;
+		}
+
+		$provider = isset( $_POST['provider'] ) ? $this->sanitize_provider( wp_unslash( $_POST['provider'] ) ) : 'openai';
+		$api_key  = isset( $_POST['api_key'] ) ? $this->sanitize_api_key( wp_unslash( $_POST['api_key'] ) ) : '';
+		$config   = $this->get_provider_settings_config( $provider );
+
+		if ( '' === $api_key ) {
+			update_option( $config['api_key_option'], '' );
+
+			$selected_model = get_option( $config['model_option'], $config['default_model'] );
+
+			wp_send_json_success(
+				array(
+					'provider'       => $provider,
+					'has_key'        => false,
+					'message'        => sprintf(
+						/* translators: %s: provider name. */
+						__( '%s API key cleared.', 'occidg' ),
+						$config['label']
+					),
+					'models'         => $this->get_provider_model_field_choices( $provider, $selected_model ),
+					'selected_model' => $selected_model,
+					'gate_state'     => self::get_generation_gate_state(),
+				)
+			);
+			return;
+		}
+
+		$validation = $this->validate_provider_key_and_fetch_models( $provider, $api_key );
+		if ( ! $validation['success'] ) {
+			wp_send_json_error(
+				array(
+					'provider' => $provider,
+					'message'  => $validation['error'],
+					'details'  => isset( $validation['details'] ) ? $validation['details'] : '',
+				)
+			);
+			return;
+		}
+
+		update_option( $config['api_key_option'], $api_key );
+		update_option( $config['model_cache_option'], $validation['models'] );
+
+		$selected_model = $this->choose_saved_or_default_provider_model( $provider, $validation['models'] );
+		update_option( $config['model_option'], $selected_model );
+
+		wp_send_json_success(
+			array(
+				'provider'       => $provider,
+				'has_key'        => true,
+				'message'        => sprintf(
+					/* translators: %s: provider name. */
+					__( '%s API key validated and saved.', 'occidg' ),
+					$config['label']
+				),
+				'models'         => $this->get_provider_model_field_choices( $provider, $selected_model ),
+				'selected_model' => $selected_model,
+				'gate_state'     => self::get_generation_gate_state(),
+			)
+		);
+	}
+
+	/**
+	 * Save the selected provider model via AJAX.
+	 *
+	 * @since 1.2.0
+	 * @return void
+	 */
+	public function occidg_ajax_save_provider_model() {
+		if ( ! check_ajax_referer( 'occidg_ajax_nonce', 'nonce', false ) ) {
+			wp_send_json_error(
+				array(
+					'message' => __( 'Nonce verification failed.', 'occidg' ),
+				)
+			);
+			return;
+		}
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error(
+				array(
+					'message' => __( 'Permission denied.', 'occidg' ),
+				)
+			);
+			return;
+		}
+
+		$provider = isset( $_POST['provider'] ) ? $this->sanitize_provider( wp_unslash( $_POST['provider'] ) ) : 'openai';
+		$model    = isset( $_POST['model'] ) ? $this->sanitize_model_identifier( wp_unslash( $_POST['model'] ) ) : '';
+		$config   = $this->get_provider_settings_config( $provider );
+
+		if ( '' === $model ) {
+			wp_send_json_error(
+				array(
+					'message' => __( 'A model selection is required.', 'occidg' ),
+				)
+			);
+			return;
+		}
+
+		update_option( $config['model_option'], $model );
+
+		wp_send_json_success(
+			array(
+				'provider'       => $provider,
+				'selected_model' => $model,
+				'message'        => sprintf(
+					/* translators: %s: provider name. */
+					__( '%s model saved.', 'occidg' ),
+					$config['label']
+				),
+			)
+		);
+	}
+
+	/**
+	 * Validate a provider key by fetching available models.
+	 *
+	 * @since 1.2.0
+	 * @param string $provider Provider slug.
+	 * @param string $api_key  API key to validate.
+	 * @return array
+	 */
+	private function validate_provider_key_and_fetch_models( $provider, $api_key ) {
+		if ( 'gemini' === $provider ) {
+			return $this->fetch_gemini_model_choices( $api_key );
+		}
+
+		return $this->fetch_openai_model_choices( $api_key );
+	}
+
+	/**
+	 * Fetch compatible OpenAI models for the provided key.
+	 *
+	 * @since 1.2.0
+	 * @param string $api_key OpenAI API key.
+	 * @return array
+	 */
+	private function fetch_openai_model_choices( $api_key ) {
+		$response = wp_remote_get(
+			'https://api.openai.com/v1/models',
+			array(
+				'headers' => array(
+					'Authorization' => 'Bearer ' . $api_key,
+				),
+				'timeout' => 30,
+			)
+		);
+
+		return $this->decode_provider_model_choices_response( $response, 'openai' );
+	}
+
+	/**
+	 * Fetch compatible Gemini models for the provided key.
+	 *
+	 * @since 1.2.0
+	 * @param string $api_key Gemini API key.
+	 * @return array
+	 */
+	private function fetch_gemini_model_choices( $api_key ) {
+		$response = wp_remote_get(
+			sprintf(
+				'https://generativelanguage.googleapis.com/v1beta/models?key=%s',
+				rawurlencode( $api_key )
+			),
+			array(
+				'timeout' => 30,
+			)
+		);
+
+		return $this->decode_provider_model_choices_response( $response, 'gemini' );
+	}
+
+	/**
+	 * Decode a provider model-list response into normalized model choices.
+	 *
+	 * @since 1.2.0
+	 * @param array|WP_Error $response Provider HTTP response.
+	 * @param string         $provider Provider slug.
+	 * @return array
+	 */
+	private function decode_provider_model_choices_response( $response, $provider ) {
+		if ( is_wp_error( $response ) ) {
+			return array(
+				'success' => false,
+				'error'   => sprintf(
+					/* translators: %s: provider name. */
+					__( 'Failed to communicate with %s.', 'occidg' ),
+					ucfirst( $provider )
+				),
+				'details' => $response->get_error_message(),
+			);
+		}
+
+		$status_code = wp_remote_retrieve_response_code( $response );
+		$raw_body    = wp_remote_retrieve_body( $response );
+		$body        = $this->decode_json_payload( $raw_body );
+
+		if ( ! is_array( $body ) ) {
+			return array(
+				'success' => false,
+				'error'   => sprintf(
+					/* translators: %s: provider name. */
+					__( 'Invalid response from %s.', 'occidg' ),
+					ucfirst( $provider )
+				),
+				'details' => $this->get_body_excerpt( $raw_body ),
+			);
+		}
+
+		if ( $status_code < 200 || $status_code >= 300 ) {
+			return array(
+				'success' => false,
+				'error'   => sprintf(
+					/* translators: %s: provider name. */
+					__( '%s returned an error response.', 'occidg' ),
+					ucfirst( $provider )
+				),
+				'details' => $this->extract_provider_error_message( $body, $provider ),
+			);
+		}
+
+		$current_model = get_option(
+			$this->get_provider_settings_config( $provider )['model_option'],
+			$this->get_provider_settings_config( $provider )['default_model']
+		);
+		$model_choices = 'gemini' === $provider
+			? $this->normalize_gemini_model_choices( $body, $current_model )
+			: $this->normalize_openai_model_choices( $body, $current_model );
+
+		if ( empty( $model_choices ) ) {
+			return array(
+				'success' => false,
+				'error'   => __( 'The provider key was valid, but no compatible models were returned.', 'occidg' ),
+			);
+		}
+
+		return array(
+			'success' => true,
+			'models'  => $model_choices,
+		);
+	}
+
+	/**
+	 * Normalize OpenAI models into dropdown choices.
+	 *
+	 * @since 1.2.0
+	 * @param array  $body          OpenAI models response body.
+	 * @param string $current_model Currently saved model.
+	 * @return array
+	 */
+	private function normalize_openai_model_choices( $body, $current_model = '' ) {
+		if ( ! isset( $body['data'] ) || ! is_array( $body['data'] ) ) {
+			return array();
+		}
+
+		$current_model = $this->sanitize_model_identifier( $current_model );
+		$model_choices = array();
+
+		foreach ( $body['data'] as $raw_model ) {
+			if ( ! is_array( $raw_model ) ) {
+				continue;
+			}
+
+			$model_id = isset( $raw_model['id'] ) ? $this->sanitize_model_identifier( $raw_model['id'] ) : '';
+			if ( '' === $model_id ) {
+				continue;
+			}
+
+			if ( $model_id !== $current_model && ! $this->should_include_openai_model( $model_id ) ) {
+				continue;
+			}
+
+			$model_choices[ $model_id ] = array(
+				'value' => $model_id,
+				'label' => $model_id,
+			);
+		}
+
+		uasort(
+			$model_choices,
+			static function ( $left, $right ) {
+				return strnatcasecmp( $left['label'], $right['label'] );
+			}
+		);
+
+		return array_values( $model_choices );
+	}
+
+	/**
+	 * Normalize Gemini models into dropdown choices.
+	 *
+	 * @since 1.2.0
+	 * @param array  $body          Gemini models response body.
+	 * @param string $current_model Currently saved model.
+	 * @return array
+	 */
+	private function normalize_gemini_model_choices( $body, $current_model = '' ) {
+		if ( ! isset( $body['models'] ) || ! is_array( $body['models'] ) ) {
+			return array();
+		}
+
+		$current_model = $this->sanitize_model_identifier( $current_model );
+		$model_choices = array();
+
+		foreach ( $body['models'] as $raw_model ) {
+			if ( ! is_array( $raw_model ) ) {
+				continue;
+			}
+
+			$supported_methods = isset( $raw_model['supportedGenerationMethods'] ) && is_array( $raw_model['supportedGenerationMethods'] )
+				? $raw_model['supportedGenerationMethods']
+				: array();
+			if ( ! in_array( 'generateContent', $supported_methods, true ) ) {
+				continue;
+			}
+
+			$model_id = isset( $raw_model['baseModelId'] ) ? $this->sanitize_model_identifier( $raw_model['baseModelId'] ) : '';
+			if ( '' === $model_id && isset( $raw_model['name'] ) && is_string( $raw_model['name'] ) ) {
+				$model_id = $this->sanitize_model_identifier( str_replace( 'models/', '', $raw_model['name'] ) );
+			}
+
+			if ( '' === $model_id || ( 0 !== strpos( $model_id, 'gemini' ) && $model_id !== $current_model ) ) {
+				continue;
+			}
+
+			if ( isset( $model_choices[ $model_id ] ) ) {
+				continue;
+			}
+
+			$display_name = isset( $raw_model['displayName'] ) ? sanitize_text_field( $raw_model['displayName'] ) : '';
+			$label        = '' !== $display_name && $display_name !== $model_id
+				? sprintf( '%1$s (%2$s)', $display_name, $model_id )
+				: $model_id;
+
+			$model_choices[ $model_id ] = array(
+				'value' => $model_id,
+				'label' => $label,
+			);
+		}
+
+		uasort(
+			$model_choices,
+			static function ( $left, $right ) {
+				return strnatcasecmp( $left['label'], $right['label'] );
+			}
+		);
+
+		return array_values( $model_choices );
+	}
+
+	/**
+	 * Choose a saved model when it is still available, otherwise use a safe default.
+	 *
+	 * @since 1.2.0
+	 * @param string $provider      Provider slug.
+	 * @param array  $model_choices Normalized model choices.
+	 * @return string
+	 */
+	private function choose_saved_or_default_provider_model( $provider, $model_choices ) {
+		$config        = $this->get_provider_settings_config( $provider );
+		$selected      = get_option( $config['model_option'], $config['default_model'] );
+		$selected      = $this->sanitize_text_model( $selected, $config['default_model'] );
+		$choice_values = array();
+
+		foreach ( $model_choices as $model_choice ) {
+			if ( isset( $model_choice['value'] ) && is_string( $model_choice['value'] ) ) {
+				$choice_values[] = $model_choice['value'];
+			}
+		}
+
+		if ( in_array( $selected, $choice_values, true ) ) {
+			return $selected;
+		}
+
+		if ( in_array( $config['default_model'], $choice_values, true ) ) {
+			return $config['default_model'];
+		}
+
+		return ! empty( $choice_values ) ? $choice_values[0] : $config['default_model'];
+	}
+
+	/**
+	 * Sanitize a model identifier without applying a fallback.
+	 *
+	 * @since 1.2.0
+	 * @param string $model Raw model identifier.
+	 * @return string
+	 */
+	private function sanitize_model_identifier( $model ) {
+		$model = trim( (string) $model );
+		if ( '' === $model ) {
+			return '';
+		}
+
+		return preg_replace( '/\s+/', '', $model );
+	}
+
+	/**
+	 * Determine whether an OpenAI model should appear in the UI select.
+	 *
+	 * @since 1.2.0
+	 * @param string $model_id OpenAI model ID.
+	 * @return bool
+	 */
+	private function should_include_openai_model( $model_id ) {
+		$model_id = $this->sanitize_model_identifier( $model_id );
+		if ( '' === $model_id || 0 === strpos( $model_id, 'ft:' ) ) {
+			return false;
+		}
+
+		$allowed_prefixes = array(
+			'gpt-4.1',
+			'gpt-4o',
+			'gpt-5',
+		);
+		$disallowed_terms = array(
+			'chatgpt',
+			'computer-use',
+			'embedding',
+			'gpt-audio',
+			'gpt-image',
+			'gpt-realtime',
+			'instruct',
+			'moderation',
+			'search-preview',
+			'transcribe',
+			'tts',
+		);
+
+		$is_allowed = false;
+		foreach ( $allowed_prefixes as $allowed_prefix ) {
+			if ( 0 === strpos( $model_id, $allowed_prefix ) ) {
+				$is_allowed = true;
+				break;
+			}
+		}
+
+		if ( ! $is_allowed ) {
+			return false;
+		}
+
+		foreach ( $disallowed_terms as $disallowed_term ) {
+			if ( false !== strpos( $model_id, $disallowed_term ) ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Handles saving plugin settings via AJAX.
 	 *
 	 * @since 1.0.0
 	 * @return void
@@ -552,37 +1296,42 @@ class Occidg_Admin_Settings {
 		$override = isset( $settings['occidg_override_metadata'] ) && '1' === $settings['occidg_override_metadata'] ? '1' : '0';
 		update_option( 'occidg_override_metadata', $override );
 
-		$language = isset( $settings['occidg_language'] ) ? $settings['occidg_language'] : 'en';
+		$language = isset( $settings['occidg_language'] ) ? $this->sanitize_language( $settings['occidg_language'] ) : 'en';
 		update_option( 'occidg_language', $language );
 
 		$provider = isset( $settings['occidg_provider'] ) ? $this->sanitize_provider( $settings['occidg_provider'] ) : 'openai';
 		update_option( 'occidg_provider', $provider );
 
-		$openai_api_key = isset( $settings['occidg_openai_api_key'] ) ? $settings['occidg_openai_api_key'] : '';
+		$openai_api_key = isset( $settings['occidg_openai_api_key'] ) ? $this->sanitize_api_key( $settings['occidg_openai_api_key'] ) : '';
 		update_option( 'occidg_openai_api_key', $openai_api_key );
 
-		$openai_model = isset( $settings['occidg_openai_model'] ) ? $settings['occidg_openai_model'] : 'gpt-4o-mini';
+		$openai_model = isset( $settings['occidg_openai_model'] ) ? $this->sanitize_openai_model( $settings['occidg_openai_model'] ) : 'gpt-4o-mini';
 		update_option( 'occidg_openai_model', $openai_model );
 
-		$gemini_api_key = isset( $settings['occidg_gemini_api_key'] ) ? $settings['occidg_gemini_api_key'] : '';
+		$gemini_api_key = isset( $settings['occidg_gemini_api_key'] ) ? $this->sanitize_api_key( $settings['occidg_gemini_api_key'] ) : '';
 		update_option( 'occidg_gemini_api_key', $gemini_api_key );
 
-		$gemini_model = isset( $settings['occidg_gemini_model'] ) ? $settings['occidg_gemini_model'] : 'gemini-1.5-flash';
+		$gemini_model = isset( $settings['occidg_gemini_model'] ) ? $this->sanitize_gemini_model( $settings['occidg_gemini_model'] ) : 'gemini-1.5-flash';
 		update_option( 'occidg_gemini_model', $gemini_model );
 
 		wp_send_json_success();
 	}
 
 	/**
-	 * Generate metadata for an image using the OneClickContent API.
+	 * Generate metadata for an image using the configured AI provider.
 	 *
 	 * @since 1.0.0
-	 * @param int $image_id The ID of the image attachment.
+	 * @param int   $image_id           The ID of the image attachment.
+	 * @param array $generation_context Optional generation context overrides.
 	 * @return array|false The generated metadata on success, or false/an error array on failure.
 	 */
-	public function occidg_generate_metadata( $image_id ) {
-		$selected_fields   = get_option( 'occidg_metadata_fields', array() );
-		$override_metadata = get_option( 'occidg_override_metadata', false );
+	public function occidg_generate_metadata( $image_id, $generation_context = array() ) {
+		$selected_fields   = isset( $generation_context['selected_fields'] ) && is_array( $generation_context['selected_fields'] )
+			? $generation_context['selected_fields']
+			: get_option( 'occidg_metadata_fields', array() );
+		$override_metadata = array_key_exists( 'override_metadata', $generation_context )
+			? ! empty( $generation_context['override_metadata'] )
+			: get_option( 'occidg_override_metadata', false );
 
 		$image_path = $this->get_custom_image_size_path( $image_id, 'one-click-image-api' );
 		if ( ! $image_path || ! file_exists( $image_path ) ) {
@@ -620,9 +1369,17 @@ class Occidg_Admin_Settings {
 		}
 		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- Provider APIs accept the image payload encoded as base64.
 		$image_base64 = base64_encode( $image_data );
-		$image_type   = wp_check_filetype( $image_path )['ext'];
+		$file_type    = wp_check_filetype( $image_path );
+		$image_type   = $this->sanitize_image_type( $file_type['ext'], $file_type['type'] ?? '' );
 
-		$provider_metadata = $this->request_provider_metadata( $image_base64, $image_type );
+		if ( ! $image_type ) {
+			return array(
+				'success' => false,
+				'error'   => __( 'Unable to detect a supported image format for metadata generation.', 'occidg' ),
+			);
+		}
+
+		$provider_metadata = $this->request_provider_metadata( $image_base64, $image_type, $generation_context );
 		if ( isset( $provider_metadata['success'] ) && ! $provider_metadata['success'] ) {
 			return $provider_metadata;
 		}
@@ -652,31 +1409,38 @@ class Occidg_Admin_Settings {
 	 * Request metadata from the configured AI provider.
 	 *
 	 * @since 1.1.16
-	 * @param string $image_base64 Base64 encoded image.
-	 * @param string $image_type   Detected image extension.
+	 * @param string $image_base64       Base64 encoded image.
+	 * @param string $image_type         Detected image extension.
+	 * @param array  $generation_context Optional generation context overrides.
 	 * @return array
 	 */
-	private function request_provider_metadata( $image_base64, $image_type ) {
-		$provider = get_option( 'occidg_provider', 'openai' );
+	private function request_provider_metadata( $image_base64, $image_type, $generation_context = array() ) {
+		$provider = isset( $generation_context['provider'] )
+			? $this->sanitize_provider( $generation_context['provider'] )
+			: get_option( 'occidg_provider', 'openai' );
 
 		if ( 'gemini' === $provider ) {
-			return $this->request_gemini_metadata( $image_base64, $image_type );
+			return $this->request_gemini_metadata( $image_base64, $image_type, $generation_context );
 		}
 
-		return $this->request_openai_metadata( $image_base64, $image_type );
+		return $this->request_openai_metadata( $image_base64, $image_type, $generation_context );
 	}
 
 	/**
 	 * Request metadata from OpenAI.
 	 *
 	 * @since 1.1.16
-	 * @param string $image_base64 Base64 encoded image.
-	 * @param string $image_type   Detected image extension.
+	 * @param string $image_base64       Base64 encoded image.
+	 * @param string $image_type         Detected image extension.
+	 * @param array  $generation_context Optional generation context overrides.
 	 * @return array
 	 */
-	private function request_openai_metadata( $image_base64, $image_type ) {
+	private function request_openai_metadata( $image_base64, $image_type, $generation_context = array() ) {
 		$api_key = get_option( 'occidg_openai_api_key', '' );
-		$model   = get_option( 'occidg_openai_model', 'gpt-4o-mini' );
+		$model   = isset( $generation_context['model'] ) && is_string( $generation_context['model'] )
+			? $generation_context['model']
+			: get_option( 'occidg_openai_model', 'gpt-4o-mini' );
+		$model   = $this->sanitize_text_model( $model, 'gpt-4o-mini' );
 
 		if ( empty( $api_key ) ) {
 			return array(
@@ -685,13 +1449,12 @@ class Occidg_Admin_Settings {
 			);
 		}
 
-		$messages = $this->prepare_messages_payload( $image_base64, $image_type );
+		$messages = $this->prepare_messages_payload( $image_base64, $image_type, $generation_context );
 		$body     = array(
-			'model'         => $model,
-			'messages'      => $messages,
-			'functions'     => array( $this->get_function_definition() ),
-			'function_call' => array( 'name' => 'generate_image_metadata' ),
-			'max_tokens'    => 500,
+			'model'                 => $model,
+			'messages'              => $messages,
+			'response_format'       => $this->get_openai_response_format(),
+			'max_completion_tokens' => 500,
 		);
 
 		$response = wp_remote_post(
@@ -706,20 +1469,29 @@ class Occidg_Admin_Settings {
 			)
 		);
 
-		return $this->decode_provider_response( $response, 'openai' );
+		$result = $this->decode_provider_response( $response, 'openai' );
+		if ( isset( $result['success'] ) && ! $result['success'] ) {
+			$this->log_provider_request_failure( 'openai', $model, $result, $response );
+		}
+
+		return $result;
 	}
 
 	/**
 	 * Request metadata from Gemini.
 	 *
 	 * @since 1.1.16
-	 * @param string $image_base64 Base64 encoded image.
-	 * @param string $image_type   Detected image extension.
+	 * @param string $image_base64       Base64 encoded image.
+	 * @param string $image_type         Detected image extension.
+	 * @param array  $generation_context Optional generation context overrides.
 	 * @return array
 	 */
-	private function request_gemini_metadata( $image_base64, $image_type ) {
+	private function request_gemini_metadata( $image_base64, $image_type, $generation_context = array() ) {
 		$api_key = get_option( 'occidg_gemini_api_key', '' );
-		$model   = get_option( 'occidg_gemini_model', 'gemini-1.5-flash' );
+		$model   = isset( $generation_context['model'] ) && is_string( $generation_context['model'] )
+			? $generation_context['model']
+			: get_option( 'occidg_gemini_model', 'gemini-1.5-flash' );
+		$model   = $this->sanitize_text_model( $model, 'gemini-1.5-flash' );
 
 		if ( empty( $api_key ) ) {
 			return array(
@@ -730,7 +1502,11 @@ class Occidg_Admin_Settings {
 
 		$language_instruction = sprintf(
 			'Generate image metadata including title, description, alt_text, and caption for the provided image in %s. Return valid JSON only.',
-			$this->get_language_label( get_option( 'occidg_language', 'en' ) )
+			$this->get_language_label(
+				isset( $generation_context['language'] ) && is_string( $generation_context['language'] )
+					? $generation_context['language']
+					: get_option( 'occidg_language', 'en' )
+			)
 		);
 
 		$body = array(
@@ -780,7 +1556,39 @@ class Occidg_Admin_Settings {
 			)
 		);
 
-		return $this->decode_provider_response( $response, 'gemini' );
+		$result = $this->decode_provider_response( $response, 'gemini' );
+		if ( isset( $result['success'] ) && ! $result['success'] ) {
+			$this->log_provider_request_failure( 'gemini', $model, $result, $response );
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Log a failed provider request with sanitized diagnostic context.
+	 *
+	 * @since 1.2.0
+	 * @param string         $provider Provider slug.
+	 * @param string         $model    Model identifier.
+	 * @param array          $result   Normalized failure payload.
+	 * @param array|WP_Error $response Raw HTTP response.
+	 * @return void
+	 */
+	private function log_provider_request_failure( $provider, $model, $result, $response ) {
+		$status_code = is_wp_error( $response ) ? 0 : (int) wp_remote_retrieve_response_code( $response );
+		$details     = isset( $result['details'] ) && is_string( $result['details'] ) ? $result['details'] : '';
+		$error       = isset( $result['error'] ) && is_string( $result['error'] ) ? $result['error'] : __( 'Unknown provider error.', 'occidg' );
+
+		Occidg_Logger::warning(
+			'Provider metadata request failed.',
+			array(
+				'provider'    => $this->sanitize_provider( $provider ),
+				'model'       => $this->sanitize_model_identifier( $model ),
+				'status_code' => $status_code,
+				'error'       => sanitize_text_field( $error ),
+				'details'     => sanitize_text_field( $this->get_body_excerpt( $details ) ),
+			)
+		);
 	}
 
 	/**
@@ -805,9 +1613,9 @@ class Occidg_Admin_Settings {
 		}
 
 		$status_code = wp_remote_retrieve_response_code( $response );
+		$raw_body    = wp_remote_retrieve_body( $response );
 
-		$body = json_decode( wp_remote_retrieve_body( $response ), true );
-		if ( JSON_ERROR_NONE !== json_last_error() ) {
+		if ( ! is_string( $raw_body ) ) {
 			return array(
 				'success' => false,
 				'error'   => sprintf(
@@ -815,7 +1623,32 @@ class Occidg_Admin_Settings {
 					__( 'Invalid response from %s.', 'occidg' ),
 					ucfirst( $provider )
 				),
-				'details' => json_last_error_msg(),
+				'details' => 'Response body is not a string.',
+			);
+		}
+
+		$body = $this->decode_json_payload( $raw_body );
+		if ( false === $body ) {
+			if ( $status_code < 200 || $status_code >= 300 ) {
+				return array(
+					'success' => false,
+					'error'   => sprintf(
+						/* translators: %s: provider name */
+						__( '%s returned an error response.', 'occidg' ),
+						ucfirst( $provider )
+					),
+					'details' => $this->get_body_excerpt( $raw_body ),
+				);
+			}
+
+			return array(
+				'success' => false,
+				'error'   => sprintf(
+					/* translators: %s: provider name */
+					__( 'Invalid response from %s.', 'occidg' ),
+					ucfirst( $provider )
+				),
+				'details' => $this->get_body_excerpt( $raw_body ),
 			);
 		}
 
@@ -840,6 +1673,7 @@ class Occidg_Admin_Settings {
 					__( 'Unable to extract metadata from the %s response.', 'occidg' ),
 					ucfirst( $provider )
 				),
+				'details' => $this->extract_provider_metadata_failure_details( $body, $provider, $raw_body ),
 			);
 		}
 
@@ -855,15 +1689,64 @@ class Occidg_Admin_Settings {
 	 * @return string
 	 */
 	private function extract_provider_error_message( $body, $provider ) {
-		if ( 'gemini' === $provider && ! empty( $body['error']['message'] ) ) {
-			return sanitize_text_field( $body['error']['message'] );
+		if ( ! is_array( $body ) ) {
+			return __( 'Unknown provider error.', 'occidg' );
 		}
 
-		if ( 'openai' === $provider && ! empty( $body['error']['message'] ) ) {
-			return sanitize_text_field( $body['error']['message'] );
+		$error_message = $this->extract_nested_value( $body, array( 'error', 'message' ) );
+		if ( is_string( $error_message ) && '' !== $error_message ) {
+			return sanitize_text_field( $error_message );
+		}
+
+		if ( 'openai' === $provider && isset( $body['error']['code'] ) ) {
+			$code = $this->extract_nested_value( $body, array( 'error', 'code' ) );
+			if ( is_string( $code ) && '' !== $code ) {
+				return sprintf(
+					/* translators: %s: error code */
+					__( 'OpenAI error: %s.', 'occidg' ),
+					sanitize_text_field( $code )
+				);
+			}
+		}
+
+		if ( isset( $body['message'] ) && is_string( $body['message'] ) && '' !== trim( $body['message'] ) ) {
+			return sanitize_text_field( $body['message'] );
+		}
+
+		if ( isset( $body['error']['errors'] ) && is_array( $body['error']['errors'] ) ) {
+			$messages = array();
+			foreach ( $body['error']['errors'] as $error ) {
+				if ( is_array( $error ) && isset( $error['message'] ) && is_string( $error['message'] ) ) {
+					$messages[] = $error['message'];
+				}
+			}
+
+			if ( ! empty( $messages ) ) {
+				return sanitize_text_field( implode( ' | ', $messages ) );
+			}
 		}
 
 		return __( 'Unknown provider error.', 'occidg' );
+	}
+
+	/**
+	 * Extract a useful detail message when a provider response succeeds but cannot be normalized.
+	 *
+	 * @since 1.2.0
+	 * @param array  $body      Provider response body.
+	 * @param string $provider  Provider slug.
+	 * @param string $raw_body  Raw response body.
+	 * @return string
+	 */
+	private function extract_provider_metadata_failure_details( $body, $provider, $raw_body ) {
+		if ( 'openai' === $provider ) {
+			$refusal = $this->extract_nested_value( $body, array( 'choices', 0, 'message', 'refusal' ) );
+			if ( is_string( $refusal ) && '' !== trim( $refusal ) ) {
+				return sanitize_text_field( $refusal );
+			}
+		}
+
+		return $this->get_body_excerpt( $raw_body );
 	}
 
 	/**
@@ -875,21 +1758,31 @@ class Occidg_Admin_Settings {
 	 * @return array|false
 	 */
 	private function extract_metadata_from_provider_response( $data, $provider ) {
-		$metadata = false;
-
 		if ( 'gemini' === $provider ) {
-			$text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
-			if ( is_string( $text ) && '' !== $text ) {
-				$metadata = json_decode( trim( $text ), true );
-			}
+			$payload = $this->extract_provider_response_text(
+				$data,
+				array(
+					array( 'candidates', 0, 'content', 'parts', 0, 'text' ),
+				)
+			);
 		} else {
-			$arguments = $data['choices'][0]['message']['function_call']['arguments'] ?? '';
-			if ( is_string( $arguments ) && '' !== $arguments ) {
-				$metadata = json_decode( $arguments, true );
-			}
+			$payload = $this->extract_provider_response_text(
+				$data,
+				array(
+					array( 'choices', 0, 'message', 'function_call', 'arguments' ),
+					array( 'choices', 0, 'message', 'tool_calls', 0, 'function', 'arguments' ),
+					array( 'choices', 0, 'message', 'content' ),
+				)
+			);
 		}
 
-		if ( JSON_ERROR_NONE !== json_last_error() || ! is_array( $metadata ) ) {
+		if ( is_array( $payload ) ) {
+			$metadata = $payload;
+		} else {
+			$metadata = $this->decode_json_payload( is_string( $payload ) ? $payload : '' );
+		}
+
+		if ( ! is_array( $metadata ) ) {
 			return false;
 		}
 
@@ -904,11 +1797,16 @@ class Occidg_Admin_Settings {
 	 * @return array|false
 	 */
 	private function normalize_generated_metadata( $metadata ) {
+		$metadata = $this->extract_metadata_payload( $metadata );
+		if ( false === $metadata ) {
+			return false;
+		}
+
 		$normalized = array(
-			'title'       => isset( $metadata['title'] ) ? sanitize_text_field( $metadata['title'] ) : '',
-			'description' => isset( $metadata['description'] ) ? sanitize_textarea_field( $metadata['description'] ) : '',
-			'alt_text'    => isset( $metadata['alt_text'] ) ? sanitize_text_field( $metadata['alt_text'] ) : '',
-			'caption'     => isset( $metadata['caption'] ) ? sanitize_textarea_field( $metadata['caption'] ) : '',
+			'title'       => $this->extract_normalized_field( $metadata, array( 'title', 'headline', 'name' ), 'text' ),
+			'description' => $this->extract_normalized_field( $metadata, array( 'description', 'desc', 'summary', 'details' ), 'textarea' ),
+			'alt_text'    => $this->extract_normalized_field( $metadata, array( 'alt_text', 'alt', 'altText', 'alternative_text' ), 'text' ),
+			'caption'     => $this->extract_normalized_field( $metadata, array( 'caption', 'subheadline', 'excerpt', 'image_caption' ), 'textarea' ),
 		);
 
 		foreach ( $normalized as $value ) {
@@ -918,6 +1816,243 @@ class Occidg_Admin_Settings {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Decode a provider payload into an array.
+	 *
+	 * @since 1.1.16
+	 * @param string $payload A raw payload string to decode.
+	 * @return array|false
+	 */
+	private function decode_json_payload( $payload ) {
+		if ( ! is_string( $payload ) ) {
+			return false;
+		}
+
+		$payload = trim( (string) preg_replace( '/^\xEF\xBB\xBF/', '', $payload ) );
+		if ( '' === $payload ) {
+			return false;
+		}
+
+		$decode = function ( $candidate ) {
+			$decoded = json_decode( $candidate, true );
+			if ( JSON_ERROR_NONE === json_last_error() && is_array( $decoded ) ) {
+				return $decoded;
+			}
+
+			$candidate = preg_replace( '/,\s*(\}|\])/u', '$1', $candidate );
+			$decoded   = json_decode( $candidate, true );
+			if ( JSON_ERROR_NONE === json_last_error() && is_array( $decoded ) ) {
+				return $decoded;
+			}
+
+			return false;
+		};
+
+		$decoded = $decode( $payload );
+		if ( false !== $decoded ) {
+			return $decoded;
+		}
+
+		if ( preg_match( '/```(?:json)?\s*([\s\S]*?)\s*```/i', $payload, $matches ) ) {
+			$payload = $matches[1];
+			$decoded = $decode( $payload );
+			if ( false !== $decoded ) {
+				return $decoded;
+			}
+		}
+
+		$start = strpos( $payload, '{' );
+		$end   = strrpos( $payload, '}' );
+		if ( false !== $start && false !== $end && $end > $start ) {
+			$extracted = substr( $payload, $start, $end - $start + 1 );
+			$decoded   = $decode( $extracted );
+			if ( false !== $decoded ) {
+				return $decoded;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Extract a nested value from an array.
+	 *
+	 * @since 1.1.16
+	 * @param array $data       Input array.
+	 * @param array $path_parts Nested keys to follow.
+	 * @return mixed
+	 */
+	private function extract_nested_value( $data, $path_parts ) {
+		$current = $data;
+
+		foreach ( $path_parts as $path_part ) {
+			if ( is_array( $current ) && array_key_exists( $path_part, $current ) ) {
+				$current = $current[ $path_part ];
+				continue;
+			}
+
+			return null;
+		}
+
+		return $current;
+	}
+
+	/**
+	 * Extract a nested text value from the provider response.
+	 *
+	 * @since 1.1.16
+	 * @param array $data  Provider response.
+	 * @param array $paths Paths to probe.
+	 * @return mixed
+	 */
+	private function extract_provider_response_text( $data, $paths ) {
+		foreach ( $paths as $path ) {
+			$value = $this->extract_nested_value( $data, $path );
+			if ( is_string( $value ) && '' !== trim( $value ) ) {
+				return $value;
+			}
+			if ( is_array( $value ) ) {
+				return $value;
+			}
+		}
+
+		return '';
+	}
+
+	/**
+	 * Extract the metadata shape from provider output when a wrapper key exists.
+	 *
+	 * @since 1.1.16
+	 * @param array $metadata Raw metadata payload.
+	 * @return array|false
+	 */
+	private function extract_metadata_payload( $metadata ) {
+		if ( ! is_array( $metadata ) ) {
+			return false;
+		}
+
+		if ( isset( $metadata['metadata'] ) && is_array( $metadata['metadata'] ) ) {
+			return $metadata['metadata'];
+		}
+
+		return $metadata;
+	}
+
+	/**
+	 * Sanitize and normalize a single field from metadata aliases.
+	 *
+	 * @since 1.1.16
+	 * @param array  $metadata    Metadata payload.
+	 * @param array  $aliases     Candidate source keys.
+	 * @param string $field_type  text|textarea.
+	 * @return string
+	 */
+	private function extract_normalized_field( $metadata, $aliases, $field_type ) {
+		foreach ( $aliases as $alias ) {
+			if ( array_key_exists( $alias, $metadata ) && ! is_array( $metadata[ $alias ] ) ) {
+				$value = is_scalar( $metadata[ $alias ] ) ? (string) $metadata[ $alias ] : '';
+				$value = trim( $value );
+
+				if ( '' === $value ) {
+					continue;
+				}
+
+				if ( 'textarea' === $field_type ) {
+					return sanitize_textarea_field( $value );
+				}
+
+				return sanitize_text_field( $value );
+			}
+		}
+
+		return '';
+	}
+
+	/**
+	 * Validate and normalize image file extensions for API usage.
+	 *
+	 * @since 1.1.16
+	 * @param string $image_ext File extension from WordPress filetype lookup.
+	 * @param string $mime_type MIME type from WordPress filetype lookup.
+	 * @return string
+	 */
+	private function sanitize_image_type( $image_ext, $mime_type = '' ) {
+		$image_ext = strtolower( trim( (string) $image_ext ) );
+		if ( '' === $image_ext && '' !== $mime_type ) {
+			$image_ext = strtolower( preg_replace( '/^image\//', '', trim( (string) $mime_type ) ) );
+		}
+
+		$allowed_types = array( 'jpg', 'jpeg', 'png', 'webp', 'gif' );
+		if ( 'jpeg' === $image_ext ) {
+			$image_ext = 'jpeg';
+		}
+
+		if ( 'jpg' === $image_ext ) {
+			$image_ext = 'jpeg';
+		}
+
+		return in_array( $image_ext, $allowed_types, true ) ? $image_ext : '';
+	}
+
+	/**
+	 * Sanitize a model string and apply a fallback.
+	 *
+	 * @since 1.1.16
+	 * @param string $model           Raw model value.
+	 * @param string $fallback_model  Fallback model value.
+	 * @return string
+	 */
+	private function sanitize_text_model( $model, $fallback_model ) {
+		$model = trim( (string) $model );
+		if ( '' === $model ) {
+			return $fallback_model;
+		}
+
+		return preg_replace( '/\s+/', '', $model );
+	}
+
+	/**
+	 * Trim a long body string for diagnostics.
+	 *
+	 * @since 1.1.16
+	 * @param string $body The response body.
+	 * @return string
+	 */
+	private function get_body_excerpt( $body ) {
+		$body = is_string( $body ) ? trim( $body ) : '';
+		if ( '' === $body ) {
+			return __( 'Response body was empty.', 'occidg' );
+		}
+
+		if ( strlen( $body ) > 500 ) {
+			return substr( $body, 0, 500 ) . '...';
+		}
+
+		return $body;
+	}
+
+	/**
+	 * Sanitize OpenAI model names before save/request.
+	 *
+	 * @since 1.1.16
+	 * @param string $model OpenAI model name.
+	 * @return string
+	 */
+	public function sanitize_openai_model( $model ) {
+		return $this->sanitize_text_model( $model, 'gpt-4o-mini' );
+	}
+
+	/**
+	 * Sanitize Gemini model names before save/request.
+	 *
+	 * @since 1.1.16
+	 * @param string $model Gemini model name.
+	 * @return string
+	 */
+	public function sanitize_gemini_model( $model ) {
+		return $this->sanitize_text_model( $model, 'gemini-1.5-flash' );
 	}
 
 	/**
@@ -991,14 +2126,17 @@ class Occidg_Admin_Settings {
 	 * Prepare the messages payload for the API request.
 	 *
 	 * @since 1.0.0
-	 * @param string $image_base64 The base64-encoded image data.
-	 * @param string $image_type   The image file type.
+	 * @param string $image_base64       The base64-encoded image data.
+	 * @param string $image_type         The image file type.
+	 * @param array  $generation_context Optional generation context overrides.
 	 * @return array The messages payload.
 	 */
-	private function prepare_messages_payload( $image_base64, $image_type ) {
-		$selected_language    = get_option( 'occidg_language', 'en' );
+	private function prepare_messages_payload( $image_base64, $image_type, $generation_context = array() ) {
+		$selected_language    = isset( $generation_context['language'] ) && is_string( $generation_context['language'] )
+			? $generation_context['language']
+			: get_option( 'occidg_language', 'en' );
 		$language_instruction = sprintf(
-			'Generate image metadata including title, description, alt text, and caption for the provided image in %s.',
+			'Generate image metadata including title, description, alt text, and caption for the provided image in %s. Return only structured JSON that matches the requested schema.',
 			$this->get_language_label( $selected_language )
 		);
 
@@ -1022,36 +2160,50 @@ class Occidg_Admin_Settings {
 	}
 
 	/**
-	 * Get the function definition for metadata generation.
+	 * Get the metadata schema used for structured provider output.
 	 *
-	 * @since 1.0.0
-	 * @return array The function definition.
+	 * @since 1.2.0
+	 * @return array
 	 */
-	private function get_function_definition() {
+	private function get_metadata_schema() {
 		return array(
-			'name'        => 'generate_image_metadata',
-			'description' => 'Generate image metadata including title, description, alt text, and caption.',
-			'parameters'  => array(
-				'type'       => 'object',
-				'properties' => array(
-					'title'       => array(
-						'type'        => 'string',
-						'description' => 'A concise and descriptive title for the image.',
-					),
-					'description' => array(
-						'type'        => 'string',
-						'description' => 'A detailed description of the image content.',
-					),
-					'alt_text'    => array(
-						'type'        => 'string',
-						'description' => 'Alt text for accessibility.',
-					),
-					'caption'     => array(
-						'type'        => 'string',
-						'description' => 'A caption to display alongside the image.',
-					),
+			'type'                 => 'object',
+			'properties'           => array(
+				'title'       => array(
+					'type'        => 'string',
+					'description' => 'A concise and descriptive title for the image.',
 				),
-				'required'   => array( 'title', 'description', 'alt_text', 'caption' ),
+				'description' => array(
+					'type'        => 'string',
+					'description' => 'A detailed description of the image content.',
+				),
+				'alt_text'    => array(
+					'type'        => 'string',
+					'description' => 'Alt text for accessibility.',
+				),
+				'caption'     => array(
+					'type'        => 'string',
+					'description' => 'A caption to display alongside the image.',
+				),
+			),
+			'required'             => array( 'title', 'description', 'alt_text', 'caption' ),
+			'additionalProperties' => false,
+		);
+	}
+
+	/**
+	 * Get the OpenAI structured response format for metadata generation.
+	 *
+	 * @since 1.2.0
+	 * @return array
+	 */
+	private function get_openai_response_format() {
+		return array(
+			'type'        => 'json_schema',
+			'json_schema' => array(
+				'name'   => 'generate_image_metadata',
+				'strict' => true,
+				'schema' => $this->get_metadata_schema(),
 			),
 		);
 	}
@@ -1142,7 +2294,7 @@ class Occidg_Admin_Settings {
 
 	/**
 	 * Generate the specified image size in WebP format and ensure it fits
-	 * Azure AI Content Safety's 4 MB (Base-64) limit.
+	 * provider request payload size constraints.
 	 *
 	 * @since 1.1.0
 	 *

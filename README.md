@@ -1,12 +1,12 @@
 # OneClickContent – Image Detail Generator
 
-Generate AI-powered alt text, titles, captions, and descriptions for existing WordPress Media Library images using your own OpenAI or Gemini API key.
+Free AI-powered image metadata generation for existing WordPress Media Library images using your own OpenAI or Gemini API key.
 
 ![OneClickContent Banner](assets/banner-1544x500.png)
 
 ## Overview
 
-OneClickContent Image Detail Generator helps you enrich existing images in your Media Library with structured metadata.
+OneClickContent Image Detail Generator is a free, bring-your-own-key WordPress plugin for enriching existing images in your Media Library with structured metadata.
 
 Use it to generate:
 - alt text
@@ -42,6 +42,14 @@ This plugin sends image data directly to the provider you configure in WordPress
 
 You are responsible for your own provider account, API key, and usage costs.
 
+## Release Highlights
+
+- Free, bring-your-own-key image metadata workflow
+- Direct provider support for OpenAI and Gemini
+- Bulk generation and single-image generation inside the Media Library
+- Configurable metadata fields, overwrite behavior, language, and automatic generation
+- No license activation, trial gating, credits, or hosted-service dependency in the core workflow
+
 ## Installation
 
 1. Upload the `occidg` folder to `/wp-content/plugins/`
@@ -73,6 +81,9 @@ Yes. Use the metadata field and override settings in the plugin configuration.
 ### Does it support bulk operations?
 Yes. You can bulk-generate metadata for existing Media Library images.
 
+### Which AI providers are supported?
+OpenAI and Gemini.
+
 ### What languages are supported?
 The plugin includes configurable language support for the existing language options in the plugin settings.
 
@@ -83,33 +94,26 @@ The plugin includes configurable language support for the existing language opti
 3. Bulk Edit mode for existing images
 4. Generated metadata preview and editing flow
 
-## Current Migration Status
+## Testing
 
-The plugin is actively being migrated away from the old OneClickContent hosted-service model.
+If your local PHP CLI lacks required extensions like `mbstring`, run PHPUnit in Docker:
 
-Completed so far:
-- BYO provider settings for OpenAI and Gemini
-- direct provider request handling with normalized metadata output
-- removal of core license, trial, credits, and upsell UI flows
-- bulk and single-image flows updated toward provider-based generation
+```bash
+npm run test:docker
+```
 
-Still in progress:
-- deeper provider response hardening and edge-case handling
-- final browser-level admin verification on the local site
-- PHPUnit rerun once the local PHP CLI has `mbstring` enabled
+If your environment has all required extensions, run tests locally:
 
-## Handoff Notes
+```bash
+npm run test:local
+```
 
-If you resume work in a new session, start here:
-- tracked repo: `/home/jameswilson/.openclaw/workspace/projects/oneclickcontent/repos/oneclickcontent-images`
-- local deployed plugin copy: `/home/jameswilson/sites/siteground/oneclickcontent-com/code/wp-content/plugins/occidg`
-- legacy hosted-service inventory: `/home/jameswilson/.openclaw/workspace/projects/oneclickcontent/inventory/occidg-azure-proxy-inventory.md`
+Run code style checks:
 
-Important:
-- OCCIDG is the metadata plugin for existing Media Library images. Keep it separate from the image-generation plugin.
-- The local deployed copy is separate from the tracked repo copy.
-- A partial manual sync caused a fatal local site error because `includes/class-occidg-i18n.php` and the `public/` directory were missed.
-- For future deploy-sync steps, prefer a full-plugin sync or an explicit runtime-file checklist instead of copying only a few changed files.
+```bash
+npm run fix
+npm run check
+```
 
 ## Developers
 

@@ -1,6 +1,6 @@
 <?php
 /**
- * Register all actions and filters for the OneClickContent Image Details plugin.
+ * Register all actions and filters for the AI image metadata plugin.
  *
  * Maintains a list of all hooks that are registered throughout the plugin,
  * and registers them with the WordPress API. Calls the run function to execute
@@ -25,7 +25,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class Occidg_Loader
  *
- * Registers and manages all actions and filters for the OneClickContent Image Details plugin.
+ * Registers and manages all actions and filters for the AI image metadata plugin.
  *
  * @since 1.0.0
  */

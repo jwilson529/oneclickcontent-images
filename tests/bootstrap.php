@@ -43,6 +43,8 @@ $GLOBALS['occidg_registered_filters'] = array();
 $GLOBALS['occidg_runtime_filters']    = array();
 $GLOBALS['occidg_loaded_textdomain']  = array();
 $GLOBALS['occidg_options']            = array();
+$GLOBALS['occidg_transients']         = array();
+$GLOBALS['occidg_scheduled_events']   = array();
 $GLOBALS['occidg_activation_hooks']   = array();
 $GLOBALS['occidg_deactivation_hooks'] = array();
 
@@ -244,6 +246,41 @@ if ( ! function_exists( 'sanitize_textarea_field' ) ) {
 	}
 }
 
+if ( ! function_exists( '__' ) ) {
+	/**
+	 * Test double for translation helper __().
+	 *
+	 * @param string $text   Text to translate.
+	 * @param string $domain Text domain.
+	 * @return string
+	 */
+	function __( $text, $domain = '' ) {
+		unset( $domain );
+
+		return (string) $text;
+	}
+}
+
+if ( ! function_exists( 'wp_unslash' ) ) {
+	/**
+	 * Test double for wp_unslash().
+	 *
+	 * @param mixed $value Value to unslash.
+	 * @return mixed
+	 */
+	function wp_unslash( $value ) {
+		if ( is_array( $value ) ) {
+			return array_map( 'wp_unslash', $value );
+		}
+
+		if ( is_scalar( $value ) ) {
+			return str_replace( array( '\\"', "\\'", '\\\\' ), array( '"', '\'', '\\' ), (string) $value );
+		}
+
+		return $value;
+	}
+}
+
 if ( ! function_exists( 'esc_url_raw' ) ) {
 	/**
 	 * Test double for esc_url_raw().
@@ -266,6 +303,164 @@ if ( ! function_exists( 'wp_mkdir_p' ) ) {
 	function wp_mkdir_p( $target ) {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_mkdir -- Test harness fallback when WordPress is not loaded.
 		return is_dir( $target ) || mkdir( $target, 0755, true );
+	}
+}
+
+if ( ! function_exists( 'is_wp_error' ) ) {
+	/**
+	 * Test double for is_wp_error().
+	 *
+	 * @param mixed $thing Thing to test.
+	 * @return bool
+	 */
+	function is_wp_error( $thing ) {
+		return is_object( $thing ) && class_exists( 'WP_Error', false ) && $thing instanceof WP_Error;
+	}
+}
+
+if ( ! function_exists( 'wp_remote_retrieve_response_code' ) ) {
+	/**
+	 * Test double for wp_remote_retrieve_response_code().
+	 *
+	 * @param mixed $response A response value.
+	 * @return int
+	 */
+	function wp_remote_retrieve_response_code( $response ) {
+		if ( is_array( $response ) && isset( $response['response']['code'] ) ) {
+			return (int) $response['response']['code'];
+		}
+
+		if ( is_array( $response ) && isset( $response['status_code'] ) ) {
+			return (int) $response['status_code'];
+		}
+
+		return 0;
+	}
+}
+
+if ( ! function_exists( 'wp_remote_retrieve_body' ) ) {
+	/**
+	 * Test double for wp_remote_retrieve_body().
+	 *
+	 * @param mixed $response A response value.
+	 * @return string
+	 */
+	function wp_remote_retrieve_body( $response ) {
+		return isset( $response['body'] ) && is_string( $response['body'] ) ? $response['body'] : '';
+	}
+}
+
+if ( ! function_exists( 'set_transient' ) ) {
+	/**
+	 * Test double for set_transient().
+	 *
+	 * @param string $transient  Transient key.
+	 * @param mixed  $value      Stored value.
+	 * @param int    $expiration Expiration in seconds.
+	 * @return bool
+	 */
+	function set_transient( $transient, $value, $expiration = 0 ) {
+		$GLOBALS['occidg_transients'][ $transient ] = array(
+			'value'      => $value,
+			'expiration' => (int) $expiration,
+		);
+
+		return true;
+	}
+}
+
+if ( ! function_exists( 'get_transient' ) ) {
+	/**
+	 * Test double for get_transient().
+	 *
+	 * @param string $transient Transient key.
+	 * @return mixed
+	 */
+	function get_transient( $transient ) {
+		if ( ! isset( $GLOBALS['occidg_transients'][ $transient ] ) ) {
+			return false;
+		}
+
+		return $GLOBALS['occidg_transients'][ $transient ]['value'];
+	}
+}
+
+if ( ! function_exists( 'delete_transient' ) ) {
+	/**
+	 * Test double for delete_transient().
+	 *
+	 * @param string $transient Transient key.
+	 * @return bool
+	 */
+	function delete_transient( $transient ) {
+		if ( ! isset( $GLOBALS['occidg_transients'][ $transient ] ) ) {
+			return false;
+		}
+
+		unset( $GLOBALS['occidg_transients'][ $transient ] );
+
+		return true;
+	}
+}
+
+if ( ! function_exists( 'wp_schedule_single_event' ) ) {
+	/**
+	 * Test double for wp_schedule_single_event().
+	 *
+	 * @param int    $timestamp Event timestamp.
+	 * @param string $hook      Hook name.
+	 * @param array  $args      Event arguments.
+	 * @return bool
+	 */
+	function wp_schedule_single_event( $timestamp, $hook, $args = array() ) {
+		$GLOBALS['occidg_scheduled_events'][] = array(
+			'timestamp' => (int) $timestamp,
+			'hook'      => (string) $hook,
+			'args'      => is_array( $args ) ? $args : array(),
+		);
+
+		return true;
+	}
+}
+
+if ( ! function_exists( 'wp_next_scheduled' ) ) {
+	/**
+	 * Test double for wp_next_scheduled().
+	 *
+	 * @param string $hook Hook name.
+	 * @param array  $args Hook args.
+	 * @return int|false
+	 */
+	function wp_next_scheduled( $hook, $args = array() ) {
+		foreach ( $GLOBALS['occidg_scheduled_events'] as $event ) {
+			if ( $hook === $event['hook'] && (array) $args === $event['args'] ) {
+				return $event['timestamp'];
+			}
+		}
+
+		return false;
+	}
+}
+
+if ( ! function_exists( 'wp_unschedule_event' ) ) {
+	/**
+	 * Test double for wp_unschedule_event().
+	 *
+	 * @param int    $timestamp Event timestamp.
+	 * @param string $hook      Hook name.
+	 * @param array  $args      Hook args.
+	 * @return bool
+	 */
+	function wp_unschedule_event( $timestamp, $hook, $args = array() ) {
+		foreach ( $GLOBALS['occidg_scheduled_events'] as $index => $event ) {
+			if ( (int) $timestamp === (int) $event['timestamp'] && $hook === $event['hook'] && (array) $args === $event['args'] ) {
+				unset( $GLOBALS['occidg_scheduled_events'][ $index ] );
+				$GLOBALS['occidg_scheduled_events'] = array_values( $GLOBALS['occidg_scheduled_events'] );
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
 
@@ -305,6 +500,21 @@ if ( ! function_exists( 'get_option' ) ) {
 	}
 }
 
+if ( ! function_exists( 'update_option' ) ) {
+	/**
+	 * Test double for update_option().
+	 *
+	 * @param string $option Option name.
+	 * @param mixed  $value  Option value.
+	 * @return bool
+	 */
+	function update_option( $option, $value ) {
+		$GLOBALS['occidg_options'][ $option ] = $value;
+
+		return true;
+	}
+}
+
 if ( ! function_exists( 'delete_option' ) ) {
 	/**
 	 * Test double for delete_option().
@@ -324,5 +534,8 @@ if ( ! function_exists( 'delete_option' ) ) {
 }
 
 require_once dirname( __DIR__ ) . '/includes/class-occidg-loader.php';
+require_once dirname( __DIR__ ) . '/includes/class-occidg-background-jobs.php';
+require_once dirname( __DIR__ ) . '/includes/class-occidg-background-worker.php';
 require_once dirname( __DIR__ ) . '/includes/class-occidg-i18n.php';
 require_once dirname( __DIR__ ) . '/includes/class-occidg-logger.php';
+require_once dirname( __DIR__ ) . '/admin/class-occidg-background-jobs-admin.php';

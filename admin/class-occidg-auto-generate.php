@@ -1,6 +1,6 @@
 <?php
 /**
- * Automatic metadata generation for the OneClickContent Image Details plugin.
+ * Automatic metadata generation for the AI image metadata plugin.
  *
  * Handles the automatic generation of metadata when images are uploaded.
  *
@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class Occidg_Auto_Generate
  *
- * Handles automatic metadata generation for images during upload in the OneClickContent Image Details plugin.
+ * Handles automatic metadata generation for images during upload in the AI image metadata plugin.
  *
  * @since 1.0.0
  */

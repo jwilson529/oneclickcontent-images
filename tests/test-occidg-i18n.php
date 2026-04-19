@@ -33,10 +33,12 @@ final class Test_Occidg_I18n extends TestCase {
 			define( 'OCCIDG_PLUGIN_FILE', dirname( __DIR__ ) . '/occidg.php' );
 		}
 
+		$expected_path = dirname( plugin_basename( OCCIDG_PLUGIN_FILE ) ) . '/languages/';
+
 		$i18n = new Occidg_I18n();
 		$i18n->load_plugin_textdomain();
 
 		$this->assertSame( 'occidg', $GLOBALS['occidg_loaded_textdomain']['domain'] );
-		$this->assertSame( 'oneclickcontent-images/languages/', $GLOBALS['occidg_loaded_textdomain']['plugin_rel_path'] );
+		$this->assertSame( $expected_path, $GLOBALS['occidg_loaded_textdomain']['plugin_rel_path'] );
 	}
 }

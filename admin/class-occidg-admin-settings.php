@@ -378,11 +378,11 @@ class Occidg_Admin_Settings {
 			),
 		);
 
-		echo '<div class="occidg-choice-grid">';
+		echo '<div class="occidg-choice-grid occidg-metadata-fields-grid">';
 		foreach ( $fields as $key => $label ) {
 			$is_checked = isset( $options[ $key ] ) && '1' === $options[ $key ];
 			printf(
-				'<label class="occidg-choice-card%1$s" for="occidg_metadata_fields_%2$s">',
+				'<label class="occidg-choice-card occidg-metadata-field-card%1$s" for="occidg_metadata_fields_%2$s">',
 				$is_checked ? ' is-checked' : '',
 				esc_attr( $key ),
 			);
@@ -391,6 +391,7 @@ class Occidg_Admin_Settings {
 				esc_attr( $key ),
 				checked( true, $is_checked, false )
 			);
+			echo '<span class="occidg-choice-copy">';
 			printf(
 				'<span class="occidg-choice-title">%s</span>',
 				esc_html( $label['label'] )
@@ -399,6 +400,7 @@ class Occidg_Admin_Settings {
 				'<span class="occidg-choice-description">%s</span>',
 				esc_html( $label['description'] )
 			);
+			echo '</span>';
 			echo '</label>';
 		}
 		echo '</div>';
@@ -1216,9 +1218,14 @@ class Occidg_Admin_Settings {
 		}
 
 		$allowed_prefixes = array(
+			'gpt-5.5',
+			'gpt-5.4',
+			'gpt-5.3',
+			'gpt-5.2',
+			'gpt-5.1',
+			'gpt-5',
 			'gpt-4.1',
 			'gpt-4o',
-			'gpt-5',
 		);
 		$disallowed_terms = array(
 			'chatgpt',

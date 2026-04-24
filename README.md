@@ -33,6 +33,7 @@ The plugin is designed for image metadata generation only. It does not create im
 - Auto-generate on upload
 - Multilingual output based on plugin settings
 - Editable metadata after generation
+- Forward-compatible OpenAI model filtering for GPT-5.5 API model IDs when OpenAI exposes them to API accounts
 
 ## Provider Model
 
@@ -41,6 +42,8 @@ This plugin sends image data directly to the provider you configure in WordPress
 - Gemini
 
 You are responsible for your own provider account, API key, and usage costs.
+
+OpenAI model choices are loaded from the models available to your saved API key. GPT-5.5-compatible model IDs are allowed by the plugin filter and will appear in the dropdown when OpenAI makes them available through the API.
 
 ## Release Highlights
 
@@ -83,6 +86,9 @@ Yes. You can bulk-generate metadata for existing Media Library images.
 
 ### Which AI providers are supported?
 OpenAI and Gemini.
+
+### Does this support GPT-5.5?
+The OpenAI model dropdown is populated from the models returned for your API key. OCCIDG accepts GPT-5.5-compatible model IDs and will list them when they are available through the OpenAI API.
 
 ### What languages are supported?
 The plugin includes configurable language support for the existing language options in the plugin settings.

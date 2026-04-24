@@ -1,6 +1,6 @@
 {
   "name": "oneclickcontent-images",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Development tooling for the free bring-your-own-key AI image metadata WordPress plugin.",
   "private": true,
 	"scripts": {
@@ -9,7 +9,7 @@
 		"fix": "sh -c 'tool=\"vendor/bin/phpcbf\"; if [ ! -x \"$tool\" ]; then tool=\"$(command -v phpcbf || true)\"; fi; if [ -z \"$tool\" ]; then printf \"PHPCBF not installed. Install Composer dev dependencies or make phpcbf available in PATH.\\n\" >&2; exit 127; fi; \"$tool\" -d memory_limit=512M -d error_reporting=\"E_ALL&~E_DEPRECATED\" --standard=phpcs.xml.dist --extensions=php .'",
 		"check": "sh -c 'tool=\"vendor/bin/phpcs\"; if [ ! -x \"$tool\" ]; then tool=\"$(command -v phpcs || true)\"; fi; if [ -z \"$tool\" ]; then printf \"PHPCS not installed. Install Composer dev dependencies or make phpcs available in PATH.\\n\" > check.txt; cat check.txt >&2; exit 127; fi; \"$tool\" -d memory_limit=512M -d error_reporting=\"E_ALL&~E_DEPRECATED\" --standard=phpcs.xml.dist --extensions=php . > check.txt'",
     "phpmd": "sh -c 'tool=\"vendor/bin/phpmd\"; if [ ! -x \"$tool\" ]; then tool=\"$(command -v phpmd || true)\"; fi; if [ -z \"$tool\" ]; then printf \"PHPMD not installed. Install Composer dev dependencies or make phpmd available in PATH.\\n\" > phpmd.txt; cat phpmd.txt >&2; exit 127; fi; \"$tool\" . text phpmd.xml --exclude vendor,node_modules,.codex-backups > phpmd.txt'",
-    "dist": "sh -c 'PLUGIN_DIR=\"$(basename \"$PWD\")\"; ZIP_NAME=\"${npm_package_name:-plugin}.zip\"; TMP_ZIP=\"/tmp/$ZIP_NAME\"; rm -f \"$ZIP_NAME\" \"$TMP_ZIP\" && cd .. && zip -r \"$TMP_ZIP\" \"$PLUGIN_DIR\" -x \"$PLUGIN_DIR/.*\" \"$PLUGIN_DIR/*/.*\" \"$PLUGIN_DIR/*.log\" \"$PLUGIN_DIR/*.zip\" \"$PLUGIN_DIR/node_modules/*\" \"$PLUGIN_DIR/vendor/*\" \"$PLUGIN_DIR/dist/*\" \"$PLUGIN_DIR/build/*\" \"$PLUGIN_DIR/.git/*\" \"$PLUGIN_DIR/.github/*\" \"$PLUGIN_DIR/.wp-core/*\" \"$PLUGIN_DIR/.wp-tests/*\" \"$PLUGIN_DIR/.cstn-generator/*\" \"$PLUGIN_DIR/.codex\" \"$PLUGIN_DIR/.codex/*\" \"$PLUGIN_DIR/codex-yolo\" \"$PLUGIN_DIR/codex-yolo/*\" \"$PLUGIN_DIR/.codex-backups/*\" \"$PLUGIN_DIR/check.txt\" \"$PLUGIN_DIR/phpmd.txt\" \"$PLUGIN_DIR/plugin-error.log\" \"$PLUGIN_DIR/AGENTS.md\" \"$PLUGIN_DIR/SPEC.md\" \"$PLUGIN_DIR/MEMORY.md\" \"$PLUGIN_DIR/PLAN.md\" \"$PLUGIN_DIR/PLAYBOOK.md\" \"$PLUGIN_DIR/DESIGN_SYSTEM.md\" \"$PLUGIN_DIR/UI_AUDIT.md\" \"$PLUGIN_DIR/APP_FLOW.md\" \"$PLUGIN_DIR/FRONTEND_GUIDELINES.md\" \"$PLUGIN_DIR/DESIGN_LESSONS.md\" \"$PLUGIN_DIR/package.json\" \"$PLUGIN_DIR/package-lock.json\" \"$PLUGIN_DIR/composer.json\" \"$PLUGIN_DIR/composer.lock\" \"$PLUGIN_DIR/phpcs.xml.dist\" \"$PLUGIN_DIR/phpunit.xml.dist\" \"$PLUGIN_DIR/phpmd.xml\" \"$PLUGIN_DIR/.codex_index.json\" \"$PLUGIN_DIR/.codex_run_meta.json\" \"$PLUGIN_DIR/.codex_tasks.csv\" \"$PLUGIN_DIR/README.md\" \"$PLUGIN_DIR/CLEAN_DOCKER_REPRO.md\" \"$PLUGIN_DIR/tests/*\" \"$PLUGIN_DIR/assets/*\" && mv \"$TMP_ZIP\" \"$PLUGIN_DIR/$ZIP_NAME\"'",
+    "dist": "sh scripts/build-dist.sh",
     "plugin-check": "wp plugin check .",
     "test:local": "sh -c 'tool=\"vendor/bin/phpunit\"; if [ ! -x \"$tool\" ]; then tool=\"$(command -v phpunit || true)\"; fi; if [ -z \"$tool\" ]; then printf \"PHPUnit not installed. Install Composer dev dependencies or make phpunit available in PATH.\\n\" >&2; exit 127; fi; \"$tool\" --configuration phpunit.xml.dist'"
   },

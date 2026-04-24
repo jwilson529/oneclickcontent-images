@@ -4,7 +4,7 @@ Tags: images, seo, alt text, OpenAI, Gemini, AI, accessibility, WordPress plugin
 Requires at least: 5.0
 Tested up to: 6.8
 Requires PHP: 7.2
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -38,6 +38,7 @@ This plugin is focused on metadata generation for images already in your Media L
 - Auto-generate on upload
 - Multilingual output based on plugin settings
 - Manual editing after generation
+- Forward-compatible OpenAI model filtering for GPT-5.5 API model IDs when OpenAI exposes them to API accounts
 
 == External Services ==
 
@@ -102,6 +103,10 @@ Yes. This is a bring-your-own-key plugin. Add your OpenAI or Gemini API key in t
 
 OpenAI and Gemini.
 
+= Does this support GPT-5.5? =
+
+The OpenAI model dropdown is populated from the models returned for your API key. OCCIDG accepts GPT-5.5-compatible model IDs and will list them when they are available through the OpenAI API.
+
 = Which fields can it generate? =
 
 The plugin can generate titles, alt text, captions, and descriptions.
@@ -131,11 +136,20 @@ The plugin supports the language options currently provided in the admin setting
 
 == Upgrade Notice ==
 
+= 1.2.1 =
+
+This release adds forward-compatible OpenAI model filtering for GPT-5.5 API model IDs and tightens release packaging automation.
+
 = 1.2.0 =
 
 This release repositions the plugin as a free, bring-your-own-key AI metadata generator for the Media Library with OpenAI and Gemini support.
 
 == Changelog ==
+
+= 1.2.1 =
+* Added explicit GPT-5.5-compatible OpenAI model ID coverage for the API model dropdown.
+* Improved metadata field selector layout on the settings screen.
+* Fixed the GitHub Actions deploy packaging step for the WordPress.org release workflow.
 
 = 1.2.0 =
 * Re-released the plugin as a free, bring-your-own-key AI image metadata solution.

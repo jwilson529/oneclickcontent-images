@@ -1113,6 +1113,11 @@
     gap: 12px;
 }
 
+.toplevel_page_occidg .occidg-metadata-fields-grid {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    max-width: 900px;
+}
+
 .toplevel_page_occidg .occidg-choice-card,
 .toplevel_page_occidg .occidg-toggle-card {
     display: flex;
@@ -1146,6 +1151,11 @@
     margin: 2px 0 0;
 }
 
+.toplevel_page_occidg .occidg-choice-copy {
+    display: grid;
+    gap: 4px;
+}
+
 .toplevel_page_occidg .occidg-choice-title,
 .toplevel_page_occidg .occidg-toggle-title {
     display: block;
@@ -1160,6 +1170,10 @@
     color: #52606d;
     font-size: 13px;
     line-height: 1.5;
+}
+
+.toplevel_page_occidg .occidg-metadata-field-card {
+    min-height: 68px;
 }
 
 .toplevel_page_occidg .occidg-toggle-copy {

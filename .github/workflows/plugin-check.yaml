@@ -64,18 +64,16 @@ jobs:
           npm ci
           composer install --no-dev --optimize-autoloader
 
-      - name: Build assets & generate POT
-        run: |
-          npm run dist
-
       - name: Create clean ZIP
         run: npm run dist
 
-      - name: Extract ZIP to “dist/”
+      - name: Extract ZIP to deploy directory
         run: |
-          rm -rf dist
-          mkdir dist
-          unzip occidg.zip -d dist
+          rm -rf dist dist-package
+          mkdir dist dist-package
+          unzip oneclickcontent-images.zip -d dist-package
+          top_level="$(find dist-package -mindepth 1 -maxdepth 1 -type d | head -n 1)"
+          cp -R "$top_level"/. dist/
 
       - name: Deploy to WP.org SVN
         uses: 10up/action-wordpress-plugin-deploy@2.3.0

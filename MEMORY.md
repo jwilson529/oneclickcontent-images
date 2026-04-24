@@ -152,3 +152,9 @@ Append a brief recap after each run:
 - Notable changes: Bumped plugin/package/readme versions to `1.2.1`, added explicit GPT-5.5 coverage to OpenAI model normalization tests, kept the dropdown tied to models returned by the user's OpenAI API key, carried the wider metadata-field card layout into the tracked repo, replaced the inline dist command with `scripts/build-dist.sh`, and fixed the GitHub Actions deploy job to extract the generated ZIP before publishing to WordPress.org SVN.
 - Tool results: `php -l` passed for modified PHP files; `npm run fix` passed; `npm run check` passed with empty `check.txt`; `npm run test:local` passed with `39` tests and `186` assertions; `npm run dist` produced `oneclickcontent-images.zip` with top-level `occidg/`; ZIP spot checks confirmed root dev files are excluded. `npm run plugin-check` still cannot run here because WP-CLI does not have the Plugin Check command installed.
 - Remaining gaps: Monitor the GitHub release workflow and WordPress.org deploy after pushing the `1.2.1` release.
+
+- Date: 2026-04-24
+- Summary: Prepared the `1.2.2` corrective release to clear the WordPress.org readme tag warning.
+- Notable changes: Reduced `README.txt` to five canonical tags: `images`, `seo`, `alt-text`, `openai`, and `gemini`; bumped plugin/package/readme versions to `1.2.2`.
+- Tool results: `php -l` passed; `npm run fix` passed; `npm run check` passed with empty `check.txt`; `npm run test:local` passed with `39` tests and `186` assertions; `npm run dist` produced a clean `occidg/` release ZIP with the corrected tags.
+- Remaining gaps: Publish and monitor the `1.2.2` GitHub release workflow.

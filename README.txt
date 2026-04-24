@@ -1,10 +1,10 @@
 === OneClickContent - Image Detail Generator ===
 Contributors: jwilson529
-Tags: images, seo, alt text, OpenAI, Gemini, AI, accessibility, WordPress plugins
+Tags: images, seo, alt-text, openai, gemini
 Requires at least: 5.0
 Tested up to: 6.8
 Requires PHP: 7.2
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -136,6 +136,10 @@ The plugin supports the language options currently provided in the admin setting
 
 == Upgrade Notice ==
 
+= 1.2.2 =
+
+This release trims the WordPress.org plugin tags to the supported five-tag limit.
+
 = 1.2.1 =
 
 This release adds forward-compatible OpenAI model filtering for GPT-5.5 API model IDs and tightens release packaging automation.
@@ -145,6 +149,9 @@ This release adds forward-compatible OpenAI model filtering for GPT-5.5 API mode
 This release repositions the plugin as a free, bring-your-own-key AI metadata generator for the Media Library with OpenAI and Gemini support.
 
 == Changelog ==
+
+= 1.2.2 =
+* Limited WordPress.org readme tags to five canonical tags to satisfy plugin directory import rules.
 
 = 1.2.1 =
 * Added explicit GPT-5.5-compatible OpenAI model ID coverage for the API model dropdown.

@@ -158,3 +158,9 @@ Append a brief recap after each run:
 - Notable changes: Reduced `README.txt` to five canonical tags: `images`, `seo`, `alt-text`, `openai`, and `gemini`; bumped plugin/package/readme versions to `1.2.2`.
 - Tool results: `php -l` passed; `npm run fix` passed; `npm run check` passed with empty `check.txt`; `npm run test:local` passed with `39` tests and `186` assertions; `npm run dist` produced a clean `occidg/` release ZIP with the corrected tags.
 - Remaining gaps: Publish and monitor the `1.2.2` GitHub release workflow.
+
+- Date: 2026-05-21
+- Summary: Prepared the `1.2.3` compatibility release for WordPress 7.0.
+- Notable changes: Updated `README.txt` `Tested up to` to `7.0`, bumped plugin/package/readme versions to `1.2.3`, and added a repository readme release-highlight note for WordPress 7.0 testing.
+- Tool results: `php -l` passed; `npm run fix` passed; `npm run check` passed with empty `check.txt`; `npm run test:local` passed with `39` tests and `186` assertions; `npm run dist` produced a clean `occidg/` release ZIP with `Tested up to: 7.0`. `npm run plugin-check` still cannot run here because WP-CLI does not have the Plugin Check command installed.
+- Remaining gaps: Publish and monitor the `1.2.3` GitHub release workflow.

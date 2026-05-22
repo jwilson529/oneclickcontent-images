@@ -2,9 +2,9 @@
 Contributors: jwilson529
 Tags: images, seo, alt-text, openai, gemini
 Requires at least: 5.0
-Tested up to: 6.8
+Tested up to: 7.0
 Requires PHP: 7.2
-Stable tag: 1.2.2
+Stable tag: 1.2.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -136,6 +136,10 @@ The plugin supports the language options currently provided in the admin setting
 
 == Upgrade Notice ==
 
+= 1.2.3 =
+
+This release declares compatibility with WordPress 7.0.
+
 = 1.2.2 =
 
 This release trims the WordPress.org plugin tags to the supported five-tag limit.
@@ -149,6 +153,9 @@ This release adds forward-compatible OpenAI model filtering for GPT-5.5 API mode
 This release repositions the plugin as a free, bring-your-own-key AI metadata generator for the Media Library with OpenAI and Gemini support.
 
 == Changelog ==
+
+= 1.2.3 =
+* Declared compatibility with WordPress 7.0.
 
 = 1.2.2 =
 * Limited WordPress.org readme tags to five canonical tags to satisfy plugin directory import rules.

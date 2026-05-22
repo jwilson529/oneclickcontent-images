@@ -1,6 +1,6 @@
 {
   "name": "oneclickcontent-images",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Development tooling for the free bring-your-own-key AI image metadata WordPress plugin.",
   "private": true,
 	"scripts": {

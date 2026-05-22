@@ -52,6 +52,7 @@ OpenAI model choices are loaded from the models available to your saved API key.
 - Bulk generation and single-image generation inside the Media Library
 - Configurable metadata fields, overwrite behavior, language, and automatic generation
 - No license activation, trial gating, credits, or hosted-service dependency in the core workflow
+- Tested with WordPress 7.0
 
 ## Installation
 

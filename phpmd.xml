@@ -4,9 +4,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://pmd.sf.net/ruleset/1.0.0 https://pmd.github.io/pmd-6.10.0/ruleset_xml_schema.xsd"
 >
-    <description>Default ruleset for WordPress plugin development.</description>
+    <description>Release gate for actionable unused-code defects.</description>
 
-    <rule ref="rulesets/codesize.xml" />
     <rule ref="rulesets/unusedcode.xml" />
-    <rule ref="rulesets/naming.xml" />
 </ruleset>

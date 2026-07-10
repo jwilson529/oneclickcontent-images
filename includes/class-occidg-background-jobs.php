@@ -486,7 +486,7 @@ class Occidg_Background_Jobs {
 			return $normalized;
 		}
 
-		foreach ( $normalized as $field_key => $default_value ) {
+		foreach ( array_keys( $normalized ) as $field_key ) {
 			if ( isset( $selected_fields[ $field_key ] ) && '1' === (string) $selected_fields[ $field_key ] ) {
 				$normalized[ $field_key ] = '1';
 			}

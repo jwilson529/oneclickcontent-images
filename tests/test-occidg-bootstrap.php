@@ -29,7 +29,7 @@ final class Test_Occidg_Bootstrap extends TestCase {
 	}
 
 	/**
-	 * Ensure the bootstrap registers lifecycle and text-domain hooks.
+	 * Ensure the bootstrap registers lifecycle hooks.
 	 *
 	 * @return void
 	 */
@@ -42,14 +42,6 @@ final class Test_Occidg_Bootstrap extends TestCase {
 		$this->assertSame( dirname( __DIR__ ) . '/occidg.php', $GLOBALS['occidg_deactivation_hooks'][0]['file'] );
 		$this->assertSame( 'occidg_deactivate', $GLOBALS['occidg_deactivation_hooks'][0]['callback'] );
 
-		$plugins_loaded_hooks = array_filter(
-			$GLOBALS['occidg_registered_actions'],
-			static function ( $hook ) {
-				return 'plugins_loaded' === $hook['hook'] && 'occidg_load_textdomain' === $hook['callback'];
-			}
-		);
-
-		$this->assertNotEmpty( $plugins_loaded_hooks );
 		$this->assertTrue( function_exists( 'occidg_run' ) );
 	}
 }

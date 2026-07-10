@@ -166,26 +166,6 @@ if ( ! function_exists( 'apply_filters' ) ) {
 	}
 }
 
-if ( ! function_exists( 'load_plugin_textdomain' ) ) {
-	/**
-	 * Test double for load_plugin_textdomain().
-	 *
-	 * @param string $domain           Text domain.
-	 * @param bool   $deprecated       Deprecated argument.
-	 * @param string $plugin_rel_path  Languages path.
-	 * @return true
-	 */
-	function load_plugin_textdomain( $domain, $deprecated = false, $plugin_rel_path = '' ) {
-		$GLOBALS['occidg_loaded_textdomain'] = array(
-			'domain'          => $domain,
-			'deprecated'      => $deprecated,
-			'plugin_rel_path' => $plugin_rel_path,
-		);
-
-		return true;
-	}
-}
-
 if ( ! function_exists( 'plugin_basename' ) ) {
 	/**
 	 * Test double for plugin_basename().
@@ -536,6 +516,5 @@ if ( ! function_exists( 'delete_option' ) ) {
 require_once dirname( __DIR__ ) . '/includes/class-occidg-loader.php';
 require_once dirname( __DIR__ ) . '/includes/class-occidg-background-jobs.php';
 require_once dirname( __DIR__ ) . '/includes/class-occidg-background-worker.php';
-require_once dirname( __DIR__ ) . '/includes/class-occidg-i18n.php';
 require_once dirname( __DIR__ ) . '/includes/class-occidg-logger.php';
 require_once dirname( __DIR__ ) . '/admin/class-occidg-background-jobs-admin.php';

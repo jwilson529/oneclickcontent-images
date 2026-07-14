@@ -233,8 +233,11 @@ class Occidg_Background_Jobs_Admin {
 			return;
 		}
 
-		$image_ids = isset( $_POST['image_ids'] ) ? $this->normalize_image_ids( wp_unslash( $_POST['image_ids'] ) ) : $this->get_all_image_ids();
-		$job       = $this->create_job_from_image_ids( $image_ids );
+		$image_ids = isset( $_POST['image_ids'] )
+			? $this->normalize_image_ids( map_deep( wp_unslash( $_POST['image_ids'] ), 'sanitize_text_field' ) )
+			: $this->get_all_image_ids();
+
+		$job = $this->create_job_from_image_ids( $image_ids );
 
 		if ( false === $job ) {
 			wp_send_json_error( array( 'message' => __( 'Unable to create a background job for the selected images.', 'occidg' ) ) );

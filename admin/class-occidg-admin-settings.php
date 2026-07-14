@@ -808,8 +808,8 @@ class Occidg_Admin_Settings {
 			return;
 		}
 
-		$provider = isset( $_POST['provider'] ) ? $this->sanitize_provider( wp_unslash( $_POST['provider'] ) ) : 'openai';
-		$api_key  = isset( $_POST['api_key'] ) ? $this->sanitize_api_key( wp_unslash( $_POST['api_key'] ) ) : '';
+		$provider = isset( $_POST['provider'] ) ? $this->sanitize_provider( sanitize_text_field( wp_unslash( $_POST['provider'] ) ) ) : 'openai';
+		$api_key  = isset( $_POST['api_key'] ) ? $this->sanitize_api_key( sanitize_text_field( wp_unslash( $_POST['api_key'] ) ) ) : '';
 		$config   = $this->get_provider_settings_config( $provider );
 
 		if ( '' === $api_key ) {
@@ -893,8 +893,8 @@ class Occidg_Admin_Settings {
 			return;
 		}
 
-		$provider = isset( $_POST['provider'] ) ? $this->sanitize_provider( wp_unslash( $_POST['provider'] ) ) : 'openai';
-		$model    = isset( $_POST['model'] ) ? $this->sanitize_model_identifier( wp_unslash( $_POST['model'] ) ) : '';
+		$provider = isset( $_POST['provider'] ) ? $this->sanitize_provider( sanitize_text_field( wp_unslash( $_POST['provider'] ) ) ) : 'openai';
+		$model    = isset( $_POST['model'] ) ? $this->sanitize_model_identifier( sanitize_text_field( wp_unslash( $_POST['model'] ) ) ) : '';
 		$config   = $this->get_provider_settings_config( $provider );
 
 		if ( '' === $model ) {
@@ -1218,6 +1218,7 @@ class Occidg_Admin_Settings {
 		}
 
 		$allowed_prefixes = array(
+			'gpt-5.6',
 			'gpt-5.5',
 			'gpt-5.4',
 			'gpt-5.3',
@@ -2286,7 +2287,7 @@ class Occidg_Admin_Settings {
 			);
 
 			if ( ! file_exists( $resized_path ) ) {
-				$generated = $this->generate_image_size_as_webp( $image_id, $size, $resized_path );
+				$generated = $this->generate_image_size_as_webp( $image_id, $resized_path );
 				if ( $generated ) {
 					return $resized_path;
 				}
@@ -2306,11 +2307,10 @@ class Occidg_Admin_Settings {
 	 * @since 1.1.0
 	 *
 	 * @param int    $image_id     Attachment ID.
-	 * @param string $size         Image size label (kept for API parity).
 	 * @param string $output_path  Destination file path.
 	 * @return bool  True on success, false on failure.
 	 */
-	private function generate_image_size_as_webp( $image_id, $size, $output_path ) {
+	private function generate_image_size_as_webp( $image_id, $output_path ) {
 
 		// ---- SETTINGS --------------------------------------------------------- //
 		$target_bytes = 3 * 1024 * 1024; // 3 MB on disk  → <4 MB after Base-64.

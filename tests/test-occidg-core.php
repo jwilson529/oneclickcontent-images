@@ -23,7 +23,7 @@ final class Test_Occidg_Core extends TestCase {
 	 */
 	public static function setUpBeforeClass(): void {
 		if ( ! defined( 'OCCIDG_VERSION' ) ) {
-			define( 'OCCIDG_VERSION', '1.2.3' );
+			define( 'OCCIDG_VERSION', '1.2.4' );
 		}
 
 		if ( ! defined( 'OCCIDG_PLUGIN_FILE' ) ) {
@@ -50,7 +50,7 @@ final class Test_Occidg_Core extends TestCase {
 		$plugin = new Occidg();
 
 		$this->assertSame( 'occidg', $plugin->get_occidg_images() );
-		$this->assertSame( '1.2.3', $plugin->get_version() );
+		$this->assertSame( '1.2.4', $plugin->get_version() );
 		$this->assertInstanceOf( Occidg_Loader::class, $plugin->get_loader() );
 
 		$plugin->run();

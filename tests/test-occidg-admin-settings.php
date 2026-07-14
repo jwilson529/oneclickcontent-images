@@ -91,6 +91,10 @@ final class Test_Occidg_Admin_Settings extends TestCase {
 						array( 'id' => 'gpt-4.1-mini' ),
 						array( 'id' => 'gpt-5-mini' ),
 						array( 'id' => 'gpt-5.5' ),
+						array( 'id' => 'gpt-5.6' ),
+						array( 'id' => 'gpt-5.6-sol' ),
+						array( 'id' => 'gpt-5.6-terra' ),
+						array( 'id' => 'gpt-5.6-luna' ),
 						array( 'id' => 'gpt-image-1' ),
 						array( 'id' => 'gpt-realtime' ),
 						array( 'id' => 'chatgpt-4o-latest' ),
@@ -117,6 +121,22 @@ final class Test_Occidg_Admin_Settings extends TestCase {
 				array(
 					'value' => 'gpt-5.5',
 					'label' => 'gpt-5.5',
+				),
+				array(
+					'value' => 'gpt-5.6',
+					'label' => 'gpt-5.6',
+				),
+				array(
+					'value' => 'gpt-5.6-luna',
+					'label' => 'gpt-5.6-luna',
+				),
+				array(
+					'value' => 'gpt-5.6-sol',
+					'label' => 'gpt-5.6-sol',
+				),
+				array(
+					'value' => 'gpt-5.6-terra',
+					'label' => 'gpt-5.6-terra',
 				),
 			),
 			$choices

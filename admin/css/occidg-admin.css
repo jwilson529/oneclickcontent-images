@@ -694,10 +694,6 @@
     }
 }
 
-.toplevel_page_occidg select#dt-length-0 {
-    width: 100%;
-}
-
 #occidg-first-time-modal .modal {
     display: none;
     position: fixed;
@@ -2515,6 +2511,12 @@ body.occidg-modal-open {
     min-height: 36px;
     border-color: #bcccdc;
     border-radius: 8px;
+}
+
+.occidg-table-card .dt-length select {
+    width: 78px;
+    min-width: 78px;
+    padding-right: 28px;
 }
 
 .occidg-table-card .dt-container table.occidg-data-table,

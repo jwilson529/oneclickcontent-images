@@ -322,16 +322,17 @@ class Occidg_Background_Worker {
 	 */
 	private function build_generation_context( $job ) {
 		return array(
-			'provider'            => isset( $job['provider'] ) ? $job['provider'] : '',
-			'model'               => isset( $job['model'] ) ? $job['model'] : '',
-			'language'            => isset( $job['language'] ) ? $job['language'] : '',
-			'selected_fields'     => isset( $job['selected_fields'] ) ? $job['selected_fields'] : array(),
-			'override_metadata'   => ! empty( $job['override_metadata'] ),
-			'mode'                => isset( $job['mode'] ) ? $job['mode'] : 'fill_missing',
-			'batch_id'            => isset( $job['batch_id'] ) ? (int) $job['batch_id'] : 0,
-			'initiated_by'        => isset( $job['initiated_by'] ) ? (int) $job['initiated_by'] : 0,
-			'overwrite_confirmed' => ! empty( $job['overwrite_confirmed'] ),
-			'current_retry_count' => isset( $job['current_retry_count'] ) ? (int) $job['current_retry_count'] : 0,
+			'provider'                 => isset( $job['provider'] ) ? $job['provider'] : '',
+			'model'                    => isset( $job['model'] ) ? $job['model'] : '',
+			'language'                 => isset( $job['language'] ) ? $job['language'] : '',
+			'selected_fields'          => isset( $job['selected_fields'] ) ? $job['selected_fields'] : array(),
+			'override_metadata'        => ! empty( $job['override_metadata'] ),
+			'mode'                     => isset( $job['mode'] ) ? $job['mode'] : 'fill_missing',
+			'batch_id'                 => isset( $job['batch_id'] ) ? (int) $job['batch_id'] : 0,
+			'initiated_by'             => isset( $job['initiated_by'] ) ? (int) $job['initiated_by'] : 0,
+			'overwrite_confirmed'      => ! empty( $job['overwrite_confirmed'] ),
+			'caption_review_confirmed' => ! empty( $job['caption_review_confirmed'] ),
+			'current_retry_count'      => isset( $job['current_retry_count'] ) ? (int) $job['current_retry_count'] : 0,
 		);
 	}
 

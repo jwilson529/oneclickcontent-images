@@ -33,18 +33,19 @@ final class Test_Occidg_Background_Jobs extends TestCase {
 		$jobs = new Occidg_Background_Jobs();
 		$job  = $jobs->create_job(
 			array(
-				'label'             => 'Library backfill',
-				'provider'          => 'openai',
-				'provider_label'    => 'OpenAI',
-				'model'             => 'gpt-4o-mini',
-				'override_metadata' => true,
-				'selected_fields'   => array(
+				'label'                    => 'Library backfill',
+				'provider'                 => 'openai',
+				'provider_label'           => 'OpenAI',
+				'model'                    => 'gpt-4o-mini',
+				'override_metadata'        => true,
+				'caption_review_confirmed' => true,
+				'selected_fields'          => array(
 					'title'       => '1',
 					'description' => '0',
 					'alt_text'    => '1',
 					'caption'     => '0',
 				),
-				'image_ids'         => array( 42, '73', 42, 0, -1 ),
+				'image_ids'                => array( 42, '73', 42, 0, -1 ),
 			)
 		);
 
@@ -55,6 +56,7 @@ final class Test_Occidg_Background_Jobs extends TestCase {
 		$this->assertSame( 'OpenAI', $job['provider_label'] );
 		$this->assertSame( 'gpt-4o-mini', $job['model'] );
 		$this->assertTrue( $job['override_metadata'] );
+		$this->assertTrue( $job['caption_review_confirmed'] );
 		$this->assertSame( array( 42, 73 ), $job['image_ids'] );
 		$this->assertSame( 2, $job['total'] );
 		$this->assertSame( 0, $job['processed'] );

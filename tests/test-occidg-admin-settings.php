@@ -240,6 +240,25 @@ final class Test_Occidg_Admin_Settings extends TestCase {
 		);
 	}
 
+	/** Empty captions should fall back to the first factual description sentence. */
+	public function test_normalize_generated_metadata_derives_empty_caption() {
+		$settings = new Occidg_Admin_Settings();
+		$method   = new ReflectionMethod( Occidg_Admin_Settings::class, 'normalize_generated_metadata' );
+		$method->setAccessible( true );
+
+		$normalized = $method->invoke(
+			$settings,
+			array(
+				'title'       => 'Castle visit',
+				'description' => 'Two costumed characters stand before a castle. Blue spires rise behind them.',
+				'alt_text'    => 'Two costumed characters in front of a castle.',
+				'caption'     => '',
+			)
+		);
+
+		$this->assertSame( 'Two costumed characters stand before a castle.', $normalized['caption'] );
+	}
+
 	/**
 	 * Empty metadata should be rejected.
 	 *

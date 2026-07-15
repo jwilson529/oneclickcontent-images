@@ -77,7 +77,7 @@ class Occidg_Background_Jobs_Admin {
 			'initiated_by'      => function_exists( 'get_current_user_id' ) ? get_current_user_id() : 0,
 		);
 		$overrides      = is_array( $overrides ) ? $overrides : array();
-		$allowed        = array( 'provider', 'provider_label', 'model', 'language', 'selected_fields', 'override_metadata', 'mode', 'batch_id', 'initiated_by', 'overwrite_confirmed' );
+		$allowed        = array( 'provider', 'provider_label', 'model', 'language', 'selected_fields', 'override_metadata', 'mode', 'batch_id', 'initiated_by', 'overwrite_confirmed', 'caption_review_confirmed' );
 		$job            = $this->jobs->create_job( array_merge( $job_args, array_intersect_key( $overrides, array_flip( $allowed ) ) ) );
 
 		if ( false === $job ) {

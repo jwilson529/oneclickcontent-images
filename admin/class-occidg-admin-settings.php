@@ -1892,6 +1892,9 @@ class Occidg_Admin_Settings {
 			'alt_text'    => $this->extract_normalized_field( $metadata, array( 'alt_text', 'alt', 'altText', 'alternative_text' ), 'text' ),
 			'caption'     => $this->extract_normalized_field( $metadata, array( 'caption', 'subheadline', 'excerpt', 'image_caption' ), 'textarea' ),
 		);
+		if ( '' === $normalized['caption'] ) {
+			$normalized['caption'] = $this->derive_caption_fallback( $normalized );
+		}
 
 		foreach ( $normalized as $value ) {
 			if ( '' !== $value ) {
@@ -1900,6 +1903,49 @@ class Occidg_Admin_Settings {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Derive a conservative caption when a provider returns an empty caption.
+	 *
+	 * The provider already generated the source text from the same image. Prefer
+	 * the first factual description sentence, followed by alt text and title, so
+	 * a blank structured-output field does not silently leave caption generation
+	 * incomplete.
+	 *
+	 * @param array $metadata Normalized generated metadata.
+	 * @return string
+	 */
+	private function derive_caption_fallback( $metadata ) {
+		$description = isset( $metadata['description'] ) ? trim( (string) $metadata['description'] ) : '';
+		if ( '' !== $description ) {
+			$sentences = preg_split( '/(?<=[.!?])\s+/u', $description, 2 );
+			$caption   = isset( $sentences[0] ) ? $sentences[0] : $description;
+			return $this->trim_generated_caption( $caption );
+		}
+
+		foreach ( array( 'alt_text', 'title' ) as $field ) {
+			if ( ! empty( $metadata[ $field ] ) ) {
+				return $this->trim_generated_caption( $metadata[ $field ] );
+			}
+		}
+
+		return '';
+	}
+
+	/**
+	 * Limit a generated caption without depending on front-end template helpers.
+	 *
+	 * @param string $caption Candidate caption.
+	 * @return string
+	 */
+	private function trim_generated_caption( $caption ) {
+		$words = preg_split( '/\s+/u', trim( (string) $caption ), -1, PREG_SPLIT_NO_EMPTY );
+		if ( ! is_array( $words ) ) {
+			return '';
+		}
+
+		return sanitize_textarea_field( implode( ' ', array_slice( $words, 0, 30 ) ) );
 	}
 
 	/**
@@ -2359,7 +2405,7 @@ class Occidg_Admin_Settings {
 			array_flip( array( 'filename', 'current_metadata', 'parent_title', 'parent_excerpt', 'parent_post_type', 'site_name', 'organization_name', 'site_description', 'editorial_tone', 'editorial_guidance', 'preferred_terms', 'prohibited_terms' ) )
 		);
 		return sprintf(
-			'Generate factual image metadata in %1$s and return only JSON matching the schema. Alt text must be concise, natural, accessibility-first, and describe meaningful visible information. Do not start with "image of" or "picture of", keyword-stuff, repeat a caption, or guess identities, locations, medical conditions, sensitive traits, emotions, roles, dates, or events. Use a person\'s name only when reliable supplied context identifies them. For text-heavy graphics, summarize purpose and avoid transcribing everything. An empty alt value may be recommended for a decorative image, but never mark it decorative automatically. Titles must be searchable and human-readable without extensions or raw camera strings. Captions are visible editorial content: keep them conservative and never fabricate context. Descriptions must remain factual. Minimal trusted context: %2$s',
+			'Generate factual image metadata in %1$s and return only JSON matching the schema. Alt text must be concise, natural, accessibility-first, and describe meaningful visible information. Do not start with "image of" or "picture of", keyword-stuff, repeat a caption, or guess identities, locations, medical conditions, sensitive traits, emotions, roles, dates, or events. Use a person\'s name only when reliable supplied context identifies them. For text-heavy graphics, summarize purpose and avoid transcribing everything. An empty alt value may be recommended for a decorative image, but never mark it decorative automatically. Titles must be searchable and human-readable without extensions or raw camera strings. Captions are visible editorial content: always return a non-empty, conservative caption grounded in visible content and never fabricate context. Descriptions must remain factual. Minimal trusted context: %2$s',
 			$this->get_language_label( $language ),
 			wp_json_encode( $safe_context )
 		);

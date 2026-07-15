@@ -56,14 +56,15 @@ class Occidg_Workflow {
 		$context = wp_parse_args(
 			$context,
 			array(
-				'mode'                => 'fill_missing',
-				'provider'            => get_option( 'occidg_provider', 'openai' ),
-				'model'               => '',
-				'selected_fields'     => get_option( 'occidg_metadata_fields', array() ),
-				'batch_id'            => 0,
-				'initiated_by'        => 0,
-				'overwrite_confirmed' => false,
-				'current_retry_count' => 0,
+				'mode'                     => 'fill_missing',
+				'provider'                 => get_option( 'occidg_provider', 'openai' ),
+				'model'                    => '',
+				'selected_fields'          => get_option( 'occidg_metadata_fields', array() ),
+				'batch_id'                 => 0,
+				'initiated_by'             => 0,
+				'overwrite_confirmed'      => false,
+				'caption_review_confirmed' => false,
+				'current_retry_count'      => 0,
 			)
 		);
 		$mode    = $this->sanitize_mode( $context['mode'] );
@@ -171,8 +172,12 @@ class Occidg_Workflow {
 					$results['skipped'][ $field ] = 'missing_provider_value';
 					continue;
 				}
-				$value      = apply_filters( 'occ_idg_generated_value', $metadata[ $field ], $field, $attachment_id, $response );
-				$value      = $this->enforce_field_rules( $field, $value );
+				$value = apply_filters( 'occ_idg_generated_value', $metadata[ $field ], $field, $attachment_id, $response );
+				$value = $this->enforce_field_rules( $field, $value );
+				if ( Occidg_Metadata::is_empty( $value ) ) {
+					$results['skipped'][ $field ] = 'empty_provider_value';
+					continue;
+				}
 				$confidence = $this->normalize_confidence( isset( $confidences[ $field ] ) ? $confidences[ $field ] : 'medium' );
 				$reason     = isset( $reasons[ $field ] ) ? sanitize_text_field( $reasons[ $field ] ) : '';
 				$prohibited = array_filter( array_map( 'trim', explode( ',', (string) get_option( 'occ_idg_prohibited_terminology', '' ) ) ) );
@@ -183,7 +188,9 @@ class Occidg_Workflow {
 						break;
 					}
 				}
-				$must_review = 'suggestion' === $mode || 'low' === $confidence || ( 'caption' === $field && get_option( 'occ_idg_require_caption_review', true ) );
+				$must_review = 'suggestion' === $mode
+					|| 'low' === $confidence
+					|| ( 'caption' === $field && get_option( 'occ_idg_require_caption_review', true ) && empty( $context['caption_review_confirmed'] ) );
 
 				if ( $must_review ) {
 					$suggestion_id                  = $this->store_suggestion( $attachment_id, $field, $value, $confidence, $reason, $context, $generation_context );

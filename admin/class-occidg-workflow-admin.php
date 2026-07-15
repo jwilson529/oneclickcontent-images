@@ -139,7 +139,7 @@ class Occidg_Workflow_Admin {
 	public function render_workflow_settings() {
 		$recommended = array(
 			'occ_idg_preserve_human_metadata'       => array( __( 'Protect human-written metadata', 'occidg' ), __( 'Keep existing titles, alt text, captions, and descriptions unless overwrite mode is deliberately enabled.', 'occidg' ), true ),
-			'occ_idg_require_caption_review'        => array( __( 'Review captions before publishing', 'occidg' ), __( 'Captions can be visible to visitors, so hold them for a quick human check.', 'occidg' ), true ),
+			'occ_idg_require_caption_review'        => array( __( 'Review automatic captions before publishing', 'occidg' ), __( 'Automatic uploads hold captions for review. An explicit Fill missing action applies its caption; Create review suggestions keeps every selected field pending.', 'occidg' ), true ),
 			'occ_idg_require_low_confidence_review' => array( __( 'Review uncertain suggestions', 'occidg' ), __( 'Keep low-confidence results as saved suggestions in the Image Library instead of applying them automatically.', 'occidg' ), true ),
 		);
 
@@ -587,12 +587,13 @@ class Occidg_Workflow_Admin {
 			/* translators: %d: metadata batch ID. */
 			sprintf( __( 'Metadata batch #%d', 'occidg' ), $batch_id ),
 			array(
-				'mode'                => $mode,
-				'batch_id'            => $batch_id,
-				'selected_fields'     => array_fill_keys( $fields, '1' ),
-				'override_metadata'   => false,
-				'overwrite_confirmed' => false,
-				'initiated_by'        => get_current_user_id(),
+				'mode'                     => $mode,
+				'batch_id'                 => $batch_id,
+				'selected_fields'          => array_fill_keys( $fields, '1' ),
+				'override_metadata'        => false,
+				'overwrite_confirmed'      => false,
+				'caption_review_confirmed' => 'fill_missing' === $mode,
+				'initiated_by'             => get_current_user_id(),
 			)
 		);
 		if ( false === $job ) {
@@ -928,14 +929,47 @@ class Occidg_Workflow_Admin {
 	public function attachment_panel( $fields, $post ) {
 		if ( 0 !== strpos( (string) $post->post_mime_type, 'image/' ) ) {
 			return $fields; }
-		$values   = $this->metadata->get_all( $post->ID );
-		$complete = 0;
-		foreach ( $values as $value ) {
+		$values         = $this->metadata->get_all( $post->ID );
+		$applied_fields = array();
+		foreach ( $values as $field => $value ) {
 			if ( ! Occidg_Metadata::is_empty( $value ) ) {
-				++$complete; }
+				$applied_fields[] = $field; }
 		}
-		/* translators: %1$d: number of complete metadata fields. */
-		$html                       = '<p>' . esc_html( sprintf( __( '%1$d of 4 metadata fields complete.', 'occidg' ), $complete ) ) . '</p>';
+		$pending_fields = array();
+		$suggestions    = $this->database->get_suggestions(
+			array(
+				'attachment_id' => $post->ID,
+				'status'        => 'pending',
+				'limit'         => 20,
+			)
+		);
+		foreach ( $suggestions as $suggestion ) {
+			$field = isset( $suggestion['field_name'] ) ? sanitize_key( $suggestion['field_name'] ) : '';
+			$value = isset( $suggestion['suggested_value'] ) ? $suggestion['suggested_value'] : '';
+			if ( isset( Occidg_Metadata::FIELDS[ $field ] ) && ! Occidg_Metadata::is_empty( $value ) ) {
+				$pending_fields[] = $field;
+			}
+		}
+		$pending_fields = array_values( array_unique( $pending_fields ) );
+		$generated      = count( array_unique( array_merge( $applied_fields, $pending_fields ) ) );
+		$applied        = count( $applied_fields );
+		/* translators: 1: number of generated fields, 2: number of applied fields. */
+		$html = '<p>' . esc_html( sprintf( __( '%1$d of 4 metadata fields generated; %2$d applied.', 'occidg' ), $generated, $applied ) ) . '</p>';
+		if ( ! empty( $pending_fields ) ) {
+			$field_labels  = array(
+				'title'       => __( 'Title', 'occidg' ),
+				'alt_text'    => __( 'Alt Text', 'occidg' ),
+				'caption'     => __( 'Caption', 'occidg' ),
+				'description' => __( 'Description', 'occidg' ),
+			);
+			$review_labels = array_map(
+				function ( $field ) use ( $field_labels ) {
+					return isset( $field_labels[ $field ] ) ? $field_labels[ $field ] : $field;
+				},
+				$pending_fields
+			);
+			$html         .= '<p><strong>' . esc_html__( 'Awaiting review:', 'occidg' ) . '</strong> ' . esc_html( implode( ', ', $review_labels ) ) . '</p>';
+		}
 		$review_status              = get_post_meta( $post->ID, '_occ_idg_review_status', true );
 		$review_status              = $review_status ? $review_status : 'not_reviewed';
 		$last_processed             = get_post_meta( $post->ID, '_occ_idg_last_processed', true );

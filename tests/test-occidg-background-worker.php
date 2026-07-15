@@ -65,14 +65,16 @@ final class Test_Occidg_Background_Worker extends TestCase {
 	 * @return void
 	 */
 	public function test_process_job_batches_and_reschedules() {
-		$jobs   = new Occidg_Background_Jobs();
-		$job    = $jobs->create_job(
+		$contexts = array();
+		$jobs     = new Occidg_Background_Jobs();
+		$job      = $jobs->create_job(
 			array(
-				'image_ids'       => array( 21, 22, 23 ),
-				'provider'        => 'openai',
-				'model'           => 'gpt-4o-mini',
-				'language'        => 'en',
-				'selected_fields' => array(
+				'image_ids'                => array( 21, 22, 23 ),
+				'provider'                 => 'openai',
+				'model'                    => 'gpt-4o-mini',
+				'language'                 => 'en',
+				'caption_review_confirmed' => true,
+				'selected_fields'          => array(
 					'title'       => '1',
 					'description' => '1',
 					'alt_text'    => '1',
@@ -80,9 +82,10 @@ final class Test_Occidg_Background_Worker extends TestCase {
 				),
 			)
 		);
-		$worker = new Occidg_Background_Worker(
+		$worker   = new Occidg_Background_Worker(
 			$jobs,
-			static function ( $image_id, $context ) {
+			static function ( $image_id, $context ) use ( &$contexts ) {
+				$contexts[] = $context;
 				return array(
 					'success'  => true,
 					'image_id' => $image_id,
@@ -98,6 +101,8 @@ final class Test_Occidg_Background_Worker extends TestCase {
 		$this->assertSame( 2, $updated_job['processed'] );
 		$this->assertSame( 2, $updated_job['succeeded'] );
 		$this->assertSame( 2, $updated_job['next_index'] );
+		$this->assertCount( 2, $contexts );
+		$this->assertTrue( $contexts[0]['caption_review_confirmed'] );
 		$this->assertCount( 1, $GLOBALS['occidg_scheduled_events'] );
 		$this->assertSame( array( $job['id'] ), $GLOBALS['occidg_scheduled_events'][0]['args'] );
 	}

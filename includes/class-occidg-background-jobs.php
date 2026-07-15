@@ -126,34 +126,35 @@ class Occidg_Background_Jobs {
 		$timestamp = $this->get_current_timestamp();
 		$job       = $this->normalize_job(
 			array(
-				'id'                  => $this->generate_job_id(),
-				'label'               => isset( $args['label'] ) ? $args['label'] : __( 'Bulk metadata generation', 'occidg' ),
-				'status'              => 'queued',
-				'created_at'          => $timestamp,
-				'updated_at'          => $timestamp,
-				'completed_at'        => '',
-				'provider'            => isset( $args['provider'] ) ? $args['provider'] : '',
-				'provider_label'      => isset( $args['provider_label'] ) ? $args['provider_label'] : '',
-				'model'               => isset( $args['model'] ) ? $args['model'] : '',
-				'language'            => isset( $args['language'] ) ? $args['language'] : '',
-				'selected_fields'     => isset( $args['selected_fields'] ) ? $args['selected_fields'] : array(),
-				'override_metadata'   => ! empty( $args['override_metadata'] ),
-				'mode'                => isset( $args['mode'] ) ? $args['mode'] : 'fill_missing',
-				'batch_id'            => isset( $args['batch_id'] ) ? $args['batch_id'] : 0,
-				'initiated_by'        => isset( $args['initiated_by'] ) ? $args['initiated_by'] : 0,
-				'overwrite_confirmed' => ! empty( $args['overwrite_confirmed'] ),
-				'retried_from_job_id' => isset( $args['retried_from_job_id'] ) ? $args['retried_from_job_id'] : '',
-				'image_ids'           => $image_ids,
-				'next_index'          => 0,
-				'total'               => count( $image_ids ),
-				'processed'           => 0,
-				'succeeded'           => 0,
-				'failed'              => 0,
-				'skipped'             => 0,
-				'failed_image_ids'    => array(),
-				'recent_failures'     => array(),
-				'last_error'          => '',
-				'current_retry_count' => 0,
+				'id'                       => $this->generate_job_id(),
+				'label'                    => isset( $args['label'] ) ? $args['label'] : __( 'Bulk metadata generation', 'occidg' ),
+				'status'                   => 'queued',
+				'created_at'               => $timestamp,
+				'updated_at'               => $timestamp,
+				'completed_at'             => '',
+				'provider'                 => isset( $args['provider'] ) ? $args['provider'] : '',
+				'provider_label'           => isset( $args['provider_label'] ) ? $args['provider_label'] : '',
+				'model'                    => isset( $args['model'] ) ? $args['model'] : '',
+				'language'                 => isset( $args['language'] ) ? $args['language'] : '',
+				'selected_fields'          => isset( $args['selected_fields'] ) ? $args['selected_fields'] : array(),
+				'override_metadata'        => ! empty( $args['override_metadata'] ),
+				'mode'                     => isset( $args['mode'] ) ? $args['mode'] : 'fill_missing',
+				'batch_id'                 => isset( $args['batch_id'] ) ? $args['batch_id'] : 0,
+				'initiated_by'             => isset( $args['initiated_by'] ) ? $args['initiated_by'] : 0,
+				'overwrite_confirmed'      => ! empty( $args['overwrite_confirmed'] ),
+				'caption_review_confirmed' => ! empty( $args['caption_review_confirmed'] ),
+				'retried_from_job_id'      => isset( $args['retried_from_job_id'] ) ? $args['retried_from_job_id'] : '',
+				'image_ids'                => $image_ids,
+				'next_index'               => 0,
+				'total'                    => count( $image_ids ),
+				'processed'                => 0,
+				'succeeded'                => 0,
+				'failed'                   => 0,
+				'skipped'                  => 0,
+				'failed_image_ids'         => array(),
+				'recent_failures'          => array(),
+				'last_error'               => '',
+				'current_retry_count'      => 0,
 			)
 		);
 
@@ -213,19 +214,20 @@ class Occidg_Background_Jobs {
 			array_merge(
 				array(
 					/* translators: %s: original background job label. */
-					'label'               => sprintf( __( 'Retry: %s', 'occidg' ), $job['label'] ),
-					'provider'            => $job['provider'],
-					'provider_label'      => $job['provider_label'],
-					'model'               => $job['model'],
-					'language'            => $job['language'],
-					'selected_fields'     => $job['selected_fields'],
-					'override_metadata'   => $job['override_metadata'],
-					'mode'                => $job['mode'],
-					'batch_id'            => $job['batch_id'],
-					'initiated_by'        => $job['initiated_by'],
-					'overwrite_confirmed' => $job['overwrite_confirmed'],
-					'retried_from_job_id' => $job['id'],
-					'image_ids'           => $retry_image_ids,
+					'label'                    => sprintf( __( 'Retry: %s', 'occidg' ), $job['label'] ),
+					'provider'                 => $job['provider'],
+					'provider_label'           => $job['provider_label'],
+					'model'                    => $job['model'],
+					'language'                 => $job['language'],
+					'selected_fields'          => $job['selected_fields'],
+					'override_metadata'        => $job['override_metadata'],
+					'mode'                     => $job['mode'],
+					'batch_id'                 => $job['batch_id'],
+					'initiated_by'             => $job['initiated_by'],
+					'overwrite_confirmed'      => $job['overwrite_confirmed'],
+					'caption_review_confirmed' => $job['caption_review_confirmed'],
+					'retried_from_job_id'      => $job['id'],
+					'image_ids'                => $retry_image_ids,
 				),
 				$overrides
 			)
@@ -435,49 +437,50 @@ class Occidg_Background_Jobs {
 		$total     = isset( $job['total'] ) ? $this->normalize_non_negative_int( $job['total'] ) : count( $image_ids );
 
 		return array(
-			'id'                  => $job_id,
-			'label'               => isset( $job['label'] ) ? sanitize_text_field( $job['label'] ) : __( 'Bulk metadata generation', 'occidg' ),
-			'status'              => $this->sanitize_status( isset( $job['status'] ) ? $job['status'] : 'queued' ),
-			'created_at'          => isset( $job['created_at'] ) && is_string( $job['created_at'] ) ? $job['created_at'] : $this->get_current_timestamp(),
-			'updated_at'          => isset( $job['updated_at'] ) && is_string( $job['updated_at'] ) ? $job['updated_at'] : $this->get_current_timestamp(),
-			'completed_at'        => isset( $job['completed_at'] ) && is_string( $job['completed_at'] ) ? $job['completed_at'] : '',
-			'provider'            => isset( $job['provider'] ) ? sanitize_text_field( $job['provider'] ) : '',
-			'provider_label'      => isset( $job['provider_label'] ) ? sanitize_text_field( $job['provider_label'] ) : '',
-			'model'               => isset( $job['model'] ) ? sanitize_text_field( $job['model'] ) : '',
-			'language'            => isset( $job['language'] ) ? sanitize_text_field( $job['language'] ) : '',
-			'selected_fields'     => $this->normalize_selected_fields( isset( $job['selected_fields'] ) ? $job['selected_fields'] : array() ),
-			'override_metadata'   => ! empty( $job['override_metadata'] ),
-			'mode'                => $this->sanitize_mode( isset( $job['mode'] ) ? $job['mode'] : ( ! empty( $job['override_metadata'] ) ? 'overwrite' : 'fill_missing' ) ),
-			'batch_id'            => isset( $job['batch_id'] ) ? $this->normalize_non_negative_int( $job['batch_id'] ) : 0,
-			'initiated_by'        => isset( $job['initiated_by'] ) ? $this->normalize_non_negative_int( $job['initiated_by'] ) : 0,
-			'overwrite_confirmed' => ! empty( $job['overwrite_confirmed'] ),
-			'retried_from_job_id' => isset( $job['retried_from_job_id'] ) ? $this->sanitize_job_id( $job['retried_from_job_id'] ) : '',
-			'image_ids'           => $image_ids,
-			'next_index'          => min(
+			'id'                       => $job_id,
+			'label'                    => isset( $job['label'] ) ? sanitize_text_field( $job['label'] ) : __( 'Bulk metadata generation', 'occidg' ),
+			'status'                   => $this->sanitize_status( isset( $job['status'] ) ? $job['status'] : 'queued' ),
+			'created_at'               => isset( $job['created_at'] ) && is_string( $job['created_at'] ) ? $job['created_at'] : $this->get_current_timestamp(),
+			'updated_at'               => isset( $job['updated_at'] ) && is_string( $job['updated_at'] ) ? $job['updated_at'] : $this->get_current_timestamp(),
+			'completed_at'             => isset( $job['completed_at'] ) && is_string( $job['completed_at'] ) ? $job['completed_at'] : '',
+			'provider'                 => isset( $job['provider'] ) ? sanitize_text_field( $job['provider'] ) : '',
+			'provider_label'           => isset( $job['provider_label'] ) ? sanitize_text_field( $job['provider_label'] ) : '',
+			'model'                    => isset( $job['model'] ) ? sanitize_text_field( $job['model'] ) : '',
+			'language'                 => isset( $job['language'] ) ? sanitize_text_field( $job['language'] ) : '',
+			'selected_fields'          => $this->normalize_selected_fields( isset( $job['selected_fields'] ) ? $job['selected_fields'] : array() ),
+			'override_metadata'        => ! empty( $job['override_metadata'] ),
+			'mode'                     => $this->sanitize_mode( isset( $job['mode'] ) ? $job['mode'] : ( ! empty( $job['override_metadata'] ) ? 'overwrite' : 'fill_missing' ) ),
+			'batch_id'                 => isset( $job['batch_id'] ) ? $this->normalize_non_negative_int( $job['batch_id'] ) : 0,
+			'initiated_by'             => isset( $job['initiated_by'] ) ? $this->normalize_non_negative_int( $job['initiated_by'] ) : 0,
+			'overwrite_confirmed'      => ! empty( $job['overwrite_confirmed'] ),
+			'caption_review_confirmed' => ! empty( $job['caption_review_confirmed'] ),
+			'retried_from_job_id'      => isset( $job['retried_from_job_id'] ) ? $this->sanitize_job_id( $job['retried_from_job_id'] ) : '',
+			'image_ids'                => $image_ids,
+			'next_index'               => min(
 				isset( $job['next_index'] ) ? $this->normalize_non_negative_int( $job['next_index'] ) : 0,
 				$total
 			),
-			'total'               => $total,
-			'processed'           => min(
+			'total'                    => $total,
+			'processed'                => min(
 				isset( $job['processed'] ) ? $this->normalize_non_negative_int( $job['processed'] ) : 0,
 				$total
 			),
-			'succeeded'           => min(
+			'succeeded'                => min(
 				isset( $job['succeeded'] ) ? $this->normalize_non_negative_int( $job['succeeded'] ) : 0,
 				$total
 			),
-			'failed'              => min(
+			'failed'                   => min(
 				isset( $job['failed'] ) ? $this->normalize_non_negative_int( $job['failed'] ) : 0,
 				$total
 			),
-			'skipped'             => min(
+			'skipped'                  => min(
 				isset( $job['skipped'] ) ? $this->normalize_non_negative_int( $job['skipped'] ) : 0,
 				$total
 			),
-			'failed_image_ids'    => $this->normalize_image_ids( isset( $job['failed_image_ids'] ) ? $job['failed_image_ids'] : array() ),
-			'recent_failures'     => $this->normalize_recent_failures( isset( $job['recent_failures'] ) ? $job['recent_failures'] : array() ),
-			'last_error'          => isset( $job['last_error'] ) ? sanitize_text_field( $job['last_error'] ) : '',
-			'current_retry_count' => isset( $job['current_retry_count'] ) ? $this->normalize_non_negative_int( $job['current_retry_count'] ) : 0,
+			'failed_image_ids'         => $this->normalize_image_ids( isset( $job['failed_image_ids'] ) ? $job['failed_image_ids'] : array() ),
+			'recent_failures'          => $this->normalize_recent_failures( isset( $job['recent_failures'] ) ? $job['recent_failures'] : array() ),
+			'last_error'               => isset( $job['last_error'] ) ? sanitize_text_field( $job['last_error'] ) : '',
+			'current_retry_count'      => isset( $job['current_retry_count'] ) ? $this->normalize_non_negative_int( $job['current_retry_count'] ) : 0,
 		);
 	}
 

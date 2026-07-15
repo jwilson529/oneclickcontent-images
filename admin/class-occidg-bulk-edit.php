@@ -63,6 +63,46 @@ class Occidg_Bulk_Edit {
 				</div>
 				<p id="occidg-bulk-selection-status" class="occidg-bulk-selection-status" aria-live="polite"></p>
 			</div>
+			<section id="occidg-selected-batch-progress" class="occidg-selected-batch-progress" aria-labelledby="occidg-selected-batch-heading" tabindex="-1" hidden>
+				<div class="occidg-selected-batch-progress__header">
+					<div>
+						<p class="occidg-eyebrow"><?php esc_html_e( 'Background batch', 'occidg' ); ?></p>
+						<h3 id="occidg-selected-batch-heading"><?php esc_html_e( 'Batch progress', 'occidg' ); ?></h3>
+					</div>
+					<span id="occidg-selected-batch-state" class="occidg-selected-batch-state"><?php esc_html_e( 'Queued', 'occidg' ); ?></span>
+				</div>
+				<p id="occidg-selected-batch-message" class="occidg-selected-batch-message" aria-live="polite"></p>
+				<div id="occidg-selected-batch-progress-track" class="occidg-selected-batch-progress-track" role="progressbar" aria-label="<?php esc_attr_e( 'Batch completion', 'occidg' ); ?>" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+					<span id="occidg-selected-batch-progress-bar" class="occidg-selected-batch-progress-bar"></span>
+				</div>
+				<dl class="occidg-selected-batch-stats">
+					<div><dt><?php esc_html_e( 'Processed', 'occidg' ); ?></dt><dd id="occidg-selected-batch-processed">0 / 0</dd></div>
+					<div><dt><?php esc_html_e( 'Succeeded', 'occidg' ); ?></dt><dd id="occidg-selected-batch-succeeded">0</dd></div>
+					<div><dt><?php esc_html_e( 'Failed', 'occidg' ); ?></dt><dd id="occidg-selected-batch-failed">0</dd></div>
+					<div><dt><?php esc_html_e( 'Skipped', 'occidg' ); ?></dt><dd id="occidg-selected-batch-skipped">0</dd></div>
+				</dl>
+				<p id="occidg-selected-batch-refresh-status" class="occidg-selected-batch-refresh-status" aria-live="polite" hidden></p>
+				<div class="occidg-selected-batch-progress__actions">
+					<a id="occidg-selected-batch-details" class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=occ-idg-batches' ) ); ?>"><?php esc_html_e( 'View batch details', 'occidg' ); ?></a>
+					<button type="button" id="occidg-dismiss-selected-batch" class="button button-link" hidden><?php esc_html_e( 'Dismiss', 'occidg' ); ?></button>
+				</div>
+			</section>
+
+			<div id="occidg-bulk-confirm-modal" class="occidg-bulk-confirm-modal" hidden>
+				<div class="occidg-bulk-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="occidg-bulk-confirm-title" aria-describedby="occidg-bulk-confirm-description" tabindex="-1">
+					<button type="button" id="occidg-bulk-confirm-close" class="occidg-bulk-confirm-close" aria-label="<?php esc_attr_e( 'Close dialog', 'occidg' ); ?>">
+						<span class="dashicons dashicons-no-alt" aria-hidden="true"></span>
+					</button>
+					<div class="occidg-bulk-confirm-icon" aria-hidden="true"><span class="dashicons dashicons-images-alt2"></span></div>
+					<h2 id="occidg-bulk-confirm-title"><?php esc_html_e( 'Start a background batch?', 'occidg' ); ?></h2>
+					<p id="occidg-bulk-confirm-description"></p>
+					<p class="occidg-bulk-confirm-note"><?php esc_html_e( 'You can stay on this page. Progress will update here automatically.', 'occidg' ); ?></p>
+					<div class="occidg-bulk-confirm-actions">
+						<button type="button" id="occidg-bulk-confirm-cancel" class="button"><?php esc_html_e( 'Go back', 'occidg' ); ?></button>
+						<button type="button" id="occidg-bulk-confirm-submit" class="button button-primary"><?php esc_html_e( 'Start batch', 'occidg' ); ?></button>
+					</div>
+				</div>
+			</div>
 			<table id="image-metadata-table" class="wp-list-table widefat fixed striped">
 				<thead>
 					<tr>

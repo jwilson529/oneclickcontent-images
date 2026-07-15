@@ -31,8 +31,20 @@ jQuery(document).ready(function($) {
 	const $clearSelection = $('#occidg-clear-selection');
 	const $queueSelected = $('.occidg-queue-selected');
 	const $bulkSelectionStatus = $('#occidg-bulk-selection-status');
+	const $bulkConfirmModal = $('#occidg-bulk-confirm-modal');
+	const $bulkConfirmDialog = $bulkConfirmModal.find('.occidg-bulk-confirm-dialog');
+	const $bulkConfirmTitle = $('#occidg-bulk-confirm-title');
+	const $bulkConfirmDescription = $('#occidg-bulk-confirm-description');
+	const $bulkConfirmSubmit = $('#occidg-bulk-confirm-submit');
+	const $selectedBatchProgress = $('#occidg-selected-batch-progress');
+	const selectedBatchStorageKey = 'occidgSelectedBatchJobId';
 	let selectionBusy = false;
 	let lastSearchValue = '';
+	let pendingQueueMode = '';
+	let lastModalTrigger = null;
+	let selectedBatchPollTimer = null;
+	let currentSelectedBatchJobId = '';
+	let refreshedTerminalJobId = '';
 
 	    const table = $('#image-metadata-table').DataTable({
         serverSide: true,
@@ -297,16 +309,108 @@ jQuery(document).ready(function($) {
 	});
 
 	$queueSelected.on('click', function() {
-		const mode = String($(this).data('mode') || '');
-		const count = selectedImageIds.size;
-		const confirmationTemplate = 'suggestion' === mode
-			? getUiString('queue_suggestions_confirmation', 'Queue review suggestions for %d selected images? Nothing changes until you approve them.')
-			: getUiString('queue_fill_missing_confirmation', 'Fill missing metadata for %d selected images? Existing values stay unchanged.');
-
-		if (0 === count || !window.confirm(confirmationTemplate.replace('%d', count))) {
+		if (0 === selectedImageIds.size) {
 			return;
 		}
 
+		openBulkConfirm(String($(this).data('mode') || ''), this);
+	});
+
+	$('#occidg-bulk-confirm-cancel, #occidg-bulk-confirm-close').on('click', closeBulkConfirm);
+
+	$bulkConfirmModal.on('click', function(event) {
+		if (event.target === this) {
+			closeBulkConfirm();
+		}
+	});
+
+	$bulkConfirmSubmit.on('click', function() {
+		const mode = pendingQueueMode;
+		if (!mode || 0 === selectedImageIds.size) {
+			closeBulkConfirm();
+			return;
+		}
+
+		closeBulkConfirm();
+		queueSelectedImages(mode);
+	});
+
+	$('#occidg-dismiss-selected-batch').on('click', dismissSelectedBatchProgress);
+
+	function openBulkConfirm(mode, trigger) {
+		const count = selectedImageIds.size;
+		const isSuggestion = 'suggestion' === mode;
+		const confirmationTemplate = isSuggestion
+			? (1 === count
+				? getUiString('queue_suggestions_confirmation_one', 'Queue review suggestions for 1 selected image? Nothing changes until you approve it.')
+				: getUiString('queue_suggestions_confirmation', 'Queue review suggestions for %d selected images? Nothing changes until you approve them.'))
+			: (1 === count
+				? getUiString('queue_fill_missing_confirmation_one', 'Fill missing metadata for 1 selected image? Existing values stay unchanged.')
+				: getUiString('queue_fill_missing_confirmation', 'Fill missing metadata for %d selected images? Existing values stay unchanged.'));
+
+		pendingQueueMode = mode;
+		lastModalTrigger = trigger || null;
+		$bulkConfirmTitle.text(isSuggestion
+			? getUiString('queue_suggestions_title', 'Create review suggestions?')
+			: getUiString('queue_fill_missing_title', 'Fill missing metadata?'));
+		$bulkConfirmDescription.text(confirmationTemplate.replace('%d', count));
+		$bulkConfirmSubmit.text(isSuggestion
+			? getUiString('queue_suggestions_submit', 'Start review batch')
+			: getUiString('queue_fill_missing_submit', 'Start fill missing batch'));
+		$bulkConfirmModal.prop('hidden', false);
+		$('body').addClass('occidg-modal-open');
+		$(document).on('keydown.occidgBulkConfirm', handleBulkConfirmKeydown);
+		window.setTimeout(function() {
+			$bulkConfirmSubmit.trigger('focus');
+		}, 0);
+	}
+
+	function closeBulkConfirm() {
+		if ($bulkConfirmModal.prop('hidden')) {
+			return;
+		}
+
+		$bulkConfirmModal.prop('hidden', true);
+		$('body').removeClass('occidg-modal-open');
+		$(document).off('keydown.occidgBulkConfirm');
+		pendingQueueMode = '';
+		if (lastModalTrigger) {
+			$(lastModalTrigger).trigger('focus');
+		}
+		lastModalTrigger = null;
+	}
+
+	function handleBulkConfirmKeydown(event) {
+		if ('Escape' === event.key) {
+			event.preventDefault();
+			closeBulkConfirm();
+			return;
+		}
+
+		if ('Tab' !== event.key) {
+			return;
+		}
+
+		const $focusable = $bulkConfirmDialog.find('button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled)').filter(':visible');
+		if (!$focusable.length) {
+			event.preventDefault();
+			$bulkConfirmDialog.trigger('focus');
+			return;
+		}
+
+		const first = $focusable.get(0);
+		const last = $focusable.get($focusable.length - 1);
+		if (event.shiftKey && document.activeElement === first) {
+			event.preventDefault();
+			$(last).trigger('focus');
+		} else if (!event.shiftKey && document.activeElement === last) {
+			event.preventDefault();
+			$(first).trigger('focus');
+		}
+	}
+
+	function queueSelectedImages(mode) {
+		const queuedImageIds = Array.from(selectedImageIds);
 		setSelectionBusy(true);
 		setBulkSelectionStatus('working', getUiString('queueing_selected_message', 'Queueing the selected images...'));
 
@@ -318,7 +422,7 @@ jQuery(document).ready(function($) {
 				action: 'occidg_create_selected_batch',
 				nonce: occidg_bulk_vars.nonce,
 				mode: mode,
-				image_ids: Array.from(selectedImageIds),
+				image_ids: queuedImageIds,
 			},
 		}).done(function(response) {
 			if (!(response.success && response.data)) {
@@ -326,14 +430,209 @@ jQuery(document).ready(function($) {
 				return;
 			}
 
-			selectedImageIds.clear();
-			setBulkSelectionStatus('success', response.data.message || getUiString('queue_selected_success', 'The selected images were queued.'), response.data.batches_url || '');
+			clearSelectedImages(false);
+			setBulkSelectionStatus('success', response.data.message || getUiString('queue_selected_success', 'The selected images were queued.'));
+			startSelectedBatchProgress(response.data);
 		}).fail(function() {
 			setBulkSelectionStatus('error', getUiString('queue_selected_error', 'Unable to queue the selected images.'));
 		}).always(function() {
 			setSelectionBusy(false);
 		});
-	});
+	}
+
+	function startSelectedBatchProgress(batchData) {
+		const jobId = String(batchData.job_id || '');
+		if (!jobId) {
+			return;
+		}
+
+		currentSelectedBatchJobId = jobId;
+		refreshedTerminalJobId = '';
+		persistSelectedBatchJobId(jobId);
+		if (batchData.batches_url) {
+			$('#occidg-selected-batch-details').attr('href', batchData.batches_url);
+		}
+		renderSelectedBatchJob({
+			id: jobId,
+			batch_id: parseInt(batchData.batch_id || 0, 10),
+			status: 'queued',
+			status_label: getUiString('background_job_queued_label', 'Queued'),
+			total: parseInt(batchData.total || 0, 10),
+			processed: 0,
+			succeeded: 0,
+			failed: 0,
+			skipped: 0,
+			percent_complete: 0,
+		});
+		$selectedBatchProgress.trigger('focus');
+		if ($selectedBatchProgress.get(0) && 'function' === typeof $selectedBatchProgress.get(0).scrollIntoView) {
+			$selectedBatchProgress.get(0).scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+		}
+		scheduleSelectedBatchPoll(jobId, 500);
+	}
+
+	function restoreSelectedBatchProgress() {
+		let jobId = '';
+		try {
+			jobId = String(window.sessionStorage.getItem(selectedBatchStorageKey) || '');
+		} catch (error) {
+			jobId = '';
+		}
+
+		if (!jobId) {
+			return;
+		}
+
+		currentSelectedBatchJobId = jobId;
+		pollSelectedBatch(jobId);
+	}
+
+	function persistSelectedBatchJobId(jobId) {
+		try {
+			window.sessionStorage.setItem(selectedBatchStorageKey, jobId);
+		} catch (error) {
+			// Progress still works for this page view when storage is unavailable.
+		}
+	}
+
+	function dismissSelectedBatchProgress() {
+		if (selectedBatchPollTimer) {
+			window.clearTimeout(selectedBatchPollTimer);
+			selectedBatchPollTimer = null;
+		}
+		currentSelectedBatchJobId = '';
+		$selectedBatchProgress.prop('hidden', true);
+		try {
+			window.sessionStorage.removeItem(selectedBatchStorageKey);
+		} catch (error) {
+			// There is nothing else to clean up when storage is unavailable.
+		}
+	}
+
+	function scheduleSelectedBatchPoll(jobId, delay) {
+		if (selectedBatchPollTimer) {
+			window.clearTimeout(selectedBatchPollTimer);
+		}
+		selectedBatchPollTimer = window.setTimeout(function() {
+			pollSelectedBatch(jobId);
+		}, delay);
+	}
+
+	function pollSelectedBatch(jobId) {
+		if (!jobId || jobId !== currentSelectedBatchJobId) {
+			return;
+		}
+
+		$.ajax({
+			url: occidg_bulk_vars.ajax_url,
+			type: 'GET',
+			dataType: 'json',
+			data: {
+				action: 'occidg_get_background_job_status',
+				nonce: window.occidg_admin_vars ? occidg_admin_vars.occidg_ajax_nonce : '',
+				job_id: jobId,
+			},
+		}).done(function(response) {
+			if (jobId !== currentSelectedBatchJobId) {
+				return;
+			}
+			if (!(response.success && response.data)) {
+				showSelectedBatchRefreshError(getAjaxErrorMessage(response, getUiString('background_job_poll_error', 'Unable to refresh the background job status right now.')));
+				scheduleSelectedBatchPoll(jobId, 5000);
+				return;
+			}
+
+			$('#occidg-selected-batch-refresh-status').prop('hidden', true).text('');
+			renderSelectedBatchJob(response.data);
+			if (isSelectedBatchPollable(response.data)) {
+				scheduleSelectedBatchPoll(jobId, document.hidden ? 5000 : 2500);
+			}
+		}).fail(function() {
+			if (jobId !== currentSelectedBatchJobId) {
+				return;
+			}
+			showSelectedBatchRefreshError(getUiString('background_job_poll_error', 'Unable to refresh the background job status right now.'));
+			scheduleSelectedBatchPoll(jobId, 5000);
+		});
+	}
+
+	function renderSelectedBatchJob(job) {
+		const status = String(job.status || 'queued');
+		const total = Math.max(0, parseInt(job.total || 0, 10));
+		const processed = Math.max(0, parseInt(job.processed || 0, 10));
+		const succeeded = Math.max(0, parseInt(job.succeeded || 0, 10));
+		const failed = Math.max(0, parseInt(job.failed || 0, 10));
+		const skipped = Math.max(0, parseInt(job.skipped || 0, 10));
+		const percent = Math.min(100, Math.max(0, parseInt(job.percent_complete || 0, 10)));
+		const statusLabel = String(job.status_label || status);
+		const message = getSelectedBatchMessage(job, statusLabel, processed, total);
+		const terminal = !isSelectedBatchPollable(job);
+
+		$selectedBatchProgress
+			.prop('hidden', false)
+			.toggleClass('is-active', 'queued' === status || 'running' === status);
+		$('#occidg-selected-batch-state')
+			.removeClass('is-queued is-running is-paused is-completed is-completed_with_errors is-cancelled is-failed')
+			.addClass(`is-${status}`)
+			.text(statusLabel);
+		$('#occidg-selected-batch-message').text(message);
+		$('#occidg-selected-batch-progress-track')
+			.attr('aria-valuenow', percent)
+			.attr('aria-valuetext', message);
+		$('#occidg-selected-batch-progress-bar').css('width', `${percent}%`);
+		$('#occidg-selected-batch-processed').text(`${processed} / ${total}`);
+		$('#occidg-selected-batch-succeeded').text(succeeded);
+		$('#occidg-selected-batch-failed').text(failed);
+		$('#occidg-selected-batch-skipped').text(skipped);
+		$('#occidg-dismiss-selected-batch').prop('hidden', !terminal);
+
+		if (terminal && job.id && refreshedTerminalJobId !== String(job.id)) {
+			refreshedTerminalJobId = String(job.id);
+			table.ajax.reload(null, false);
+		}
+	}
+
+	function getSelectedBatchMessage(job, statusLabel, processed, total) {
+		const status = String(job.status || 'queued');
+		if ('completed' === status) {
+			return `${getUiString('background_job_complete', 'All metadata generation complete.')} ${formatJobSummary(job)}`;
+		}
+		if ('completed_with_errors' === status) {
+			return `${getUiString('background_job_complete_with_errors', 'Metadata generation finished with some errors.')} ${formatJobSummary(job)}`;
+		}
+		if ('paused' === status) {
+			return getUiString('background_job_paused', 'Metadata generation is paused.');
+		}
+		if ('cancelled' === status) {
+			return getUiString('background_job_cancelled', 'Metadata generation was cancelled.');
+		}
+		if ('failed' === status) {
+			return String(job.last_error || getUiString('background_job_complete_with_errors', 'Metadata generation finished with some errors.'));
+		}
+
+		return getUiString('background_job_progress', '%1$s: %2$d of %3$d images processed.')
+			.replace('%1$s', statusLabel)
+			.replace('%2$d', processed)
+			.replace('%3$d', total);
+	}
+
+	function formatJobSummary(job) {
+		return getUiString('background_job_summary', '%1$d succeeded, %2$d failed, %3$d skipped.')
+			.replace('%1$d', Math.max(0, parseInt(job.succeeded || 0, 10)))
+			.replace('%2$d', Math.max(0, parseInt(job.failed || 0, 10)))
+			.replace('%3$d', Math.max(0, parseInt(job.skipped || 0, 10)));
+	}
+
+	function isSelectedBatchPollable(job) {
+		return ['queued', 'running', 'paused'].includes(String(job.status || ''));
+	}
+
+	function showSelectedBatchRefreshError(message) {
+		$selectedBatchProgress.prop('hidden', false);
+		$('#occidg-selected-batch-refresh-status').prop('hidden', false).text(message);
+	}
+
+	restoreSelectedBatchProgress();
 
     function renderEditableInput(field, value, imageId) {
         return `<div class="input-wrapper">

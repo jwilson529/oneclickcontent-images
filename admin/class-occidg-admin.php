@@ -498,8 +498,14 @@ class Occidg_Admin {
 				'selected_matching_message'           => __( 'Selected %d matching images.', 'occidg' ),
 				/* translators: %d: selected image count. */
 				'queue_fill_missing_confirmation'     => __( 'Fill missing metadata for %d selected images? Existing values stay unchanged.', 'occidg' ),
+				'queue_fill_missing_confirmation_one' => __( 'Fill missing metadata for 1 selected image? Existing values stay unchanged.', 'occidg' ),
 				/* translators: %d: selected image count. */
 				'queue_suggestions_confirmation'      => __( 'Queue review suggestions for %d selected images? Nothing changes until you approve them.', 'occidg' ),
+				'queue_suggestions_confirmation_one'  => __( 'Queue review suggestions for 1 selected image? Nothing changes until you approve it.', 'occidg' ),
+				'queue_fill_missing_title'            => __( 'Fill missing metadata?', 'occidg' ),
+				'queue_suggestions_title'             => __( 'Create review suggestions?', 'occidg' ),
+				'queue_fill_missing_submit'           => __( 'Start fill missing batch', 'occidg' ),
+				'queue_suggestions_submit'            => __( 'Start review batch', 'occidg' ),
 				'queueing_selected_message'           => __( 'Queueing the selected images...', 'occidg' ),
 				'queue_selected_error'                => __( 'Unable to queue the selected images.', 'occidg' ),
 				'queue_selected_success'              => __( 'The selected images were queued.', 'occidg' ),
@@ -548,6 +554,7 @@ class Occidg_Admin {
 				'background_job_complete'             => __( 'All metadata generation complete.', 'occidg' ),
 				'background_job_complete_with_errors' => __( 'Metadata generation finished with some errors.', 'occidg' ),
 				'background_job_retrying'             => __( 'Creating retry job...', 'occidg' ),
+				'background_job_queued_label'         => __( 'Queued', 'occidg' ),
 				/* translators: 1: succeeded image count, 2: failed image count, 3: skipped image count. */
 				'background_job_summary'              => __( '%1$d succeeded, %2$d failed, %3$d skipped.', 'occidg' ),
 				/* translators: 1: queue state label, 2: processed image count, 3: total image count. */

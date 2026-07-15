@@ -94,6 +94,28 @@ final class Test_Occidg_Background_Jobs_Admin extends TestCase {
 	}
 
 	/**
+	 * Generators should only be able to load jobs they initiated.
+	 *
+	 * @return void
+	 */
+	public function test_get_user_job_payload_is_limited_to_the_initiating_user() {
+		$jobs   = new Occidg_Background_Jobs();
+		$worker = new Occidg_Background_Worker(
+			$jobs,
+			static function () {
+				return array( 'success' => true );
+			}
+		);
+		$admin  = new Occidg_Background_Jobs_Admin( $jobs, $worker );
+
+		$first_user_job  = $admin->create_job_from_image_ids( array( 203 ), '', array( 'initiated_by' => 7 ) );
+		$second_user_job = $admin->create_job_from_image_ids( array( 204 ), '', array( 'initiated_by' => 8 ) );
+
+		$this->assertSame( $first_user_job['id'], $admin->get_user_job_payload( $first_user_job['id'], 7 )['id'] );
+		$this->assertFalse( $admin->get_user_job_payload( $second_user_job['id'], 7 ) );
+	}
+
+	/**
 	 * Status lookup should fall back to the latest retryable job when no active job exists.
 	 *
 	 * @return void

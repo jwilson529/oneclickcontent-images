@@ -169,6 +169,47 @@ class Occidg_Background_Jobs_Admin {
 	}
 
 	/**
+	 * Return a job owned by a specific user, or that user's latest relevant job.
+	 *
+	 * Generators without batch-management access use this path so they can poll
+	 * work they started without gaining visibility into other users' jobs.
+	 *
+	 * @since 2.0.2
+	 * @param string $job_id Job ID, or an empty string for the latest job.
+	 * @param int    $user_id WordPress user ID.
+	 * @return array|false
+	 */
+	public function get_user_job_payload( $job_id, $user_id ) {
+		$user_id = absint( $user_id );
+		if ( $user_id < 1 ) {
+			return false;
+		}
+
+		if ( '' !== $job_id ) {
+			$job = $this->jobs->get_job( $job_id );
+			if ( false === $job || $user_id !== (int) $job['initiated_by'] ) {
+				return false;
+			}
+
+			return $this->build_job_payload( $job );
+		}
+
+		$status_groups = array(
+			array( 'queued', 'running', 'paused' ),
+			array( 'completed_with_errors', 'cancelled', 'failed' ),
+		);
+		foreach ( $status_groups as $statuses ) {
+			foreach ( $this->jobs->get_jobs() as $job ) {
+				if ( $user_id === (int) $job['initiated_by'] && in_array( $job['status'], $statuses, true ) ) {
+					return $this->build_job_payload( $job );
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Pause a job and return the normalized payload.
 	 *
 	 * @since 1.2.0
@@ -262,13 +303,17 @@ class Occidg_Background_Jobs_Admin {
 	public function ajax_get_job_status() {
 		check_ajax_referer( 'occidg_ajax_nonce', 'nonce' );
 
-		if ( ! current_user_can( 'occ_idg_manage_batches' ) ) {
+		$can_manage   = current_user_can( 'occ_idg_manage_batches' );
+		$can_generate = current_user_can( 'occ_idg_generate_metadata' );
+		if ( ! $can_manage && ! $can_generate ) {
 			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'occidg' ) ) );
 			return;
 		}
 
 		$job_id = isset( $_REQUEST['job_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['job_id'] ) ) : '';
-		$job    = $this->get_job_payload( $job_id );
+		$job    = $can_manage
+			? $this->get_job_payload( $job_id )
+			: $this->get_user_job_payload( $job_id, get_current_user_id() );
 
 		if ( false === $job ) {
 			wp_send_json_error( array( 'message' => __( 'Background job not found.', 'occidg' ) ) );

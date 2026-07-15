@@ -2517,6 +2517,7 @@ body.occidg-modal-open {
     border-radius: 8px;
 }
 
+.occidg-table-card .dt-container table.occidg-data-table,
 .occidg-data-table {
     width: 100% !important;
     min-width: 880px;

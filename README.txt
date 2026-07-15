@@ -4,7 +4,7 @@ Tags: images, seo, alt-text, openai, gemini
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 7.2
-Stable tag: 2.0.2
+Stable tag: 2.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -189,6 +189,10 @@ The plugin supports the language options currently provided in the admin setting
 
 == Upgrade Notice ==
 
+= 2.0.3 =
+
+Adds selected-image background generation with clearer live progress, restores caption generation, and refreshes workflow table layouts.
+
 = 2.0.2 =
 
 Prevents API-key clearing during normal settings saves and fixes reliable creation of repeated background batches.
@@ -222,6 +226,12 @@ This release adds forward-compatible OpenAI model filtering for GPT-5.5 API mode
 This release repositions the plugin as a free, bring-your-own-key AI metadata generator for the Media Library with OpenAI and Gemini support.
 
 == Changelog ==
+
+= 2.0.3 =
+* Added selected-image bulk generation to the Image Library with durable background processing and live progress feedback.
+* Fixed caption generation for upload and bulk workflows, including four-field completion reporting.
+* Improved the workflow UX with styled confirmations, full-width Batches and History tables, and clearer DataTables controls.
+* Removed the obsolete settings tab and legacy provider-help panel.
 
 = 2.0.2 =
 * Fixed an upgrade regression where saving the main settings form could clear an existing provider API key because the masked key field submits an empty value.

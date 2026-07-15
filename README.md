@@ -172,7 +172,7 @@ OpenAI and Gemini.
 
 ## Release Highlights
 
-- Current release: 2.0.2
+- Current release: 2.0.3
 - Unified, searchable Image Library with inline editing, Preview, Generate, and suggestion review
 - Safe fill-missing behavior with opt-in, confirmed overwrite controls
 - Preflight estimates and remembered batch-planner choices

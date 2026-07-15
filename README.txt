@@ -4,7 +4,7 @@ Tags: images, seo, alt-text, openai, gemini
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 7.2
-Stable tag: 2.0.3
+Stable tag: 2.0.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -189,6 +189,10 @@ The plugin supports the language options currently provided in the admin setting
 
 == Upgrade Notice ==
 
+= 2.0.4 =
+
+Keeps interactive background batches moving on hosts such as Pantheon that disable normal WP-Cron spawning.
+
 = 2.0.3 =
 
 Adds selected-image background generation with clearer live progress, restores caption generation, and refreshes workflow table layouts.
@@ -226,6 +230,10 @@ This release adds forward-compatible OpenAI model filtering for GPT-5.5 API mode
 This release repositions the plugin as a free, bring-your-own-key AI metadata generator for the Media Library with OpenAI and Gemini support.
 
 == Changelog ==
+
+= 2.0.4 =
+* Added an authenticated, lock-protected browser fallback that processes one due batch item per status poll when normal WP-Cron spawning is disabled.
+* Preserved scheduled retry delays and platform cron as the durable backstop for background batches.
 
 = 2.0.3 =
 * Added selected-image bulk generation to the Image Library with durable background processing and live progress feedback.

@@ -261,7 +261,7 @@ jQuery(document).ready(function($) {
 
         $.ajax({
             url: occidg_admin_vars.ajax_url,
-            type: 'GET',
+            type: 'POST',
             dataType: 'json',
             data: {
                 action: 'occidg_get_background_job_status',

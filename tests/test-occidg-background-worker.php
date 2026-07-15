@@ -108,6 +108,95 @@ final class Test_Occidg_Background_Worker extends TestCase {
 	}
 
 	/**
+	 * Browser fallback ticks should process one item and keep the rest queued.
+	 *
+	 * @return void
+	 */
+	public function test_process_job_tick_processes_one_item() {
+		$jobs   = new Occidg_Background_Jobs();
+		$job    = $jobs->create_job(
+			array(
+				'image_ids'       => array( 24, 25, 26 ),
+				'selected_fields' => array( 'caption' => '1' ),
+			)
+		);
+		$worker = new Occidg_Background_Worker(
+			$jobs,
+			static function () {
+				return array( 'success' => true );
+			},
+			5
+		);
+
+		$updated_job = $worker->process_job_tick( $job['id'] );
+
+		$this->assertSame( 'running', $updated_job['status'] );
+		$this->assertSame( 1, $updated_job['processed'] );
+		$this->assertSame( 1, $updated_job['next_index'] );
+		$this->assertCount( 1, $GLOBALS['occidg_scheduled_events'] );
+	}
+
+	/**
+	 * Browser fallback ticks should preserve future retry delays.
+	 *
+	 * @return void
+	 */
+	public function test_process_job_tick_respects_future_event() {
+		$calls  = 0;
+		$jobs   = new Occidg_Background_Jobs();
+		$job    = $jobs->create_job(
+			array(
+				'image_ids'       => array( 27 ),
+				'selected_fields' => array( 'caption' => '1' ),
+			)
+		);
+		$worker = new Occidg_Background_Worker(
+			$jobs,
+			static function () use ( &$calls ) {
+				++$calls;
+				return array( 'success' => true );
+			}
+		);
+
+		wp_schedule_single_event( time() + 60, Occidg_Background_Worker::CRON_HOOK, array( $job['id'] ) );
+		$unchanged_job = $worker->process_job_tick( $job['id'] );
+
+		$this->assertSame( 'queued', $unchanged_job['status'] );
+		$this->assertSame( 0, $unchanged_job['processed'] );
+		$this->assertSame( 0, $calls );
+		$this->assertCount( 1, $GLOBALS['occidg_scheduled_events'] );
+	}
+
+	/**
+	 * Browser fallback ticks should consume a due event before rescheduling.
+	 *
+	 * @return void
+	 */
+	public function test_process_job_tick_replaces_due_event() {
+		$jobs   = new Occidg_Background_Jobs();
+		$job    = $jobs->create_job(
+			array(
+				'image_ids'       => array( 28, 29 ),
+				'selected_fields' => array( 'caption' => '1' ),
+			)
+		);
+		$worker = new Occidg_Background_Worker(
+			$jobs,
+			static function () {
+				return array( 'success' => true );
+			}
+		);
+		$due_at = time() - 5;
+
+		wp_schedule_single_event( $due_at, Occidg_Background_Worker::CRON_HOOK, array( $job['id'] ) );
+		$updated_job = $worker->process_job_tick( $job['id'] );
+
+		$this->assertSame( 1, $updated_job['processed'] );
+		$this->assertCount( 1, $GLOBALS['occidg_scheduled_events'] );
+		$this->assertGreaterThan( $due_at, $GLOBALS['occidg_scheduled_events'][0]['timestamp'] );
+	}
+
+	/**
 	 * A held lock should prevent background progress.
 	 *
 	 * @return void

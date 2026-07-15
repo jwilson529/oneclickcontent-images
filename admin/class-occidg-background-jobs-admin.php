@@ -320,6 +320,14 @@ class Occidg_Background_Jobs_Admin {
 			return;
 		}
 
+		$is_poll_post = isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === strtoupper( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) );
+		if ( $is_poll_post && ! empty( $job['is_active'] ) && defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON ) {
+			$updated_job = $this->worker->process_job_tick( $job['id'] );
+			if ( false !== $updated_job ) {
+				$job = $this->build_job_payload( $updated_job );
+			}
+		}
+
 		wp_send_json_success( $job );
 	}
 

@@ -18,7 +18,7 @@
  * Plugin Name:       OneClickContent - Image Detail Generator
  * Plugin URI:        https://github.com/jwilson529/oneclickcontent-images
  * Description:       Free AI-powered image metadata generation for Media Library images using your own OpenAI or Gemini API key.
- * Version:           2.0.3
+ * Version:           2.0.4
  * Author:            James Wilson
  * Author URI:        https://github.com/jwilson529
  * License:           GPL-2.0+
@@ -38,7 +38,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @since 1.0.0
  */
-define( 'OCCIDG_VERSION', '2.0.3' );
+define( 'OCCIDG_VERSION', '2.0.4' );
 define( 'OCCIDG_PRODUCT_SLUG', 'oneclickcontent-image-meta-generator' );
 define( 'OCCIDG_PLUGIN_FILE', __FILE__ );
 define( 'OCCIDG_LOG_FILE', plugin_dir_path( __FILE__ ) . 'plugin-error.log' );

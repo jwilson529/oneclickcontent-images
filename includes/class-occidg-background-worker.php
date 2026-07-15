@@ -184,6 +184,46 @@ class Occidg_Background_Worker {
 	 * @return array|false
 	 */
 	public function process_job( $job_id ) {
+		return $this->process_job_items( $job_id, $this->batch_size );
+	}
+
+	/**
+	 * Process one due item from an authenticated browser status poll.
+	 *
+	 * This is a fallback for hosts that disable normal WP-Cron spawning. Future
+	 * scheduled events are respected so provider retry backoff remains intact.
+	 *
+	 * @since 2.0.4
+	 * @param string $job_id Job ID.
+	 * @return array|false
+	 */
+	public function process_job_tick( $job_id ) {
+		$job_id = is_scalar( $job_id ) ? trim( (string) $job_id ) : '';
+		if ( '' === $job_id ) {
+			return false;
+		}
+
+		$scheduled_at = wp_next_scheduled( self::CRON_HOOK, array( $job_id ) );
+		if ( false !== $scheduled_at && $scheduled_at > time() ) {
+			return $this->jobs->get_job( $job_id );
+		}
+
+		if ( false !== $scheduled_at ) {
+			wp_unschedule_event( $scheduled_at, self::CRON_HOOK, array( $job_id ) );
+		}
+
+		return $this->process_job_items( $job_id, 1 );
+	}
+
+	/**
+	 * Process a limited number of items for a queued job.
+	 *
+	 * @since 2.0.4
+	 * @param string $job_id    Job ID.
+	 * @param int    $item_limit Maximum images to process in this pass.
+	 * @return array|false
+	 */
+	private function process_job_items( $job_id, $item_limit ) {
 		$job = $this->jobs->get_job( $job_id );
 		if ( false === $job ) {
 			return false;
@@ -225,7 +265,7 @@ class Occidg_Background_Worker {
 				'status'           => 'running',
 			);
 
-			$batch_limit = min( $job['total'], $job['next_index'] + $this->batch_size );
+			$batch_limit = min( $job['total'], $job['next_index'] + max( 1, (int) $item_limit ) );
 
 			for ( $index = $job['next_index']; $index < $batch_limit; $index++ ) {
 				$image_id    = $job['image_ids'][ $index ];

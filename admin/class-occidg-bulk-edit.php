@@ -50,9 +50,23 @@ class Occidg_Bulk_Edit {
 		$filters = is_array( $filters ) ? $filters : array();
 		?>
 		<div id="occidg_bulk_edit" class="occidg-library-editor" data-filter-active="<?php echo $filter_active ? '1' : '0'; ?>" data-library-filters="<?php echo esc_attr( wp_json_encode( $filters ) ); ?>">
+			<div class="occidg-bulk-selection-toolbar" aria-label="<?php esc_attr_e( 'Bulk image generation', 'occidg' ); ?>">
+				<div class="occidg-bulk-selection-summary">
+					<strong id="occidg-selected-count"><?php esc_html_e( '0 selected', 'occidg' ); ?></strong>
+					<span><?php esc_html_e( 'Select images here, then queue a safe background batch.', 'occidg' ); ?></span>
+				</div>
+				<div class="occidg-bulk-selection-actions">
+					<button type="button" id="occidg-select-all-matching" class="button"><?php esc_html_e( 'Select all matching', 'occidg' ); ?></button>
+					<button type="button" id="occidg-clear-selection" class="button" disabled><?php esc_html_e( 'Clear selection', 'occidg' ); ?></button>
+					<button type="button" class="button button-primary occidg-queue-selected" data-mode="fill_missing" disabled><?php esc_html_e( 'Fill missing', 'occidg' ); ?></button>
+					<button type="button" class="button occidg-queue-selected" data-mode="suggestion" disabled><?php esc_html_e( 'Create review suggestions', 'occidg' ); ?></button>
+				</div>
+				<p id="occidg-bulk-selection-status" class="occidg-bulk-selection-status" aria-live="polite"></p>
+			</div>
 			<table id="image-metadata-table" class="wp-list-table widefat fixed striped">
 				<thead>
 					<tr>
+						<th class="occidg-select-column"><input type="checkbox" id="occidg-select-page" aria-label="<?php esc_attr_e( 'Select all eligible images on this page', 'occidg' ); ?>"></th>
 						<th><?php esc_html_e( 'Thumbnail', 'occidg' ); ?></th>
 						<th><?php esc_html_e( 'Title', 'occidg' ); ?></th>
 						<th><?php esc_html_e( 'Alt Text', 'occidg' ); ?></th>
@@ -196,10 +210,7 @@ class Occidg_Bulk_Edit {
 		$length        = min( 100, max( 1, $length ) );
 		$page          = (int) floor( $start / $length ) + 1;
 		$filter_active = ! empty( $_REQUEST['filter_active'] );
-			$filters   = isset( $_REQUEST['library_filters'] ) && ! is_array( $_REQUEST['library_filters'] )
-				? json_decode( wp_unslash( $_REQUEST['library_filters'] ), true ) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- JSON is recursively sanitized below.
-				: array();
-		$filters       = is_array( $filters ) ? map_deep( $filters, 'sanitize_text_field' ) : array();
+		$filters       = $this->get_library_filters_from_request();
 		$filtered_ids  = $filter_active ? ( new Occidg_Preflight() )->query_ids( $filters, 10000 ) : array();
 
 		if ( $filter_active && empty( $filtered_ids ) ) {
@@ -234,27 +245,27 @@ class Occidg_Bulk_Edit {
 
 		// Handle ordering parameters sent by DataTables.
 		// DataTables sends order[0][column] and order[0][dir].
-		$order_column_index = isset( $_REQUEST['order'][0]['column'] ) ? intval( $_REQUEST['order'][0]['column'] ) : 1;
+		$order_column_index = isset( $_REQUEST['order'][0]['column'] ) ? intval( $_REQUEST['order'][0]['column'] ) : 2;
 		$order_dir          = isset( $_REQUEST['order'][0]['dir'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['order'][0]['dir'] ) ) : 'asc';
 
 		// Map DataTables column index to WP_Query keys.
-		// Column indices: 0 = thumbnail, 1 = title, 2 = alt_text, 3 = description, 4 = caption, 5 = actions.
-		if ( 2 === $order_column_index ) {
+		// Column indices: 0 = select, 1 = thumbnail, 2 = title, 3 = alt_text, 4 = description, 5 = caption, 6 = actions.
+		if ( 3 === $order_column_index ) {
 			// For alt_text, sort by the meta value.
-	        // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Sorting by alt text is required, and performance will be monitored.
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Sorting by alt text is required, and performance will be monitored.
 			$args['meta_key'] = '_wp_attachment_image_alt';
 			$args['orderby']  = 'meta_value';
 			$args['order']    = $order_dir;
-		} elseif ( in_array( $order_column_index, array( 1, 3, 4 ), true ) ) {
+		} elseif ( in_array( $order_column_index, array( 2, 4, 5 ), true ) ) {
 			$column_map      = array(
-				1 => 'post_title',
-				3 => 'post_content',
-				4 => 'post_excerpt',
+				2 => 'post_title',
+				4 => 'post_content',
+				5 => 'post_excerpt',
 			);
 			$args['orderby'] = $column_map[ $order_column_index ];
 			$args['order']   = $order_dir;
 		}
-		// If order_column_index is 0 or 5, leave ordering as default.
+		// Selection, thumbnail, and action columns keep the default ordering.
 
 		// Get total record count.
 		$total_query   = new WP_Query(
@@ -300,6 +311,103 @@ class Occidg_Bulk_Edit {
 				'data'            => $data,
 			)
 		);
+	}
+
+	/**
+	 * Return every eligible attachment ID matching the current Image Library view.
+	 *
+	 * The endpoint only resolves IDs. Provider work remains in the durable queue.
+	 *
+	 * @since 2.0.2
+	 * @return void
+	 */
+	public function get_bulk_selection_ids() {
+		check_ajax_referer( 'occidg_bulk_edit', 'nonce' );
+		if ( ! current_user_can( 'occ_idg_generate_metadata' ) ) {
+			wp_send_json_error( array( 'message' => __( 'You do not have permission to generate metadata.', 'occidg' ) ) );
+			return;
+		}
+
+		$search_value  = isset( $_REQUEST['search_value'] ) && ! is_array( $_REQUEST['search_value'] )
+			? sanitize_text_field( wp_unslash( $_REQUEST['search_value'] ) )
+			: '';
+		$filter_active = ! empty( $_REQUEST['filter_active'] );
+		$filters       = $this->get_library_filters_from_request();
+		$filtered_ids  = $filter_active ? ( new Occidg_Preflight() )->query_ids( $filters, 10000 ) : array();
+		$max_selection = max( 1, absint( get_option( 'occ_idg_max_batch_size', 1000 ) ) );
+
+		if ( $filter_active && empty( $filtered_ids ) ) {
+			wp_send_json_success(
+				array(
+					'image_ids' => array(),
+					'count'     => 0,
+				)
+			);
+			return;
+		}
+
+		$args = array(
+			'post_type'      => 'attachment',
+			'post_mime_type' => 'image',
+			'post_status'    => 'inherit',
+			'posts_per_page' => $max_selection + 1,
+			'fields'         => 'ids',
+		);
+		if ( ! current_user_can( 'edit_others_posts' ) ) {
+			$args['author'] = get_current_user_id();
+		}
+		if ( $filter_active ) {
+			$args['post__in'] = array_slice( $filtered_ids, 0, 10000 );
+		}
+		if ( '' !== $search_value ) {
+			$args['s'] = $search_value;
+		}
+
+		$query = new WP_Query( $args );
+		if ( (int) $query->found_posts > $max_selection ) {
+			wp_send_json_error(
+				array(
+					'message' => sprintf(
+						/* translators: 1: matching image count, 2: maximum batch size. */
+						__( '%1$s images match, which is above the %2$s-image batch limit. Narrow the filters or raise the maximum batch size.', 'occidg' ),
+						number_format_i18n( (int) $query->found_posts ),
+						number_format_i18n( $max_selection )
+					),
+				)
+			);
+			return;
+		}
+
+		$image_ids = array();
+		foreach ( $query->posts as $attachment_id ) {
+			$attachment_id = absint( $attachment_id );
+			if ( ! $attachment_id || Occidg_Image_Support::is_svg_attachment( $attachment_id ) || ! current_user_can( 'edit_post', $attachment_id ) ) {
+				continue;
+			}
+			$image_ids[] = $attachment_id;
+		}
+
+		wp_send_json_success(
+			array(
+				'image_ids' => array_values( array_unique( $image_ids ) ),
+				'count'     => count( $image_ids ),
+			)
+		);
+	}
+
+	/**
+	 * Decode and recursively sanitize Image Library filters from the request.
+	 *
+	 * @return array Sanitized filters.
+	 */
+	private function get_library_filters_from_request() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Both callers verify the bulk-edit AJAX nonce before parsing these filters.
+		$filters = isset( $_REQUEST['library_filters'] ) && ! is_array( $_REQUEST['library_filters'] )
+			? json_decode( wp_unslash( $_REQUEST['library_filters'] ), true ) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- JSON is recursively sanitized below.
+			: array();
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		return is_array( $filters ) ? map_deep( $filters, 'sanitize_text_field' ) : array();
 	}
 
 	/**

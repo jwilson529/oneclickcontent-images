@@ -605,62 +605,6 @@
     }
 }
 
-.bulk-edit-provider-help.compact {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-    background: radial-gradient(circle at top left, #a1c4fd, #c2e9fb, #c2e9fb 70%);
-    color: #1e2a38;
-    border-radius: 8px;
-    padding: 20px;
-    margin: 20px 0;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-    animation: fadeIn 0.6s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.bulk-edit-provider-help.compact .cta-left {
-    flex: 1 1 60%;
-    min-width: 250px;
-}
-
-.bulk-edit-provider-help.compact .cta-left h2 {
-    font-size: 1.5rem;
-    margin-bottom: 10px;
-    color: #102a43;
-}
-
-.bulk-edit-provider-help.compact .cta-left p {
-    font-size: 14px;
-    line-height: 1.5;
-    margin-bottom: 15px;
-    color: #1f2937;
-}
-
-.bulk-edit-provider-help.compact .benefits-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.bulk-edit-provider-help.compact .benefits-list li {
-    position: relative;
-    padding-left: 22px;
-    margin: 8px 0;
-    font-size: 14px;
-    color: #1f2937;
-}
-
-.bulk-edit-provider-help.compact .benefits-list li::before {
-    content: "✔";
-    position: absolute;
-    left: 0;
-    color: #0077cc;
-    font-weight: bold;
-}
-
 .toplevel_page_occidg .modal {
     position: fixed;
     top: 0;
@@ -785,30 +729,6 @@
 }
 
 /* -------------------------------
-   Responsive Nav Tabs
-------------------------------- */
-.nav-tab-wrapper {
-    overflow-x: auto;          /* Enable horizontal scroll */
-    white-space: nowrap;       /* Keep tabs on one line */
-    padding-bottom: 5px;       /* Allow space for scrollbar if needed */
-}
-
-.nav-tab-wrapper .nav-tab {
-    display: inline-block;     /* Size based on content */
-    width: auto !important;    /* Override WP default full width */
-    margin-right: 10px;        /* Space between tabs */
-    box-sizing: border-box;
-}
-
-/* Reduce padding/font on smaller screens */
-@media (max-width: 768px) {
-    .nav-tab-wrapper .nav-tab {
-        padding: 8px 10px;
-        font-size: 14px;
-    }
-}
-
-/* -------------------------------
    Responsive DataTable Container
 ------------------------------- */
 .dt-container {
@@ -876,23 +796,6 @@
     font-size: 1.15rem;
     font-weight: 700;
     margin-bottom: 10px;
-}
-
-.toplevel_page_occidg #occidg_images .bulk-edit-provider-help.compact {
-    gap: 18px;
-    align-items: flex-start;
-    margin: 0 0 24px;
-    padding: 24px;
-    border: 1px solid rgba(29, 78, 216, 0.14);
-    border-radius: 18px;
-    background:
-        radial-gradient(circle at top right, rgba(191, 219, 254, 0.9), rgba(239, 246, 255, 0.95) 48%, rgba(255, 255, 255, 0.98) 100%);
-    box-shadow: none;
-}
-
-.toplevel_page_occidg #occidg_images .bulk-edit-provider-help.compact .cta-left h2 {
-    margin-bottom: 8px;
-    font-size: 1.35rem;
 }
 
 .toplevel_page_occidg .occidg-settings-layout {
@@ -2176,6 +2079,69 @@
 
 .occidg-library-table-card .occidg-section-heading {
     margin-bottom: 16px;
+}
+
+.occidg-bulk-selection-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 18px;
+    min-width: 760px;
+    margin-bottom: 14px;
+    padding: 14px 16px;
+    border: 1px solid #bcccdc;
+    border-radius: 10px;
+    background: #f8fafc;
+}
+
+.occidg-bulk-selection-summary {
+    display: grid;
+    gap: 3px;
+}
+
+.occidg-bulk-selection-summary strong {
+    color: #102a43;
+    font-size: 15px;
+}
+
+.occidg-bulk-selection-summary span {
+    color: #52606d;
+}
+
+.occidg-bulk-selection-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.occidg-bulk-selection-status {
+    flex-basis: 100%;
+    margin: 0;
+    font-weight: 600;
+}
+
+.occidg-bulk-selection-status.is-working {
+    color: #1d4ed8;
+}
+
+.occidg-bulk-selection-status.is-success {
+    color: #166534;
+}
+
+.occidg-bulk-selection-status.is-error {
+    color: #b42318;
+}
+
+.toplevel_page_occidg #image-metadata-table .occidg-select-column {
+    width: 44px !important;
+    padding-right: 8px;
+    padding-left: 8px;
+    text-align: center;
+}
+
+.toplevel_page_occidg #image-metadata-table .occidg-select-column input {
+    margin: 0;
 }
 
 .toplevel_page_occidg .occidg-row-utility-links {

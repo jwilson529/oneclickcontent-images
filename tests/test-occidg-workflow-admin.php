@@ -79,4 +79,14 @@ final class Test_Occidg_Workflow_Admin extends TestCase {
 		$this->assertSame( 'oldest', $preferences['order'] );
 		$this->assertSame( '', $preferences['missing_field'] );
 	}
+
+	/** Explicit Image Library selections should contain unique positive IDs only. */
+	public function test_normalize_selected_image_ids_removes_duplicates_and_invalid_values() {
+		$admin  = new Occidg_Workflow_Admin( null, null, null, null, null );
+		$method = new ReflectionMethod( Occidg_Workflow_Admin::class, 'normalize_selected_image_ids' );
+		$method->setAccessible( true );
+
+		$this->assertSame( array( 42, 7 ), $method->invoke( $admin, array( 42, '42', 0, -7, 'invalid' ) ) );
+		$this->assertSame( array(), $method->invoke( $admin, '42' ) );
+	}
 }

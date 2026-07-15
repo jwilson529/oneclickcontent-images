@@ -68,6 +68,8 @@ final class Test_Occidg_Core extends TestCase {
 		$this->assertContains( 'wp_ajax_occidg_resume_background_job', $action_hooks );
 		$this->assertContains( 'wp_ajax_occidg_cancel_background_job', $action_hooks );
 		$this->assertContains( 'wp_ajax_occidg_retry_background_job', $action_hooks );
+		$this->assertContains( 'wp_ajax_occidg_get_bulk_selection_ids', $action_hooks );
+		$this->assertContains( 'wp_ajax_occidg_create_selected_batch', $action_hooks );
 		$this->assertContains( 'wp_enqueue_scripts', $action_hooks );
 		$this->assertNotContains( 'wp_ajax_occidg_validate_license', $action_hooks );
 		$this->assertNotContains( 'wp_ajax_occidg_get_license_status', $action_hooks );

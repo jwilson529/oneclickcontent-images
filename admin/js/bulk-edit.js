@@ -24,8 +24,17 @@ jQuery(document).ready(function($) {
 		libraryFilters = {};
 	}
 	const filterActive = '1' === String($libraryEditor.attr('data-filter-active') || '0');
+	const selectedImageIds = new Set();
+	const $selectedCount = $('#occidg-selected-count');
+	const $selectPage = $('#occidg-select-page');
+	const $selectAllMatching = $('#occidg-select-all-matching');
+	const $clearSelection = $('#occidg-clear-selection');
+	const $queueSelected = $('.occidg-queue-selected');
+	const $bulkSelectionStatus = $('#occidg-bulk-selection-status');
+	let selectionBusy = false;
+	let lastSearchValue = '';
 
-    const table = $('#image-metadata-table').DataTable({
+	    const table = $('#image-metadata-table').DataTable({
         serverSide: true,
         processing: true,
         searching: true,
@@ -41,9 +50,30 @@ jQuery(document).ready(function($) {
 				request.filter_active = filterActive ? '1' : '';
 				request.library_filters = JSON.stringify(libraryFilters);
             },
-        },
-        columns: [
-            { data: 'thumbnail', orderable: false, searchable: false },
+	        },
+	        columns: [
+			{
+				data: null,
+				orderable: false,
+				searchable: false,
+				className: 'occidg-select-column',
+				width: '44px',
+				render: function(data, type, row) {
+					if ('display' !== type) {
+						return '';
+					}
+
+					const imageId = parseInt(row.id, 10);
+					const unsupported = isGenerationUnsupported(row);
+					const checked = selectedImageIds.has(imageId) ? ' checked' : '';
+					const disabled = unsupported
+						? ` disabled aria-disabled="true" title="${escapeAttribute(getUnsupportedSvgMessage(row))}"`
+						: '';
+
+					return `<input type="checkbox" class="occidg-row-select" value="${imageId}" aria-label="${escapeAttribute(getUiString('select_image_label', 'Select image').replace('%d', imageId))}"${checked}${disabled}>`;
+				},
+			},
+	            { data: 'thumbnail', orderable: false, searchable: false },
             {
                 data: 'title',
                 render: function(data, type, row) {
@@ -119,10 +149,191 @@ jQuery(document).ready(function($) {
                     </div>`;
                 },
             },
-        ],
-        pageLength: 10,
-        lengthMenu: [10, 25, 50, 100],
-    });
+	        ],
+		order: [[2, 'asc']],
+	        pageLength: 10,
+	        lengthMenu: [10, 25, 50, 100],
+		drawCallback: function() {
+			window.setTimeout(syncSelectionControls, 0);
+		},
+	    });
+
+	function syncSelectionControls() {
+		$metadataTable.find('tbody .occidg-row-select').each(function() {
+			const imageId = parseInt($(this).val(), 10);
+			$(this).prop('checked', selectedImageIds.has(imageId));
+		});
+
+		const $eligiblePageCheckboxes = $metadataTable.find('tbody .occidg-row-select:not(:disabled)');
+		const selectedOnPage = $eligiblePageCheckboxes.filter(':checked').length;
+		$selectPage
+			.prop('checked', $eligiblePageCheckboxes.length > 0 && selectedOnPage === $eligiblePageCheckboxes.length)
+			.prop('indeterminate', selectedOnPage > 0 && selectedOnPage < $eligiblePageCheckboxes.length)
+			.prop('disabled', selectionBusy || 0 === $eligiblePageCheckboxes.length);
+
+		updateSelectionButtons();
+	}
+
+	function updateSelectionButtons() {
+		const count = selectedImageIds.size;
+		const countTemplate = 1 === count
+			? getUiString('selected_count_singular', '%d selected')
+			: getUiString('selected_count_plural', '%d selected');
+		$selectedCount.text(countTemplate.replace('%d', count));
+		$clearSelection.prop('disabled', selectionBusy || 0 === count);
+		$selectAllMatching.prop('disabled', selectionBusy);
+		$queueSelected
+			.prop('disabled', selectionBusy || 0 === count || !isGenerationAllowed())
+			.attr('title', !isGenerationAllowed() ? getGenerationGateMessage() : null);
+	}
+
+	function clearSelectedImages(clearStatus) {
+		selectedImageIds.clear();
+		$metadataTable.find('tbody .occidg-row-select').prop('checked', false);
+		if (clearStatus) {
+			setBulkSelectionStatus('', '');
+		}
+		syncSelectionControls();
+	}
+
+	function setSelectionBusy(isBusy) {
+		selectionBusy = !!isBusy;
+		syncSelectionControls();
+	}
+
+	function setBulkSelectionStatus(state, message, batchesUrl) {
+		$bulkSelectionStatus
+			.removeClass('is-working is-success is-error')
+			.toggleClass(`is-${state}`, !!state)
+			.empty();
+
+		if (!message) {
+			return;
+		}
+
+		$bulkSelectionStatus.append($('<span />', { text: message }));
+		if (batchesUrl) {
+			$bulkSelectionStatus
+				.append(document.createTextNode(' '))
+				.append($('<a />', {
+					href: batchesUrl,
+					text: getUiString('view_batches_label', 'View batches'),
+				}));
+		}
+	}
+
+	$metadataTable.on('change', '.occidg-row-select', function() {
+		const imageId = parseInt($(this).val(), 10);
+		if ($(this).is(':checked')) {
+			selectedImageIds.add(imageId);
+		} else {
+			selectedImageIds.delete(imageId);
+		}
+		syncSelectionControls();
+	});
+
+	$selectPage.on('change', function() {
+		const shouldSelect = $(this).is(':checked');
+		$metadataTable.find('tbody .occidg-row-select:not(:disabled)').each(function() {
+			const imageId = parseInt($(this).val(), 10);
+			if (shouldSelect) {
+				selectedImageIds.add(imageId);
+			} else {
+				selectedImageIds.delete(imageId);
+			}
+			$(this).prop('checked', shouldSelect);
+		});
+		syncSelectionControls();
+	});
+
+	$clearSelection.on('click', function() {
+		clearSelectedImages(true);
+	});
+
+	$metadataTable.on('search.dt', function() {
+		const currentSearchValue = table.search();
+		if (currentSearchValue === lastSearchValue) {
+			return;
+		}
+
+		lastSearchValue = currentSearchValue;
+		clearSelectedImages(true);
+	});
+
+	$selectAllMatching.on('click', function() {
+		setSelectionBusy(true);
+		setBulkSelectionStatus('working', getUiString('selecting_matching_message', 'Selecting matching images...'));
+
+		$.ajax({
+			url: occidg_bulk_vars.ajax_url,
+			type: 'POST',
+			dataType: 'json',
+			data: {
+				action: 'occidg_get_bulk_selection_ids',
+				nonce: occidg_bulk_vars.nonce,
+				search_value: table.search(),
+				filter_active: filterActive ? '1' : '',
+				library_filters: JSON.stringify(libraryFilters),
+			},
+		}).done(function(response) {
+			if (!(response.success && response.data && Array.isArray(response.data.image_ids))) {
+				setBulkSelectionStatus('error', getAjaxErrorMessage(response, getUiString('select_matching_error', 'Unable to select the matching images.')));
+				return;
+			}
+
+			response.data.image_ids.forEach(function(imageId) {
+				selectedImageIds.add(parseInt(imageId, 10));
+			});
+			const count = parseInt(response.data.count || 0, 10);
+			const message = 0 === count
+				? getUiString('no_matching_images_message', 'No eligible images match this view.')
+				: getUiString('selected_matching_message', 'Selected %d matching images.').replace('%d', count);
+			setBulkSelectionStatus(0 === count ? '' : 'success', message);
+		}).fail(function() {
+			setBulkSelectionStatus('error', getUiString('select_matching_error', 'Unable to select the matching images.'));
+		}).always(function() {
+			setSelectionBusy(false);
+		});
+	});
+
+	$queueSelected.on('click', function() {
+		const mode = String($(this).data('mode') || '');
+		const count = selectedImageIds.size;
+		const confirmationTemplate = 'suggestion' === mode
+			? getUiString('queue_suggestions_confirmation', 'Queue review suggestions for %d selected images? Nothing changes until you approve them.')
+			: getUiString('queue_fill_missing_confirmation', 'Fill missing metadata for %d selected images? Existing values stay unchanged.');
+
+		if (0 === count || !window.confirm(confirmationTemplate.replace('%d', count))) {
+			return;
+		}
+
+		setSelectionBusy(true);
+		setBulkSelectionStatus('working', getUiString('queueing_selected_message', 'Queueing the selected images...'));
+
+		$.ajax({
+			url: occidg_bulk_vars.ajax_url,
+			type: 'POST',
+			dataType: 'json',
+			data: {
+				action: 'occidg_create_selected_batch',
+				nonce: occidg_bulk_vars.nonce,
+				mode: mode,
+				image_ids: Array.from(selectedImageIds),
+			},
+		}).done(function(response) {
+			if (!(response.success && response.data)) {
+				setBulkSelectionStatus('error', getAjaxErrorMessage(response, getUiString('queue_selected_error', 'Unable to queue the selected images.')));
+				return;
+			}
+
+			selectedImageIds.clear();
+			setBulkSelectionStatus('success', response.data.message || getUiString('queue_selected_success', 'The selected images were queued.'), response.data.batches_url || '');
+		}).fail(function() {
+			setBulkSelectionStatus('error', getUiString('queue_selected_error', 'Unable to queue the selected images.'));
+		}).always(function() {
+			setSelectionBusy(false);
+		});
+	});
 
     function renderEditableInput(field, value, imageId) {
         return `<div class="input-wrapper">
@@ -206,11 +417,11 @@ jQuery(document).ready(function($) {
         return ` disabled="disabled" aria-disabled="true" title="${escapeAttribute(getGenerationGateMessage())}"`;
     }
 
-    $('#image-metadata-table').on('focus', 'input, textarea', function() {
-        $(this).data('original-value', $(this).val());
-    });
+	    $('#image-metadata-table').on('focus', '.input-wrapper input, .input-wrapper textarea', function() {
+	        $(this).data('original-value', $(this).val());
+	    });
 
-    $('#image-metadata-table').on('blur', 'input, textarea', function() {
+	    $('#image-metadata-table').on('blur', '.input-wrapper input, .input-wrapper textarea', function() {
         const $input = $(this);
 
         if ($input.val() === $input.data('original-value')) {

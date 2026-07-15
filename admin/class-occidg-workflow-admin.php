@@ -486,6 +486,165 @@ class Occidg_Workflow_Admin {
 		exit;
 	}
 
+	/**
+	 * Queue a durable batch for explicitly selected Image Library attachments.
+	 *
+	 * This AJAX request validates and records the work only. Provider requests are
+	 * performed later by the background worker in small, resumable steps.
+	 *
+	 * @since 2.0.2
+	 * @return void
+	 */
+	public function ajax_create_selected_batch() {
+		check_ajax_referer( 'occidg_bulk_edit', 'nonce' );
+		if ( ! current_user_can( 'occ_idg_generate_metadata' ) ) {
+			wp_send_json_error( array( 'message' => __( 'You do not have permission to generate metadata.', 'occidg' ) ) );
+			return;
+		}
+
+		$mode = isset( $_POST['mode'] ) && ! is_array( $_POST['mode'] ) ? sanitize_key( wp_unslash( $_POST['mode'] ) ) : '';
+		if ( ! in_array( $mode, array( 'fill_missing', 'suggestion' ), true ) ) {
+			wp_send_json_error( array( 'message' => __( 'Choose a supported bulk generation mode.', 'occidg' ) ) );
+			return;
+		}
+
+		$raw_ids = isset( $_POST['image_ids'] ) && is_array( $_POST['image_ids'] ) ? wp_unslash( $_POST['image_ids'] ) : array();
+		$ids     = $this->normalize_selected_image_ids( $raw_ids );
+		$max     = max( 1, absint( get_option( 'occ_idg_max_batch_size', 1000 ) ) );
+		if ( count( $ids ) > $max ) {
+			wp_send_json_error(
+				array(
+					'message' => sprintf(
+						/* translators: %s: maximum batch size. */
+						__( 'This selection is above the %s-image batch limit.', 'occidg' ),
+						number_format_i18n( $max )
+					),
+				)
+			);
+			return;
+		}
+
+		$ids = array_values(
+			array_filter(
+				$ids,
+				function ( $attachment_id ) {
+					return 'attachment' === get_post_type( $attachment_id )
+						&& 0 === strpos( (string) get_post_mime_type( $attachment_id ), 'image/' )
+						&& ! Occidg_Image_Support::is_svg_attachment( $attachment_id )
+						&& current_user_can( 'edit_post', $attachment_id );
+				}
+			)
+		);
+		if ( empty( $ids ) ) {
+			wp_send_json_error( array( 'message' => __( 'Select at least one eligible image.', 'occidg' ) ) );
+			return;
+		}
+
+		$fields = Occidg_Metadata::normalize_fields( get_option( 'occidg_metadata_fields', array() ) );
+		if ( empty( $fields ) ) {
+			wp_send_json_error( array( 'message' => __( 'Enable at least one metadata field in Settings before queueing a batch.', 'occidg' ) ) );
+			return;
+		}
+
+		$gate_state = Occidg_Admin_Settings::get_generation_gate_state();
+		if ( empty( $gate_state['has_selected_provider_key'] ) ) {
+			wp_send_json_error( array( 'message' => $gate_state['missing_key_message'] ) );
+			return;
+		}
+
+		$provider           = $gate_state['provider'];
+		$model              = get_option( 'gemini' === $provider ? 'occidg_gemini_model' : 'occidg_openai_model', '' );
+		$estimated_requests = count( $ids );
+		$estimated_cost     = round( $estimated_requests * (float) get_option( 'occ_idg_' . $provider . '_cost_per_request', 0 ), 6 );
+		$cost_cap           = (float) get_option( 'occ_idg_max_estimated_batch_cost', 0 );
+		if ( $cost_cap > 0 && $estimated_cost > $cost_cap ) {
+			wp_send_json_error( array( 'message' => __( 'The estimated batch cost exceeds the configured safety limit.', 'occidg' ) ) );
+			return;
+		}
+
+		$mode_label = 'suggestion' === $mode ? __( 'Review suggestions', 'occidg' ) : __( 'Fill missing metadata', 'occidg' );
+		$batch_id   = $this->database->create_batch(
+			array(
+				/* translators: 1: batch mode label, 2: batch creation time. */
+				'name'               => sprintf( __( '%1$s — selected images — %2$s', 'occidg' ), $mode_label, current_time( 'mysql' ) ),
+				'mode'               => $mode,
+				'provider'           => $provider,
+				'model'              => $model,
+				'requested_fields'   => $fields,
+				'filters'            => array( 'source' => 'image_library_selection' ),
+				'estimated_requests' => $estimated_requests,
+				'estimated_cost'     => $estimated_cost,
+			),
+			$ids
+		);
+		if ( false === $batch_id ) {
+			wp_send_json_error( array( 'message' => __( 'The selected-image batch could not be saved.', 'occidg' ) ) );
+			return;
+		}
+
+		$job = $this->jobs_admin->create_job_from_image_ids(
+			$ids,
+			/* translators: %d: metadata batch ID. */
+			sprintf( __( 'Metadata batch #%d', 'occidg' ), $batch_id ),
+			array(
+				'mode'                => $mode,
+				'batch_id'            => $batch_id,
+				'selected_fields'     => array_fill_keys( $fields, '1' ),
+				'override_metadata'   => false,
+				'overwrite_confirmed' => false,
+				'initiated_by'        => get_current_user_id(),
+			)
+		);
+		if ( false === $job ) {
+			$this->database->update_batch(
+				$batch_id,
+				array(
+					'status'       => 'failed',
+					'completed_at' => current_time( 'mysql', true ),
+				)
+			);
+			wp_send_json_error( array( 'message' => __( 'The background batch could not be queued. Verify provider credentials.', 'occidg' ) ) );
+			return;
+		}
+
+		$this->database->update_batch(
+			$batch_id,
+			array(
+				'job_key' => $job['id'],
+				'status'  => 'queued',
+			)
+		);
+
+		wp_send_json_success(
+			array(
+				'batch_id'    => $batch_id,
+				'job_id'      => $job['id'],
+				'total'       => count( $ids ),
+				'batches_url' => admin_url( 'admin.php?page=occ-idg-batches' ),
+				'message'     => sprintf(
+					/* translators: 1: batch mode label, 2: selected image count. */
+					_n( '%1$s queued for %2$s image.', '%1$s queued for %2$s images.', count( $ids ), 'occidg' ),
+					$mode_label,
+					number_format_i18n( count( $ids ) )
+				),
+			)
+		);
+	}
+
+	/**
+	 * Normalize an explicitly submitted attachment ID list.
+	 *
+	 * @param mixed $image_ids Candidate attachment IDs.
+	 * @return array Unique positive IDs.
+	 */
+	private function normalize_selected_image_ids( $image_ids ) {
+		if ( ! is_array( $image_ids ) ) {
+			return array();
+		}
+
+		return array_values( array_filter( array_unique( array_map( 'absint', $image_ids ) ) ) );
+	}
+
 	/** Review pending field suggestions with edit-before-approval. */
 	public function render_review() {
 		$this->guard( 'occ_idg_review_suggestions' );

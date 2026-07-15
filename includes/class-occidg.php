@@ -177,8 +177,10 @@ class Occidg {
 		$this->loader->add_action( 'wp_ajax_get_thumbnail', $plugin_admin, 'get_thumbnail' );
 
 		$this->loader->add_action( 'wp_ajax_occidg_get_image_metadata', $plugin_bulk_edit, 'get_image_metadata' );
+		$this->loader->add_action( 'wp_ajax_occidg_get_bulk_selection_ids', $plugin_bulk_edit, 'get_bulk_selection_ids' );
 		$this->loader->add_action( 'wp_ajax_occidg_save_bulk_metadata', $plugin_bulk_edit, 'save_bulk_metadata' );
 		$this->loader->add_action( 'wp_ajax_occidg_apply_bulk_suggestion', $plugin_bulk_edit, 'apply_bulk_suggestion' );
+		$this->loader->add_action( 'wp_ajax_occidg_create_selected_batch', $workflow_admin, 'ajax_create_selected_batch' );
 
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			WP_CLI::add_command( 'occ-idg', new Occidg_CLI( $workflow, $preflight, $database, $metadata, $background_jobs_admin ) );

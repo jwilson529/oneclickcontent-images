@@ -117,7 +117,6 @@ class Occidg_Admin {
 		}
 		$first_time_key = 'occidg_first_time';
 		$is_first_time  = get_option( $first_time_key, true );
-		$tab_nonce      = wp_create_nonce( 'oneclickcontent_tab_switch' );
 		$gate_state     = Occidg_Admin_Settings::get_generation_gate_state();
 		$generate_attrs = $gate_state['has_selected_provider_key']
 			? ''
@@ -128,31 +127,10 @@ class Occidg_Admin {
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'AI Image Metadata', 'occidg' ); ?></h1>
-			<h2 class="nav-tab-wrapper">
-				<?php if ( $can_settings ) : ?>
-					<a href="<?php echo esc_url( admin_url( 'admin.php?page=occidg&tab=settings&_wpnonce=' . $tab_nonce ) ); ?>" class="nav-tab <?php echo 'settings' === $tab ? 'nav-tab-active' : ''; ?>">
-						<?php esc_html_e( 'Settings', 'occidg' ); ?>
-					</a>
-				<?php endif; ?>
-			</h2>
 
 			<?php if ( 'settings' === $tab ) : ?>
 				<!-- All settings output is encapsulated within #occidg_images -->
 				<div id="occidg_images" class="wrap">
-					<div class="bulk-edit-provider-help compact">
-						<div class="cta-left">
-							<img src="<?php echo esc_url( plugin_dir_url( __FILE__ ) . 'assets/icon.png' ); ?>" alt="<?php esc_attr_e( 'Plugin icon', 'occidg' ); ?>" style="float: left; margin-right: 10px; width: 50px; height: auto;">
-							<h2><?php esc_html_e( 'Free, bring-your-own-key image metadata', 'occidg' ); ?></h2>
-							<p><?php esc_html_e( 'Configure OpenAI or Gemini, choose which metadata fields to fill, and generate title, description, alt text, and caption directly from your own provider account.', 'occidg' ); ?></p>
-							<ul class="benefits-list">
-								<li><?php esc_html_e( 'Use your own API key', 'occidg' ); ?></li>
-								<li><?php esc_html_e( 'Run the plugin for free with the provider account you choose', 'occidg' ); ?></li>
-								<li><?php esc_html_e( 'Keep metadata generation focused on your Media Library', 'occidg' ); ?></li>
-								<li><?php esc_html_e( 'Control which fields get updated', 'occidg' ); ?></li>
-							</ul>
-						</div>
-					</div>
-
 					<div class="occidg-settings-layout">
 						<div class="occidg-settings-main">
 								<!-- Bulk generation options -->
@@ -258,7 +236,7 @@ class Occidg_Admin {
 					<p><?php esc_html_e( 'Here’s how to get started:', 'occidg' ); ?></p>
 					<ol>
 						<li>
-							<strong><?php esc_html_e( 'Settings Tab:', 'occidg' ); ?></strong>
+							<strong><?php esc_html_e( 'Settings:', 'occidg' ); ?></strong>
 							<?php esc_html_e( 'Choose your provider, enter your API key, and decide which metadata fields to generate.', 'occidg' ); ?>
 						</li>
 						<li>
@@ -507,6 +485,25 @@ class Occidg_Admin {
 				'field_alt_text_label'                => __( 'Alt Text', 'occidg' ),
 				'field_description_label'             => __( 'Description', 'occidg' ),
 				'field_caption_label'                 => __( 'Caption', 'occidg' ),
+				/* translators: %d: WordPress attachment ID. */
+				'select_image_label'                  => __( 'Select image %d', 'occidg' ),
+				/* translators: %d: selected image count. */
+				'selected_count_singular'             => __( '%d selected', 'occidg' ),
+				/* translators: %d: selected image count. */
+				'selected_count_plural'               => __( '%d selected', 'occidg' ),
+				'selecting_matching_message'          => __( 'Selecting matching images...', 'occidg' ),
+				'select_matching_error'               => __( 'Unable to select the matching images.', 'occidg' ),
+				'no_matching_images_message'          => __( 'No eligible images match this view.', 'occidg' ),
+				/* translators: %d: matching image count. */
+				'selected_matching_message'           => __( 'Selected %d matching images.', 'occidg' ),
+				/* translators: %d: selected image count. */
+				'queue_fill_missing_confirmation'     => __( 'Fill missing metadata for %d selected images? Existing values stay unchanged.', 'occidg' ),
+				/* translators: %d: selected image count. */
+				'queue_suggestions_confirmation'      => __( 'Queue review suggestions for %d selected images? Nothing changes until you approve them.', 'occidg' ),
+				'queueing_selected_message'           => __( 'Queueing the selected images...', 'occidg' ),
+				'queue_selected_error'                => __( 'Unable to queue the selected images.', 'occidg' ),
+				'queue_selected_success'              => __( 'The selected images were queued.', 'occidg' ),
+				'view_batches_label'                  => __( 'View batches', 'occidg' ),
 				'review_label'                        => __( 'Review', 'occidg' ),
 				'hide_review_label'                   => __( 'Hide review', 'occidg' ),
 				'edit_attachment_label'               => __( 'Edit attachment', 'occidg' ),

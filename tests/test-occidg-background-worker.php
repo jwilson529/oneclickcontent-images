@@ -165,8 +165,9 @@ final class Test_Occidg_Background_Worker extends TestCase {
 
 				if ( 43 === $image_id ) {
 					return array(
-						'success' => false,
-						'error'   => 'No metadata fields require generation, and "Override Metadata" is disabled.',
+						'success' => true,
+						'skipped' => true,
+						'reason'  => 'unsupported_svg',
 					);
 				}
 

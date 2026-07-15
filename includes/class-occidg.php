@@ -68,6 +68,15 @@ class Occidg {
 	 */
 	private function load_dependencies() {
 		require_once plugin_dir_path( __DIR__ ) . 'includes/class-occidg-loader.php';
+		require_once plugin_dir_path( __DIR__ ) . 'includes/class-occidg-database.php';
+		require_once plugin_dir_path( __DIR__ ) . 'includes/class-occidg-capabilities.php';
+		require_once plugin_dir_path( __DIR__ ) . 'includes/class-occidg-image-support.php';
+		require_once plugin_dir_path( __DIR__ ) . 'includes/class-occidg-metadata.php';
+		require_once plugin_dir_path( __DIR__ ) . 'includes/interface-occidg-provider.php';
+		require_once plugin_dir_path( __DIR__ ) . 'includes/class-occidg-provider-adapter.php';
+		require_once plugin_dir_path( __DIR__ ) . 'includes/class-occidg-provider-registry.php';
+		require_once plugin_dir_path( __DIR__ ) . 'includes/class-occidg-workflow.php';
+		require_once plugin_dir_path( __DIR__ ) . 'includes/class-occidg-preflight.php';
 		require_once plugin_dir_path( __DIR__ ) . 'includes/class-occidg-background-jobs.php';
 		require_once plugin_dir_path( __DIR__ ) . 'includes/class-occidg-background-worker.php';
 		require_once plugin_dir_path( __DIR__ ) . 'includes/class-occidg-logger.php';
@@ -76,7 +85,11 @@ class Occidg {
 		require_once plugin_dir_path( __DIR__ ) . 'admin/class-occidg-admin-settings.php';
 		require_once plugin_dir_path( __DIR__ ) . 'admin/class-occidg-auto-generate.php';
 		require_once plugin_dir_path( __DIR__ ) . 'admin/class-occidg-bulk-edit.php';
+		require_once plugin_dir_path( __DIR__ ) . 'admin/class-occidg-workflow-admin.php';
 		require_once plugin_dir_path( __DIR__ ) . 'public/class-occidg-public.php';
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			require_once plugin_dir_path( __DIR__ ) . 'includes/class-occidg-cli.php';
+		}
 
 		$this->loader = new Occidg_Loader();
 	}
@@ -88,31 +101,54 @@ class Occidg {
 	 */
 	private function define_admin_hooks() {
 		$plugin_admin_settings = new Occidg_Admin_Settings();
+		$database              = new Occidg_Database();
+		$metadata              = new Occidg_Metadata( $database );
+		$providers             = new Occidg_Provider_Registry();
+		$providers->register( 'openai', new Occidg_Provider_Adapter( 'openai', array( $plugin_admin_settings, 'occidg_generate_metadata' ) ) );
+		$providers->register( 'gemini', new Occidg_Provider_Adapter( 'gemini', array( $plugin_admin_settings, 'occidg_generate_metadata' ) ) );
+		$workflow              = new Occidg_Workflow( $database, $metadata, $providers );
+		$preflight             = new Occidg_Preflight();
 		$background_jobs       = new Occidg_Background_Jobs();
 		$background_worker     = new Occidg_Background_Worker(
 			$background_jobs,
-			array( $plugin_admin_settings, 'occidg_generate_metadata' )
+			array( $workflow, 'process_attachment' ),
+			max( 1, (int) get_option( 'occ_idg_images_per_queue_action', Occidg_Background_Worker::DEFAULT_BATCH_SIZE ) )
 		);
 		$background_jobs_admin = new Occidg_Background_Jobs_Admin( $background_jobs, $background_worker );
-		$plugin_auto_generate  = new Occidg_Auto_Generate();
-		$plugin_bulk_edit      = new Occidg_Bulk_Edit();
+		$plugin_auto_generate  = new Occidg_Auto_Generate( $workflow );
+		$plugin_bulk_edit      = new Occidg_Bulk_Edit( $database );
 		$plugin_admin          = new Occidg_Admin(
 			$this->get_occidg_images(),
 			$this->get_version(),
 			$plugin_bulk_edit,
 			$plugin_admin_settings
 		);
+		$workflow_admin        = new Occidg_Workflow_Admin( $workflow, $metadata, $database, $preflight, $background_jobs_admin, $plugin_bulk_edit );
 
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'register_admin_menu' );
+		$this->loader->add_action( 'admin_menu', $workflow_admin, 'register_menus', 20 );
+		$this->loader->add_action( 'admin_init', $workflow_admin, 'register_settings' );
+		$this->loader->add_action( 'admin_init', 'Occidg_Database', 'maybe_upgrade' );
+		$this->loader->add_action( 'admin_init', 'Occidg_Capabilities', 'install' );
+		$this->loader->add_action( 'admin_init', $database, 'prune_history' );
+		$this->loader->add_action( 'admin_post_occ_idg_create_batch', $workflow_admin, 'handle_create_batch' );
+		$this->loader->add_action( 'admin_post_occ_idg_review_suggestion', $workflow_admin, 'handle_review_suggestion' );
+		$this->loader->add_action( 'admin_post_occ_idg_batch_action', $workflow_admin, 'handle_batch_action' );
+		$this->loader->add_action( 'admin_post_occ_idg_restore_history', $workflow_admin, 'handle_restore_history' );
+		$this->loader->add_action( 'admin_post_occ_idg_restore_batch', $workflow_admin, 'handle_restore_batch' );
+		$this->loader->add_action( 'admin_post_occ_idg_attachment_status', $workflow_admin, 'handle_attachment_status' );
+		$this->loader->add_action( 'admin_post_occ_idg_export', $workflow_admin, 'export_csv' );
 		$this->loader->add_action( 'wp_ajax_occidg_check_override_metadata', $plugin_admin, 'check_override_metadata' );
 		$this->loader->add_action( 'wp_ajax_occidg_dismiss_first_time', $plugin_admin, 'dismiss_first_time' );
 
 		$this->loader->add_action( 'admin_init', $plugin_admin_settings, 'occidg_register_settings' );
+		$this->loader->add_filter( 'option_page_capability_occidg_settings', $plugin_admin_settings, 'settings_page_capability' );
 		$this->loader->add_action( 'admin_notices', $plugin_admin_settings, 'display_admin_notices' );
 		$this->loader->add_action( 'wp_ajax_occidg_save_settings', $plugin_admin_settings, 'occidg_save_settings' );
 		$this->loader->add_action( 'wp_ajax_occidg_validate_provider_key', $plugin_admin_settings, 'occidg_ajax_validate_provider_key' );
 		$this->loader->add_action( 'wp_ajax_occidg_save_provider_model', $plugin_admin_settings, 'occidg_ajax_save_provider_model' );
 		$this->loader->add_action( 'wp_ajax_occidg_generate_metadata', $plugin_admin_settings, 'occidg_ajax_generate_metadata' );
+		$this->loader->add_action( 'wp_ajax_occidg_preview_metadata', $plugin_admin_settings, 'occidg_ajax_preview_metadata' );
 		$this->loader->add_action( 'wp_ajax_occidg_refresh_nonce', $plugin_admin_settings, 'occidg_ajax_refresh_nonce' );
 		$this->loader->add_action( 'wp_ajax_occidg_create_background_job', $background_jobs_admin, 'ajax_create_job' );
 		$this->loader->add_action( 'wp_ajax_occidg_get_background_job_status', $background_jobs_admin, 'ajax_get_job_status' );
@@ -123,6 +159,9 @@ class Occidg {
 		$this->loader->add_action( Occidg_Background_Worker::CRON_HOOK, $background_worker, 'process_job' );
 
 		$this->loader->add_filter( 'attachment_fields_to_edit', $plugin_admin, 'add_generate_metadata_button', 10, 2 );
+		$this->loader->add_filter( 'attachment_fields_to_edit', $workflow_admin, 'attachment_panel', 20, 2 );
+		$this->loader->add_filter( 'manage_media_columns', $workflow_admin, 'media_columns' );
+		$this->loader->add_action( 'manage_media_custom_column', $workflow_admin, 'media_column', 10, 2 );
 		$this->loader->add_filter( 'bulk_actions-upload', $plugin_admin, 'add_generate_details_bulk_action' );
 		$this->loader->add_filter( 'handle_bulk_actions-upload', $plugin_admin, 'handle_generate_details_bulk_action', 10, 3 );
 		$this->loader->add_action( 'admin_notices', $plugin_admin, 'generate_details_bulk_action_admin_notice' );
@@ -135,12 +174,15 @@ class Occidg {
 		$this->loader->add_action( 'wp_ajax_check_image_error', $plugin_auto_generate, 'check_image_error' );
 		$this->loader->add_action( 'wp_ajax_occidg_remove_image_error_transient', $plugin_auto_generate, 'occidg_remove_image_error_transient' );
 
-		$this->loader->add_action( 'plugins_loaded', $plugin_admin, 'occidg_register_custom_image_size' );
-		$this->loader->add_filter( 'image_size_names_choose', $plugin_admin, 'occidg_add_custom_image_sizes' );
 		$this->loader->add_action( 'wp_ajax_get_thumbnail', $plugin_admin, 'get_thumbnail' );
 
 		$this->loader->add_action( 'wp_ajax_occidg_get_image_metadata', $plugin_bulk_edit, 'get_image_metadata' );
 		$this->loader->add_action( 'wp_ajax_occidg_save_bulk_metadata', $plugin_bulk_edit, 'save_bulk_metadata' );
+		$this->loader->add_action( 'wp_ajax_occidg_apply_bulk_suggestion', $plugin_bulk_edit, 'apply_bulk_suggestion' );
+
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			WP_CLI::add_command( 'occ-idg', new Occidg_CLI( $workflow, $preflight, $database, $metadata, $background_jobs_admin ) );
+		}
 	}
 
 	/**

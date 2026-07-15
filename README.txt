@@ -4,7 +4,7 @@ Tags: images, seo, alt-text, openai, gemini
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 7.2
-Stable tag: 1.2.4
+Stable tag: 2.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -22,6 +22,8 @@ Use your own **OpenAI** or **Gemini** API key to generate:
 
 This plugin is focused on metadata generation for images already in your Media Library. It does not create images.
 
+SVG attachments remain available for audits and manual metadata editing. AI metadata generation skips SVG files consistently across single-image, bulk, automatic, background, and WP-CLI workflows without making a provider request.
+
 **Key Benefits:**
 - Improve SEO for image search and content relevance
 - Improve accessibility with descriptive alt text
@@ -29,6 +31,10 @@ This plugin is focused on metadata generation for images already in your Media L
 - Use your own provider account and models
 - Bulk-generate metadata across your library
 - Control which fields get updated
+- Run preflight counts and dry runs before making provider requests
+- Review, edit, approve, reject, or defer field-level suggestions
+- Process resumable batches with pause, resume, cancel, and retry controls
+- Restore individual fields or complete batches from immutable change history
 
 == Features ==
 
@@ -39,6 +45,9 @@ This plugin is focused on metadata generation for images already in your Media L
 - Multilingual output based on plugin settings
 - Manual editing after generation
 - Forward-compatible OpenAI model filtering for GPT-5.6 API model IDs when OpenAI exposes them to API accounts
+- Safe fill-missing, suggestion, overwrite-confirmation, and dry-run modes
+- Confidence-aware review with decorative-image decisions
+- Custom capabilities, CSV exports, environment-managed API keys, and WP-CLI commands
 
 == External Services ==
 
@@ -71,29 +80,73 @@ Full source code, including unminified JavaScript files, is available at the [Gi
 
 == Installation ==
 
-1. **Upload the Plugin:**
-   - Upload the `occidg` folder to the `/wp-content/plugins/` directory.
+1. In WordPress, go to **Plugins > Add New Plugin > Upload Plugin**.
+2. Choose the plugin ZIP and click **Install Now**.
+3. Activate **OneClickContent - Image Detail Generator**.
+4. Open **Image Metadata** in the WordPress admin menu.
+5. Choose OpenAI or Gemini, add the matching API key, select a model and language, and choose the metadata fields to generate.
+6. Save the settings, then open **Image Metadata > Image Library**.
 
-2. **Activate the Plugin:**
-   - Activate through the Plugins menu in WordPress.
+For a manual installation, upload the plugin folder to `/wp-content/plugins/occidg/`, then activate it from the Plugins screen.
 
-3. **Configure Your Settings:**
-   - Go to **Image Metadata** in your WordPress admin menu.
-   - Choose **OpenAI** or **Gemini** as your provider.
-   - Enter your API key.
-   - Choose your preferred model.
-   - Choose your preferred language.
-   - Optionally enable automatic generation on upload.
+== Quick Start ==
 
-4. **Generate Image Details:**
-   - Visit your **Media Library**.
-   - Select any image and click **Generate Metadata**, or use the Bulk Edit tab to process multiple images at once.
+1. Keep overwrite disabled for the safest starting point.
+2. Open **Image Metadata > Image Library**.
+3. Find an image and click **Preview**.
+4. Compare the current and suggested values. Preview does not change the image.
+5. Edit a suggestion if needed, then click **Use this suggestion** for each value you approve.
+6. Use **Generate** when you want the current plugin rules applied automatically. With the recommended defaults, Generate fills empty selected fields and preserves existing metadata.
+
+Whitespace-only fields are treated as empty. SVG attachments can be edited manually, but AI generation skips them.
+
+== How to Process a Batch ==
+
+1. Open **Image Metadata > Dashboard** and review what is missing.
+2. Under **Choose what to run**, select the fields and a small starting batch such as 10 or 25 images.
+3. Leave the mode on **Preview only - change nothing**, then click **Run Preview**.
+4. Review the estimated images, fields, provider requests, and cost.
+5. Open **Advanced batch options** and choose one of these modes:
+   * **Create suggestions for review** saves proposed values without changing attachments.
+   * **Fill missing fields** applies values only where selected fields are empty.
+   * **Overwrite selected fields** replaces existing values only when overwrite is enabled and immediately confirmed.
+6. Run the batch, then open **Image Metadata > Batches** to monitor it.
+
+Batches run in the background. The Batches screen provides pause, resume, cancel, and retry controls, so the original browser page does not need to remain open.
+
+Your field, batch-size, mode, ordering, and missing-field choices are remembered when you run the form. Overwrite confirmation is never remembered.
+
+== How to Review and Restore ==
+
+Open **Image Metadata > Image Library** and filter for images with suggestions ready. Each suggestion can be approved, edited before approval, rejected, or left for later.
+
+The plugin records metadata before applying a workflow change:
+
+* Open **Image Metadata > History** to restore an individual field.
+* Open **Image Metadata > Batches** to restore a completed batch.
+
+A normal restore protects values that someone edited after the recorded plugin change. An individual field can be force-restored only after explicit confirmation.
+
+== Recommended First Run ==
+
+1. Enable only Alternative text and Title.
+2. Keep overwrite disabled.
+3. Preview 10 images.
+4. Check several results against the images and page context.
+5. Run Fill missing fields on a small batch.
+6. Confirm the results in the Image Library before increasing the batch size.
+
+Advanced workflow settings contain processing limits, request ceilings, retry behavior, editorial guidance, context controls, overwrite permissions, history retention, reports, capabilities, and WP-CLI support. Most sites can leave these settings at their defaults.
 
 == Frequently Asked Questions ==
 
 = Does this plugin create images? =
 
 No. It generates metadata for images that already exist in the Media Library.
+
+= Does AI metadata generation support SVG files? =
+
+No. SVG attachments can be audited and edited manually, but AI generation skips them without making a provider request.
 
 = Do I need my own API key? =
 
@@ -131,10 +184,22 @@ The plugin supports the language options currently provided in the admin setting
 
 1. **Settings Screen:** Configure provider, API key, model, language, and auto-generate settings.
 2. **Media Library Integration:** Generate metadata directly from the WordPress Media Library.
-3. **Bulk Edit Mode:** Bulk generate metadata across multiple images.
+3. **Image Library:** Filter images, edit metadata inline, preview or generate values, and review saved suggestions.
 4. **Generated Image Details:** Preview and edit AI-generated titles, captions, alt texts, and descriptions.
 
 == Upgrade Notice ==
+
+= 2.0.2 =
+
+Prevents API-key clearing during normal settings saves and fixes reliable creation of repeated background batches.
+
+= 2.0.1 =
+
+Adds a clearer how-to guide for setup, previews, safe generation, batches, review, and restoration. Also tightens release packaging.
+
+= 2.0.0 =
+
+This major upgrade adds the production-safe preflight, review, queue, history, rollback, permissions, and reporting workflow. Existing metadata remains preserved by default.
 
 = 1.2.4 =
 
@@ -157,6 +222,26 @@ This release adds forward-compatible OpenAI model filtering for GPT-5.5 API mode
 This release repositions the plugin as a free, bring-your-own-key AI metadata generator for the Media Library with OpenAI and Gemini support.
 
 == Changelog ==
+
+= 2.0.2 =
+* Fixed an upgrade regression where saving the main settings form could clear an existing provider API key because the masked key field submits an empty value.
+* Added regression coverage that preserves existing OpenAI and Gemini keys while still accepting explicit replacement keys.
+* Fixed batch persistence so requested fields are stored correctly and multiple background batches can be created safely.
+* Hardened approved-suggestion sanitization and destructive uninstall cleanup.
+
+= 2.0.1 =
+* Added step-by-step instructions for installation, configuration, Preview, Generate, batch processing, suggestion review, and restoration.
+* Documented the recommended first-run workflow and the difference between Preview and Generate.
+* Excluded the internal upgrade specification from installable release packages.
+
+= 2.0.0 =
+* Added preflight metrics, missing-field filters, safe batch presets, and exportable dry runs with request and cost estimates.
+* Added fill-missing, suggestion, explicitly confirmed overwrite, and dry-run processing modes.
+* Added field-level confidence, suggestion review/edit/approval/rejection, decorative decisions, and attachment status integrations.
+* Added custom suggestions, history, batches, and batch-item tables with immutable audit records and conflict-aware field/batch rollback.
+* Added resumable background batches with pause, resume, cancellation, temporary-error backoff, retry, locking, request ceilings, and item-level failures.
+* Added OpenAI/Gemini provider abstraction, environment-key constants, masked key fields, privacy disclosure, and credential-redacted logging.
+* Added custom role capabilities, CSV reports, and `wp occ-idg` operational commands.
 
 = 1.2.4 =
 * Added GPT-5.6-compatible OpenAI model ID coverage for the API model dropdown, including gpt-5.6, gpt-5.6-sol, gpt-5.6-terra, and gpt-5.6-luna.

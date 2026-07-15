@@ -33,7 +33,7 @@ class Occidg_Admin_Settings {
 	 * @return void
 	 */
 	public function display_admin_notices() {
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! $this->can_manage_settings() ) {
 			return;
 		}
 
@@ -65,7 +65,7 @@ class Occidg_Admin_Settings {
 			'occidg_openai_api_key',
 			array(
 				'type'              => 'string',
-				'sanitize_callback' => array( $this, 'sanitize_api_key' ),
+				'sanitize_callback' => array( $this, 'sanitize_openai_api_key_option' ),
 				'default'           => '',
 			)
 		);
@@ -85,7 +85,7 @@ class Occidg_Admin_Settings {
 			'occidg_gemini_api_key',
 			array(
 				'type'              => 'string',
-				'sanitize_callback' => array( $this, 'sanitize_api_key' ),
+				'sanitize_callback' => array( $this, 'sanitize_gemini_api_key_option' ),
 				'default'           => '',
 			)
 		);
@@ -148,6 +148,11 @@ class Occidg_Admin_Settings {
 		$this->add_settings_sections_and_fields();
 	}
 
+	/** Return the capability required by WordPress to submit this settings group. */
+	public function settings_page_capability() {
+		return 'occ_idg_manage_settings';
+	}
+
 	/**
 	 * Adds settings sections and fields to the settings page.
 	 *
@@ -157,7 +162,7 @@ class Occidg_Admin_Settings {
 	private function add_settings_sections_and_fields() {
 		add_settings_section(
 			'occidg_metadata_section',
-			__( 'Select Metadata Fields to Replace', 'occidg' ),
+			__( 'Choose Metadata Fields', 'occidg' ),
 			array( $this, 'occidg_metadata_section_callback' ),
 			'occidg_settings'
 		);
@@ -328,7 +333,7 @@ class Occidg_Admin_Settings {
 	 * @return void
 	 */
 	public function occidg_metadata_section_callback() {
-		echo '<p>' . esc_html__( 'Select which metadata fields you want to automatically generate and replace for images.', 'occidg' ) . '</p>';
+		echo '<p>' . esc_html__( 'Choose which details the plugin should generate. Existing values stay protected unless overwrite mode is deliberately enabled.', 'occidg' ) . '</p>';
 	}
 
 	/**
@@ -338,16 +343,20 @@ class Occidg_Admin_Settings {
 	 * @return void
 	 */
 	public function occidg_override_metadata_callback() {
-		$checked       = get_option( 'occidg_override_metadata', false );
-		$checked_value = $checked ? 1 : 0;
+		$overwrite_allowed = (bool) get_option( 'occ_idg_allow_overwrite', false );
+		$checked           = $overwrite_allowed && get_option( 'occidg_override_metadata', false );
+		$checked_value     = $checked ? 1 : 0;
 		?>
 		<label class="occidg-toggle-card" for="occidg_override_metadata">
-			<input type="checkbox" id="occidg_override_metadata" name="occidg_override_metadata" value="1" <?php checked( 1, esc_attr( $checked_value ) ); ?> />
+			<input type="checkbox" id="occidg_override_metadata" name="occidg_override_metadata" value="1" <?php checked( 1, esc_attr( $checked_value ) ); ?> <?php disabled( ! $overwrite_allowed ); ?> />
 			<span class="occidg-toggle-copy">
 				<span class="occidg-toggle-title"><?php esc_html_e( 'Overwrite existing metadata', 'occidg' ); ?></span>
 				<span class="occidg-toggle-description"><?php esc_html_e( 'Replace titles, alt text, descriptions, and captions that already exist on attachments.', 'occidg' ); ?></span>
 			</span>
 		</label>
+		<?php if ( ! $overwrite_allowed ) : ?>
+			<p class="description"><?php esc_html_e( 'Enable overwrite mode under Safety and Review → Advanced workflow settings before using this control.', 'occidg' ); ?></p>
+		<?php endif; ?>
 		<?php
 	}
 
@@ -454,8 +463,8 @@ class Occidg_Admin_Settings {
 		$provider                  = get_option( 'occidg_provider', 'openai' );
 		$provider                  = 'gemini' === $provider ? 'gemini' : 'openai';
 		$provider_label            = 'gemini' === $provider ? __( 'Gemini', 'occidg' ) : __( 'OpenAI', 'occidg' );
-		$has_openai_key            = ! empty( get_option( 'occidg_openai_api_key', '' ) );
-		$has_gemini_key            = ! empty( get_option( 'occidg_gemini_api_key', '' ) );
+		$has_openai_key            = '' !== self::get_provider_api_key( 'openai' );
+		$has_gemini_key            = '' !== self::get_provider_api_key( 'gemini' );
 		$has_selected_provider_key = 'gemini' === $provider ? $has_gemini_key : $has_openai_key;
 
 		return array(
@@ -470,6 +479,21 @@ class Occidg_Admin_Settings {
 				$provider_label
 			),
 		);
+	}
+
+	/**
+	 * Return a provider key from an environment constant before the database.
+	 *
+	 * @param string $provider Provider slug.
+	 * @return string Provider API key.
+	 */
+	public static function get_provider_api_key( $provider ) {
+		$provider = 'gemini' === $provider ? 'gemini' : 'openai';
+		$constant = 'gemini' === $provider ? 'OCC_IDG_GEMINI_API_KEY' : 'OCC_IDG_OPENAI_API_KEY';
+		if ( defined( $constant ) && is_string( constant( $constant ) ) && '' !== trim( constant( $constant ) ) ) {
+			return trim( constant( $constant ) );
+		}
+		return (string) get_option( 'occidg_' . $provider . '_api_key', '' );
 	}
 
 	/**
@@ -517,6 +541,48 @@ class Occidg_Admin_Settings {
 		$api_key = preg_replace( '/\s+/', '', $api_key );
 
 		return is_string( $api_key ) ? trim( $api_key ) : '';
+	}
+
+	/**
+	 * Preserve a stored OpenAI key when the masked settings field is unchanged.
+	 *
+	 * @param mixed $api_key Submitted API key value.
+	 * @return string Sanitized new key or the existing stored key.
+	 */
+	public function sanitize_openai_api_key_option( $api_key ) {
+		return $this->sanitize_masked_api_key_option( $api_key, 'occidg_openai_api_key' );
+	}
+
+	/**
+	 * Preserve a stored Gemini key when the masked settings field is unchanged.
+	 *
+	 * @param mixed $api_key Submitted API key value.
+	 * @return string Sanitized new key or the existing stored key.
+	 */
+	public function sanitize_gemini_api_key_option( $api_key ) {
+		return $this->sanitize_masked_api_key_option( $api_key, 'occidg_gemini_api_key' );
+	}
+
+	/**
+	 * Treat a blank masked field as unchanged during a normal settings save.
+	 *
+	 * API keys are rendered as empty password inputs so their values are not sent
+	 * back to the browser. The dedicated provider-key AJAX action owns explicit
+	 * replacement and clearing; a normal settings submission must therefore keep
+	 * the existing option when the masked field is blank.
+	 *
+	 * @param mixed  $api_key    Submitted API key value.
+	 * @param string $option_name Provider API key option name.
+	 * @return string Sanitized new key or the existing stored key.
+	 */
+	private function sanitize_masked_api_key_option( $api_key, $option_name ) {
+		$api_key = $this->sanitize_api_key( $api_key );
+
+		if ( '' !== $api_key ) {
+			return $api_key;
+		}
+
+		return (string) get_option( $option_name, '' );
 	}
 
 	/**
@@ -638,19 +704,27 @@ class Occidg_Admin_Settings {
 	 * @return void
 	 */
 	private function render_provider_api_key_field( $provider ) {
-		$config = $this->get_provider_settings_config( $provider );
-		$value  = get_option( $config['api_key_option'], '' );
+		$config   = $this->get_provider_settings_config( $provider );
+		$value    = self::get_provider_api_key( $provider );
+		$constant = 'gemini' === $provider ? 'OCC_IDG_GEMINI_API_KEY' : 'OCC_IDG_OPENAI_API_KEY';
+		$external = defined( $constant ) && '' !== (string) constant( $constant );
 		?>
 		<div class="occidg-provider-setting-field" data-provider="<?php echo esc_attr( $config['provider'] ); ?>">
 			<input
 				type="password"
 				id="<?php echo esc_attr( $config['api_key_option'] ); ?>"
 				name="<?php echo esc_attr( $config['api_key_option'] ); ?>"
-				value="<?php echo esc_attr( $value ); ?>"
+				value=""
+				placeholder="<?php echo $value ? esc_attr__( 'Saved key (enter a new key to replace)', 'occidg' ) : ''; ?>"
 				class="regular-text occidg-api-key-field"
 				autocomplete="off"
 				data-provider="<?php echo esc_attr( $config['provider'] ); ?>"
+				<?php disabled( $external ); ?>
 			/>
+			<?php if ( $external ) : ?>
+				<?php /* translators: %s: environment constant name. */ ?>
+				<p class="description"><strong><?php echo esc_html( sprintf( __( 'Managed externally by %s.', 'occidg' ), $constant ) ); ?></strong></p>
+			<?php endif; ?>
 			<p class="description"><?php echo esc_html( $config['key_description'] ); ?></p>
 			<p
 				id="<?php echo esc_attr( $config['api_key_option'] ); ?>_status"
@@ -672,7 +746,7 @@ class Occidg_Admin_Settings {
 		$config         = $this->get_provider_settings_config( $provider );
 		$current_model  = get_option( $config['model_option'], $config['default_model'] );
 		$model_choices  = $this->get_provider_model_field_choices( $provider, $current_model );
-		$has_saved_key  = ! empty( get_option( $config['api_key_option'], '' ) );
+		$has_saved_key  = '' !== self::get_provider_api_key( $provider );
 		$disabled_attrs = $has_saved_key ? '' : ' disabled="disabled" aria-disabled="true"';
 		?>
 		<div class="occidg-provider-setting-field" data-provider="<?php echo esc_attr( $config['provider'] ); ?>">
@@ -799,7 +873,7 @@ class Occidg_Admin_Settings {
 			return;
 		}
 
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! $this->can_manage_settings() ) {
 			wp_send_json_error(
 				array(
 					'message' => __( 'Permission denied.', 'occidg' ),
@@ -884,7 +958,7 @@ class Occidg_Admin_Settings {
 			return;
 		}
 
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! $this->can_manage_settings() ) {
 			wp_send_json_error(
 				array(
 					'message' => __( 'Permission denied.', 'occidg' ),
@@ -1270,7 +1344,7 @@ class Occidg_Admin_Settings {
 	 * @return void
 	 */
 	public function occidg_save_settings() {
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! $this->can_manage_settings() ) {
 			wp_send_json_error( __( 'Insufficient permissions.', 'occidg' ) );
 			return;
 		}
@@ -1301,7 +1375,7 @@ class Occidg_Admin_Settings {
 		$auto_add = isset( $settings['occidg_auto_add_details'] ) && '1' === $settings['occidg_auto_add_details'] ? '1' : '0';
 		update_option( 'occidg_auto_add_details', $auto_add );
 
-		$override = isset( $settings['occidg_override_metadata'] ) && '1' === $settings['occidg_override_metadata'] ? '1' : '0';
+		$override = get_option( 'occ_idg_allow_overwrite', false ) && current_user_can( 'occ_idg_overwrite_metadata' ) && isset( $settings['occidg_override_metadata'] ) && '1' === $settings['occidg_override_metadata'] ? '1' : '0';
 		update_option( 'occidg_override_metadata', $override );
 
 		$language = isset( $settings['occidg_language'] ) ? $this->sanitize_language( $settings['occidg_language'] ) : 'en';
@@ -1311,13 +1385,17 @@ class Occidg_Admin_Settings {
 		update_option( 'occidg_provider', $provider );
 
 		$openai_api_key = isset( $settings['occidg_openai_api_key'] ) ? $this->sanitize_api_key( $settings['occidg_openai_api_key'] ) : '';
-		update_option( 'occidg_openai_api_key', $openai_api_key );
+		if ( '' !== $openai_api_key && ! defined( 'OCC_IDG_OPENAI_API_KEY' ) ) {
+			update_option( 'occidg_openai_api_key', $openai_api_key );
+		}
 
 		$openai_model = isset( $settings['occidg_openai_model'] ) ? $this->sanitize_openai_model( $settings['occidg_openai_model'] ) : 'gpt-4o-mini';
 		update_option( 'occidg_openai_model', $openai_model );
 
 		$gemini_api_key = isset( $settings['occidg_gemini_api_key'] ) ? $this->sanitize_api_key( $settings['occidg_gemini_api_key'] ) : '';
-		update_option( 'occidg_gemini_api_key', $gemini_api_key );
+		if ( '' !== $gemini_api_key && ! defined( 'OCC_IDG_GEMINI_API_KEY' ) ) {
+			update_option( 'occidg_gemini_api_key', $gemini_api_key );
+		}
 
 		$gemini_model = isset( $settings['occidg_gemini_model'] ) ? $this->sanitize_gemini_model( $settings['occidg_gemini_model'] ) : 'gemini-1.5-flash';
 		update_option( 'occidg_gemini_model', $gemini_model );
@@ -1334,17 +1412,27 @@ class Occidg_Admin_Settings {
 	 * @return array|false The generated metadata on success, or false/an error array on failure.
 	 */
 	public function occidg_generate_metadata( $image_id, $generation_context = array() ) {
-		$selected_fields   = isset( $generation_context['selected_fields'] ) && is_array( $generation_context['selected_fields'] )
+		$selected_fields           = isset( $generation_context['selected_fields'] ) && is_array( $generation_context['selected_fields'] )
 			? $generation_context['selected_fields']
 			: get_option( 'occidg_metadata_fields', array() );
-		$override_metadata = array_key_exists( 'override_metadata', $generation_context )
-			? ! empty( $generation_context['override_metadata'] )
-			: get_option( 'occidg_override_metadata', false );
+		$is_non_persistent_request = array_key_exists( 'persist', $generation_context ) && false === $generation_context['persist'];
+		$override_metadata         = array_key_exists( 'override_metadata', $generation_context )
+			? ! empty( $generation_context['override_metadata'] ) && ( $is_non_persistent_request || ( get_option( 'occ_idg_allow_overwrite', false ) && ! empty( $generation_context['overwrite_confirmed'] ) ) )
+			: false;
 
-		$image_path = $this->get_custom_image_size_path( $image_id, 'one-click-image-api' );
-		if ( ! $image_path || ! file_exists( $image_path ) ) {
-			$image_path = get_attached_file( $image_id );
+		if ( Occidg_Image_Support::is_svg_attachment( $image_id ) ) {
+			return array(
+				'success'   => false,
+				'skipped'   => true,
+				'reason'    => 'unsupported_svg',
+				'temporary' => false,
+				'error'     => Occidg_Image_Support::get_svg_generation_message(),
+			);
 		}
+
+		// Start from the original attachment. Unsupported provider formats may be
+		// converted to a short-lived JPEG through WordPress's image editor.
+		$image_path = get_attached_file( $image_id );
 
 		if ( ! $image_path || ! file_exists( $image_path ) ) {
 			Occidg_Logger::warning(
@@ -1364,39 +1452,33 @@ class Occidg_Admin_Settings {
 			);
 		}
 
-		$image_data = file_get_contents( $image_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
-		if ( false === $image_data ) {
-			Occidg_Logger::warning(
-				'Metadata generation skipped because the image file could not be read.',
-				array(
-					'image_id'   => $image_id,
-					'image_path' => $image_path,
-				)
-			);
-			return false;
+		$file_type      = wp_check_filetype( $image_path );
+		$file_extension = strtolower( (string) pathinfo( $image_path, PATHINFO_EXTENSION ) );
+		$detected_ext   = ! empty( $file_type['ext'] ) ? $file_type['ext'] : $file_extension;
+		$detected_mime  = ! empty( $file_type['type'] ) ? $file_type['type'] : (string) get_post_mime_type( $image_id );
+		$image_payload  = $this->prepare_provider_image( $image_path, $detected_ext, $detected_mime, $image_id );
+		if ( empty( $image_payload['success'] ) ) {
+			return $image_payload;
 		}
+		$image_type = $image_payload['image_type'];
+		$image_data = $image_payload['image_data'];
 		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- Provider APIs accept the image payload encoded as base64.
 		$image_base64 = base64_encode( $image_data );
-		$file_type    = wp_check_filetype( $image_path );
-		$image_type   = $this->sanitize_image_type( $file_type['ext'], $file_type['type'] ?? '' );
-
-		if ( ! $image_type ) {
-			return array(
-				'success' => false,
-				'error'   => __( 'Unable to detect a supported image format for metadata generation.', 'occidg' ),
-			);
-		}
 
 		$provider_metadata = $this->request_provider_metadata( $image_base64, $image_type, $generation_context );
 		if ( isset( $provider_metadata['success'] ) && ! $provider_metadata['success'] ) {
 			return $provider_metadata;
 		}
 
-		$processed_metadata = $this->process_and_save_metadata( $image_id, $provider_metadata, $generate_metadata );
+		$processed_metadata = ! empty( $generation_context['persist'] ) || ! array_key_exists( 'persist', $generation_context )
+			? $this->process_and_save_metadata( $image_id, $provider_metadata, $generate_metadata, $generation_context )
+			: $this->normalize_generated_metadata( $provider_metadata );
 		if ( $processed_metadata ) {
+			$confidence = array_fill_keys( array_keys( $processed_metadata ), 'medium' );
 			return array(
-				'success'  => true,
-				'metadata' => $processed_metadata,
+				'success'    => true,
+				'metadata'   => $processed_metadata,
+				'confidence' => $confidence,
 			);
 		}
 
@@ -1444,7 +1526,7 @@ class Occidg_Admin_Settings {
 	 * @return array
 	 */
 	private function request_openai_metadata( $image_base64, $image_type, $generation_context = array() ) {
-		$api_key = get_option( 'occidg_openai_api_key', '' );
+		$api_key = self::get_provider_api_key( 'openai' );
 		$model   = isset( $generation_context['model'] ) && is_string( $generation_context['model'] )
 			? $generation_context['model']
 			: get_option( 'occidg_openai_model', 'gpt-4o-mini' );
@@ -1462,7 +1544,7 @@ class Occidg_Admin_Settings {
 			'model'                 => $model,
 			'messages'              => $messages,
 			'response_format'       => $this->get_openai_response_format(),
-			'max_completion_tokens' => 500,
+			'max_completion_tokens' => max( 100, min( 4000, (int) get_option( 'occ_idg_max_response_tokens', 500 ) ) ),
 		);
 
 		$response = wp_remote_post(
@@ -1473,7 +1555,7 @@ class Occidg_Admin_Settings {
 					'Authorization' => 'Bearer ' . $api_key,
 				),
 				'body'    => wp_json_encode( $body ),
-				'timeout' => 60,
+				'timeout' => isset( $generation_context['request_timeout'] ) ? max( 5, min( 300, (int) $generation_context['request_timeout'] ) ) : max( 5, min( 300, (int) get_option( 'occ_idg_request_timeout', 60 ) ) ),
 			)
 		);
 
@@ -1495,7 +1577,7 @@ class Occidg_Admin_Settings {
 	 * @return array
 	 */
 	private function request_gemini_metadata( $image_base64, $image_type, $generation_context = array() ) {
-		$api_key = get_option( 'occidg_gemini_api_key', '' );
+		$api_key = self::get_provider_api_key( 'gemini' );
 		$model   = isset( $generation_context['model'] ) && is_string( $generation_context['model'] )
 			? $generation_context['model']
 			: get_option( 'occidg_gemini_model', 'gemini-1.5-flash' );
@@ -1508,14 +1590,7 @@ class Occidg_Admin_Settings {
 			);
 		}
 
-		$language_instruction = sprintf(
-			'Generate image metadata including title, description, alt_text, and caption for the provided image in %s. Return valid JSON only.',
-			$this->get_language_label(
-				isset( $generation_context['language'] ) && is_string( $generation_context['language'] )
-					? $generation_context['language']
-					: get_option( 'occidg_language', 'en' )
-			)
-		);
+		$language_instruction = $this->build_generation_instruction( $generation_context );
 
 		$body = array(
 			'contents'         => array(
@@ -1535,6 +1610,7 @@ class Occidg_Admin_Settings {
 			),
 			'generationConfig' => array(
 				'temperature'      => 0.4,
+				'maxOutputTokens'  => max( 100, min( 4000, (int) get_option( 'occ_idg_max_response_tokens', 500 ) ) ),
 				'responseMimeType' => 'application/json',
 				'responseSchema'   => array(
 					'type'       => 'OBJECT',
@@ -1560,7 +1636,7 @@ class Occidg_Admin_Settings {
 					'Content-Type' => 'application/json',
 				),
 				'body'    => wp_json_encode( $body ),
-				'timeout' => 60,
+				'timeout' => isset( $generation_context['request_timeout'] ) ? max( 5, min( 300, (int) $generation_context['request_timeout'] ) ) : max( 5, min( 300, (int) get_option( 'occ_idg_request_timeout', 60 ) ) ),
 			)
 		);
 
@@ -1612,7 +1688,7 @@ class Occidg_Admin_Settings {
 			return array(
 				'success' => false,
 				'error'   => sprintf(
-					/* translators: %s: provider name */
+					/* translators: %s: provider name. */
 					__( 'Failed to communicate with %s.', 'occidg' ),
 					ucfirst( $provider )
 				),
@@ -1627,7 +1703,7 @@ class Occidg_Admin_Settings {
 			return array(
 				'success' => false,
 				'error'   => sprintf(
-					/* translators: %s: provider name */
+					/* translators: %s: provider name. */
 					__( 'Invalid response from %s.', 'occidg' ),
 					ucfirst( $provider )
 				),
@@ -1641,7 +1717,7 @@ class Occidg_Admin_Settings {
 				return array(
 					'success' => false,
 					'error'   => sprintf(
-						/* translators: %s: provider name */
+						/* translators: %s: provider name. */
 						__( '%s returned an error response.', 'occidg' ),
 						ucfirst( $provider )
 					),
@@ -1652,7 +1728,7 @@ class Occidg_Admin_Settings {
 			return array(
 				'success' => false,
 				'error'   => sprintf(
-					/* translators: %s: provider name */
+					/* translators: %s: provider name. */
 					__( 'Invalid response from %s.', 'occidg' ),
 					ucfirst( $provider )
 				),
@@ -1664,7 +1740,7 @@ class Occidg_Admin_Settings {
 			return array(
 				'success' => false,
 				'error'   => sprintf(
-					/* translators: %s: provider name */
+					/* translators: %s: provider name. */
 					__( '%s returned an error response.', 'occidg' ),
 					ucfirst( $provider )
 				),
@@ -2005,6 +2081,111 @@ class Occidg_Admin_Settings {
 	}
 
 	/**
+	 * Read an image in a provider-supported format.
+	 *
+	 * AVIF is converted to a temporary JPEG through WordPress's configured image
+	 * editor. The temporary file is removed before this method returns. This
+	 * keeps support portable across GD, Imagick, and host-specific editors while
+	 * failing safely on hosts that cannot decode AVIF.
+	 *
+	 * @since 2.0.0
+	 * @param string $image_path Image file path.
+	 * @param string $image_ext  Detected file extension.
+	 * @param string $mime_type  Detected MIME type.
+	 * @param int    $image_id   Attachment ID for diagnostics.
+	 * @return array{success: bool, image_type?: string, image_data?: string, error?: string}
+	 */
+	private function prepare_provider_image( $image_path, $image_ext, $mime_type, $image_id ) {
+		$image_type = $this->sanitize_image_type( $image_ext, $mime_type );
+		$read_path  = $image_path;
+		$temp_path  = '';
+
+		$is_avif = 'avif' === strtolower( trim( (string) $image_ext ) ) || 'image/avif' === strtolower( trim( (string) $mime_type ) );
+		if ( ! $image_type && $is_avif ) {
+			if ( ! function_exists( 'wp_tempnam' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/file.php';
+			}
+
+			$editor = wp_get_image_editor( $image_path );
+			if ( is_wp_error( $editor ) ) {
+				Occidg_Logger::warning(
+					'AVIF metadata preview could not initialize a WordPress image editor.',
+					array(
+						'image_id' => $image_id,
+						'error'    => $editor->get_error_message(),
+					)
+				);
+				return array(
+					'success' => false,
+					'error'   => __( 'This server cannot prepare this AVIF file for AI preview. You can still edit its metadata manually.', 'occidg' ),
+				);
+			}
+
+			$temp_seed = wp_tempnam( 'occidg-avif-preview.jpg' );
+			if ( ! $temp_seed ) {
+				return array(
+					'success' => false,
+					'error'   => __( 'WordPress could not create a temporary image for this AVIF preview.', 'occidg' ),
+				);
+			}
+
+			$saved = $editor->save( $temp_seed, 'image/jpeg' );
+			if ( is_wp_error( $saved ) ) {
+				wp_delete_file( $temp_seed );
+				Occidg_Logger::warning(
+					'AVIF metadata preview could not create a temporary JPEG.',
+					array(
+						'image_id' => $image_id,
+						'error'    => $saved->get_error_message(),
+					)
+				);
+				return array(
+					'success' => false,
+					'error'   => __( 'This server could not convert the AVIF file for AI preview. You can still edit its metadata manually.', 'occidg' ),
+				);
+			}
+
+			$read_path  = ! empty( $saved['path'] ) ? $saved['path'] : $temp_seed;
+			$temp_path  = $read_path;
+			$image_type = 'jpeg';
+			if ( $temp_seed !== $temp_path ) {
+				wp_delete_file( $temp_seed );
+			}
+		}
+
+		if ( ! $image_type ) {
+			return array(
+				'success' => false,
+				'error'   => __( 'Unable to detect a supported image format for metadata generation.', 'occidg' ),
+			);
+		}
+
+		$image_data = file_get_contents( $read_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		if ( $temp_path ) {
+			wp_delete_file( $temp_path );
+		}
+
+		if ( false === $image_data ) {
+			Occidg_Logger::warning(
+				'Metadata generation skipped because the image file could not be read.',
+				array(
+					'image_id' => $image_id,
+				)
+			);
+			return array(
+				'success' => false,
+				'error'   => __( 'WordPress could not read this image for AI metadata generation.', 'occidg' ),
+			);
+		}
+
+		return array(
+			'success'    => true,
+			'image_type' => $image_type,
+			'image_data' => $image_data,
+		);
+	}
+
+	/**
 	 * Sanitize a model string and apply a fallback.
 	 *
 	 * @since 1.1.16
@@ -2103,26 +2284,26 @@ class Occidg_Admin_Settings {
 	private function determine_metadata_to_generate( $image_id, $selected_fields, $override_metadata ) {
 		$generate_metadata = array();
 
-		if ( isset( $selected_fields['alt_text'] ) ) {
-			if ( $override_metadata || ! get_post_meta( $image_id, '_wp_attachment_image_alt', true ) ) {
+		if ( isset( $selected_fields['alt_text'] ) && '1' === (string) $selected_fields['alt_text'] ) {
+			if ( $override_metadata || Occidg_Metadata::is_empty( get_post_meta( $image_id, '_wp_attachment_image_alt', true ) ) ) {
 				$generate_metadata['alt_text'] = true;
 			}
 		}
 
-		if ( isset( $selected_fields['title'] ) ) {
-			if ( $override_metadata || ! get_the_title( $image_id ) ) {
+		if ( isset( $selected_fields['title'] ) && '1' === (string) $selected_fields['title'] ) {
+			if ( $override_metadata || Occidg_Metadata::is_empty( get_the_title( $image_id ) ) ) {
 				$generate_metadata['title'] = true;
 			}
 		}
 
-		if ( isset( $selected_fields['description'] ) ) {
-			if ( $override_metadata || ! get_post_field( 'post_content', $image_id ) ) {
+		if ( isset( $selected_fields['description'] ) && '1' === (string) $selected_fields['description'] ) {
+			if ( $override_metadata || Occidg_Metadata::is_empty( get_post_field( 'post_content', $image_id ) ) ) {
 				$generate_metadata['description'] = true;
 			}
 		}
 
-		if ( isset( $selected_fields['caption'] ) ) {
-			if ( $override_metadata || empty( get_post_field( 'post_excerpt', $image_id ) ) ) {
+		if ( isset( $selected_fields['caption'] ) && '1' === (string) $selected_fields['caption'] ) {
+			if ( $override_metadata || Occidg_Metadata::is_empty( get_post_field( 'post_excerpt', $image_id ) ) ) {
 				$generate_metadata['caption'] = true;
 			}
 		}
@@ -2140,13 +2321,11 @@ class Occidg_Admin_Settings {
 	 * @return array The messages payload.
 	 */
 	private function prepare_messages_payload( $image_base64, $image_type, $generation_context = array() ) {
-		$selected_language    = isset( $generation_context['language'] ) && is_string( $generation_context['language'] )
+		$selected_language              = isset( $generation_context['language'] ) && is_string( $generation_context['language'] )
 			? $generation_context['language']
 			: get_option( 'occidg_language', 'en' );
-		$language_instruction = sprintf(
-			'Generate image metadata including title, description, alt text, and caption for the provided image in %s. Return only structured JSON that matches the requested schema.',
-			$this->get_language_label( $selected_language )
-		);
+		$generation_context['language'] = $selected_language;
+		$language_instruction           = $this->build_generation_instruction( $generation_context );
 
 		return array(
 			array(
@@ -2164,6 +2343,25 @@ class Occidg_Admin_Settings {
 					),
 				),
 			),
+		);
+	}
+
+	/**
+	 * Build the shared accessibility-first provider instruction.
+	 *
+	 * @param array $context Minimal attachment and editorial context.
+	 * @return string
+	 */
+	private function build_generation_instruction( $context ) {
+		$language     = isset( $context['language'] ) ? $context['language'] : get_option( 'occidg_language', 'en' );
+		$safe_context = array_intersect_key(
+			(array) $context,
+			array_flip( array( 'filename', 'current_metadata', 'parent_title', 'parent_excerpt', 'parent_post_type', 'site_name', 'organization_name', 'site_description', 'editorial_tone', 'editorial_guidance', 'preferred_terms', 'prohibited_terms' ) )
+		);
+		return sprintf(
+			'Generate factual image metadata in %1$s and return only JSON matching the schema. Alt text must be concise, natural, accessibility-first, and describe meaningful visible information. Do not start with "image of" or "picture of", keyword-stuff, repeat a caption, or guess identities, locations, medical conditions, sensitive traits, emotions, roles, dates, or events. Use a person\'s name only when reliable supplied context identifies them. For text-heavy graphics, summarize purpose and avoid transcribing everything. An empty alt value may be recommended for a decorative image, but never mark it decorative automatically. Titles must be searchable and human-readable without extensions or raw camera strings. Captions are visible editorial content: keep them conservative and never fabricate context. Descriptions must remain factual. Minimal trusted context: %2$s',
+			$this->get_language_label( $language ),
+			wp_json_encode( $safe_context )
 		);
 	}
 
@@ -2223,159 +2421,90 @@ class Occidg_Admin_Settings {
 	 * @param int   $image_id          The ID of the image attachment.
 	 * @param array $data              The normalized metadata data.
 	 * @param array $generate_metadata The metadata fields to save.
+	 * @param array $generation_context Audit context.
 	 * @return array|false The saved metadata or false on failure.
 	 */
-	private function process_and_save_metadata( $image_id, $data, $generate_metadata ) {
+	private function process_and_save_metadata( $image_id, $data, $generate_metadata, $generation_context = array() ) {
 		$sanitized_metadata = $this->normalize_generated_metadata( $data );
 
 		if ( false === $sanitized_metadata ) {
 			return false;
 		}
 
-		if ( isset( $generate_metadata['alt_text'] ) ) {
-			update_post_meta( $image_id, '_wp_attachment_image_alt', $sanitized_metadata['alt_text'] );
-		}
-
-		if ( isset( $generate_metadata['title'] ) ) {
-			wp_update_post(
-				array(
-					'ID'         => $image_id,
-					'post_title' => $sanitized_metadata['title'],
-				)
-			);
-		}
-
-		if ( isset( $generate_metadata['description'] ) ) {
-			wp_update_post(
-				array(
-					'ID'           => $image_id,
-					'post_content' => $sanitized_metadata['description'],
-				)
-			);
-		}
-
-		if ( isset( $generate_metadata['caption'] ) ) {
-			wp_update_post(
-				array(
-					'ID'           => $image_id,
-					'post_excerpt' => $sanitized_metadata['caption'],
-				)
-			);
+		if ( class_exists( 'Occidg_Metadata' ) && class_exists( 'Occidg_Database' ) ) {
+			$metadata_service = new Occidg_Metadata( new Occidg_Database() );
+			$provider         = isset( $generation_context['provider'] ) ? $generation_context['provider'] : get_option( 'occidg_provider', 'openai' );
+			$model            = isset( $generation_context['model'] ) ? $generation_context['model'] : get_option( 'gemini' === $provider ? 'occidg_gemini_model' : 'occidg_openai_model', '' );
+			$processing_mode  = ! empty( $generation_context['override_metadata'] ) ? 'overwrite' : 'fill_missing';
+			foreach ( array_keys( $generate_metadata ) as $field ) {
+				if ( $this->should_queue_caption_for_review( $field, $generation_context ) ) {
+					( new Occidg_Database() )->insert_suggestion(
+						array(
+							'attachment_id'   => $image_id,
+							'field_name'      => $field,
+							'current_value'   => get_post_field( 'post_excerpt', $image_id, 'raw' ),
+							'suggested_value' => $sanitized_metadata[ $field ],
+							'confidence'      => 'medium',
+							'provider'        => $provider,
+							'model'           => $model,
+							'prompt_version'  => Occidg_Workflow::PROMPT_VERSION,
+						)
+					);
+					update_post_meta( $image_id, '_occ_idg_review_status', 'suggestion_ready' );
+					continue;
+				}
+				$metadata_service->update_field(
+					$image_id,
+					$field,
+					$sanitized_metadata[ $field ],
+					array(
+						'provider'        => $provider,
+						'model'           => $model,
+						'confidence'      => 'medium',
+						'processing_mode' => $processing_mode,
+						'approved_by'     => isset( $generation_context['approved_by'] ) ? absint( $generation_context['approved_by'] ) : null,
+						'prompt_version'  => Occidg_Workflow::PROMPT_VERSION,
+					)
+				);
+			}
+		} else {
+			if ( isset( $generate_metadata['alt_text'] ) ) {
+				update_post_meta( $image_id, '_wp_attachment_image_alt', $sanitized_metadata['alt_text'] );
+			}
+			$post_update = array( 'ID' => $image_id );
+			foreach ( array(
+				'title'       => 'post_title',
+				'description' => 'post_content',
+				'caption'     => 'post_excerpt',
+			) as $field => $post_key ) {
+				if ( isset( $generate_metadata[ $field ] ) ) {
+					$post_update[ $post_key ] = $sanitized_metadata[ $field ];
+				}
+			}
+			if ( count( $post_update ) > 1 ) {
+				wp_update_post( $post_update );
+			}
 		}
 
 		return $sanitized_metadata;
 	}
 
 	/**
-	 * Retrieve the path of the specified image size or generate it in WebP format if missing.
+	 * Decide whether a generated caption must remain in the review queue.
 	 *
-	 * @since 1.0.0
-	 * @param int    $image_id The image ID.
-	 * @param string $size     The image size to retrieve.
-	 * @return string|false The path to the WebP image, or false if generation fails.
+	 * A row-level Generate click is an explicit approval to apply every eligible
+	 * generated field, so it may confirm the caption during that request. Passive
+	 * and background generation continue to honor the caption review setting.
+	 *
+	 * @since 2.0.0
+	 * @param string $field              Metadata field.
+	 * @param array  $generation_context Generation request context.
+	 * @return bool Whether the caption should be queued instead of saved.
 	 */
-	private function get_custom_image_size_path( $image_id, $size ) {
-		$image_info = wp_get_attachment_image_src( $image_id, $size );
-
-		if ( $image_info && isset( $image_info[0] ) ) {
-			$image_path = get_attached_file( $image_id );
-
-			$resized_path = str_replace(
-				wp_basename( $image_path ),
-				wp_basename( $image_info[0], pathinfo( $image_info[0], PATHINFO_EXTENSION ) ) . 'webp',
-				$image_path
-			);
-
-			if ( ! file_exists( $resized_path ) ) {
-				$generated = $this->generate_image_size_as_webp( $image_id, $resized_path );
-				if ( $generated ) {
-					return $resized_path;
-				}
-				return false;
-			}
-
-			return $resized_path;
-		}
-
-		return false;
-	}
-
-	/**
-	 * Generate the specified image size in WebP format and ensure it fits
-	 * provider request payload size constraints.
-	 *
-	 * @since 1.1.0
-	 *
-	 * @param int    $image_id     Attachment ID.
-	 * @param string $output_path  Destination file path.
-	 * @return bool  True on success, false on failure.
-	 */
-	private function generate_image_size_as_webp( $image_id, $output_path ) {
-
-		// ---- SETTINGS --------------------------------------------------------- //
-		$target_bytes = 3 * 1024 * 1024; // 3 MB on disk  → <4 MB after Base-64.
-		$min_quality  = 60;              // Do not go below this.
-		$quality_step = 5;               // Decrease quality in 5-point steps.
-		$scale_factor = 0.9;             // When quality floor reached, shrink width by 10 %.
-
-		// ---- LOAD ORIGINAL ---------------------------------------------------- //
-		$image_path = get_attached_file( $image_id );
-		if ( ! file_exists( $image_path ) ) {
-			return false;
-		}
-
-		$orig_editor = wp_get_image_editor( $image_path );
-		if ( is_wp_error( $orig_editor ) ) {
-			return false;
-		}
-
-		// ---- START VALUES ----------------------------------------------------- //
-		$current_size = $orig_editor->get_size();
-		$width        = $current_size['width'];
-		$height       = $current_size['height'];
-		$quality      = 90;
-
-		if ( $width > 1024 ) {
-			$width  = 1024;
-			$height = null; // Preserve aspect ratio.
-		}
-
-		// ---- TRY, MEASURE, ADJUST -------------------------------------------- //
-		while ( true ) {
-
-			// Always clone the pristine editor to avoid double compression.
-			$editor = clone $orig_editor;
-			$editor->resize( $width, $height, false );
-			$editor->set_quality( $quality );
-
-			$saved = $editor->save( $output_path, 'image/webp' );
-			if ( is_wp_error( $saved ) ) {
-				return false;
-			}
-
-			$filesize = filesize( $output_path );
-
-			// Success.
-			if ( $filesize <= $target_bytes ) {
-				return true;
-			}
-
-			// First, lower quality.
-			if ( $quality - $quality_step >= $min_quality ) {
-				$quality -= $quality_step;
-				continue;
-			}
-
-			// Then, reduce width.
-			$width   = (int) round( $width * $scale_factor );
-			$height  = null;
-			$quality = 90; // Reset quality after each down-scale.
-
-			// Fail-safe: stop if the image would get absurdly small.
-			if ( $width < 512 ) {
-				return false;
-			}
-		}
+	private function should_queue_caption_for_review( $field, $generation_context ) {
+		return 'caption' === $field
+			&& (bool) get_option( 'occ_idg_require_caption_review', true )
+			&& empty( $generation_context['caption_review_confirmed'] );
 	}
 
 	/**
@@ -2390,26 +2519,57 @@ class Occidg_Admin_Settings {
 			return;
 		}
 
-		if ( ! current_user_can( 'upload_files' ) ) {
+		if ( ! current_user_can( 'occ_idg_generate_metadata' ) ) {
 			wp_send_json_error( __( 'Permission denied.', 'occidg' ) );
 			return;
 		}
 
-		$image_id = isset( $_POST['image_id'] ) ? absint( $_POST['image_id'] ) : 0;
+		$image_id               = isset( $_POST['image_id'] ) ? absint( $_POST['image_id'] ) : 0;
+		$apply_configured_rules = isset( $_POST['apply_configured_rules'] ) && ! is_array( $_POST['apply_configured_rules'] ) && '1' === sanitize_text_field( wp_unslash( $_POST['apply_configured_rules'] ) );
 
-		if ( ! $image_id ) {
-			wp_send_json_error( __( 'Invalid image ID.', 'occidg' ) );
+		if ( ! $image_id || ! current_user_can( 'edit_post', $image_id ) ) {
+			wp_send_json_error( __( 'Invalid image ID or insufficient permission.', 'occidg' ) );
 			return;
 		}
 
-		$metadata = $this->occidg_generate_metadata( $image_id );
+		$generation_context = array();
+		$overwrite_mode     = false;
+		if ( $apply_configured_rules ) {
+			$overwrite_mode     = (bool) get_option( 'occidg_override_metadata', false )
+				&& (bool) get_option( 'occ_idg_allow_overwrite', false )
+				&& current_user_can( 'occ_idg_overwrite_metadata' );
+			$generation_context = array(
+				'override_metadata'        => $overwrite_mode,
+				'overwrite_confirmed'      => $overwrite_mode,
+				'caption_review_confirmed' => true,
+				'approved_by'              => get_current_user_id(),
+				'mode'                     => $overwrite_mode ? 'overwrite' : 'fill_missing',
+			);
+		}
+
+		$metadata = $this->occidg_generate_metadata( $image_id, $generation_context );
 
 		if ( is_array( $metadata ) && isset( $metadata['success'] ) ) {
 			if ( $metadata['success'] ) {
+				$current_metadata = class_exists( 'Occidg_Metadata' ) && class_exists( 'Occidg_Database' )
+					? ( new Occidg_Metadata( new Occidg_Database() ) )->get_all( $image_id )
+					: array(
+						'title'       => get_the_title( $image_id ),
+						'alt_text'    => get_post_meta( $image_id, '_wp_attachment_image_alt', true ),
+						'description' => get_post_field( 'post_content', $image_id, 'raw' ),
+						'caption'     => get_post_field( 'post_excerpt', $image_id, 'raw' ),
+					);
+				$message          = $apply_configured_rules
+					? ( $overwrite_mode
+						? __( 'Generated using your overwrite settings.', 'occidg' )
+						: __( 'Generated. Existing metadata was protected.', 'occidg' ) )
+					: __( 'Metadata generated successfully.', 'occidg' );
 				wp_send_json_success(
 					array(
-						'message'  => __( 'Metadata generated successfully.', 'occidg' ),
-						'metadata' => $metadata,
+						'message'          => $message,
+						'metadata'         => $metadata,
+						'current_metadata' => $current_metadata,
+						'mode'             => $overwrite_mode ? 'overwrite' : 'fill_missing',
 					)
 				);
 			} else {
@@ -2418,6 +2578,75 @@ class Occidg_Admin_Settings {
 		} else {
 			wp_send_json_error( __( 'Failed to generate metadata.', 'occidg' ) );
 		}
+	}
+
+	/**
+	 * Generate non-persistent candidate metadata for one Bulk Edit row.
+	 *
+	 * The preview deliberately requests every enabled field, including fields
+	 * that already contain a value. Nothing is written until the user approves
+	 * a specific suggestion through the Bulk Edit interface.
+	 *
+	 * @since 2.0.0
+	 * @return void
+	 */
+	public function occidg_ajax_preview_metadata() {
+		if ( ! check_ajax_referer( 'occidg_ajax_nonce', 'nonce', false ) ) {
+			wp_send_json_error( __( 'Nonce verification failed.', 'occidg' ) );
+			return;
+		}
+
+		if ( ! current_user_can( 'occ_idg_generate_metadata' ) ) {
+			wp_send_json_error( __( 'Permission denied.', 'occidg' ) );
+			return;
+		}
+
+		$image_id = isset( $_POST['image_id'] ) ? absint( $_POST['image_id'] ) : 0;
+		if ( ! $image_id || ! current_user_can( 'edit_post', $image_id ) ) {
+			wp_send_json_error( __( 'Invalid image ID or insufficient permission.', 'occidg' ) );
+			return;
+		}
+
+		$selected_fields = get_option( 'occidg_metadata_fields', array() );
+		$fields          = Occidg_Metadata::normalize_fields( $selected_fields );
+		if ( empty( $fields ) ) {
+			wp_send_json_error( __( 'Choose at least one metadata field in Settings before generating a preview.', 'occidg' ) );
+			return;
+		}
+
+		$result = $this->occidg_generate_metadata(
+			$image_id,
+			array(
+				'persist'           => false,
+				'override_metadata' => true,
+				'selected_fields'   => array_fill_keys( $fields, '1' ),
+			)
+		);
+
+		if ( ! is_array( $result ) || empty( $result['success'] ) || empty( $result['metadata'] ) ) {
+			wp_send_json_error( is_array( $result ) ? $result : __( 'Failed to generate metadata preview.', 'occidg' ) );
+			return;
+		}
+
+		$metadata_service = new Occidg_Metadata( new Occidg_Database() );
+		$current          = $metadata_service->get_all( $image_id );
+		$suggestions      = array_intersect_key( $result['metadata'], array_flip( $fields ) );
+		$preview_fields   = array();
+		foreach ( $fields as $field ) {
+			$preview_fields[ $field ] = array(
+				'current'       => isset( $current[ $field ] ) ? $current[ $field ] : '',
+				'current_empty' => Occidg_Metadata::is_empty( isset( $current[ $field ] ) ? $current[ $field ] : '' ),
+				'suggested'     => isset( $suggestions[ $field ] ) ? $suggestions[ $field ] : '',
+			);
+		}
+
+		wp_send_json_success(
+			array(
+				'image_id' => $image_id,
+				'fields'   => $preview_fields,
+				'message'  => __( 'Preview ready. Nothing has been changed.', 'occidg' ),
+			)
+		);
 	}
 
 	/**
@@ -2432,7 +2661,7 @@ class Occidg_Admin_Settings {
 			return;
 		}
 
-		if ( ! current_user_can( 'upload_files' ) ) {
+		if ( ! current_user_can( 'occ_idg_generate_metadata' ) ) {
 			wp_send_json_error( __( 'Permission denied.', 'occidg' ) );
 			return;
 		}
@@ -2444,5 +2673,10 @@ class Occidg_Admin_Settings {
 				'nonce' => $new_nonce,
 			)
 		);
+	}
+
+	/** Determine whether the current user may change plugin settings. */
+	private function can_manage_settings() {
+		return current_user_can( 'occ_idg_manage_settings' ) || current_user_can( 'manage_options' );
 	}
 }

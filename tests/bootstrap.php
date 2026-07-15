@@ -70,6 +70,17 @@ if ( ! function_exists( 'add_action' ) ) {
 	}
 }
 
+if ( ! function_exists( 'do_action' ) ) {
+	/**
+	 * Test double for do_action().
+	 *
+	 * @param string $hook Hook name.
+	 */
+	function do_action( $hook ) {
+		unset( $hook );
+	}
+}
+
 if ( ! function_exists( 'register_activation_hook' ) ) {
 	/**
 	 * Test double for register_activation_hook().
@@ -211,6 +222,42 @@ if ( ! function_exists( 'sanitize_text_field' ) ) {
 	 */
 	function sanitize_text_field( $value ) {
 		return is_scalar( $value ) ? trim( (string) $value ) : '';
+	}
+}
+
+if ( ! function_exists( 'sanitize_key' ) ) {
+	/**
+	 * Test double for sanitize_key().
+	 *
+	 * @param mixed $value Candidate value.
+	 * @return string Sanitized key.
+	 */
+	function sanitize_key( $value ) {
+		return strtolower( preg_replace( '/[^a-z0-9_\-]/i', '', (string) $value ) );
+	}
+}
+
+if ( ! function_exists( 'absint' ) ) {
+	/**
+	 * Test double for absint().
+	 *
+	 * @param mixed $value Candidate value.
+	 * @return int Absolute integer.
+	 */
+	function absint( $value ) {
+		return abs( (int) $value );
+	}
+}
+
+if ( ! function_exists( 'wp_strip_all_tags' ) ) {
+	/**
+	 * Test double for wp_strip_all_tags().
+	 *
+	 * @param mixed $value Candidate value.
+	 * @return string Text without tags.
+	 */
+	function wp_strip_all_tags( $value ) {
+		return strip_tags( (string) $value ); // phpcs:ignore WordPress.WP.AlternativeFunctions.strip_tags_strip_tags -- This function is the test double.
 	}
 }
 
@@ -513,7 +560,73 @@ if ( ! function_exists( 'delete_option' ) ) {
 	}
 }
 
+if ( ! function_exists( 'wp_parse_args' ) ) {
+	/**
+	 * Test double for wp_parse_args().
+	 *
+	 * @param array $args     Supplied arguments.
+	 * @param array $defaults Default arguments.
+	 * @return array
+	 */
+	function wp_parse_args( $args, $defaults = array() ) {
+		return array_merge( $defaults, is_array( $args ) ? $args : array() );
+	}
+}
+
+if ( ! function_exists( 'wp_json_encode' ) ) {
+	/**
+	 * Test double for wp_json_encode().
+	 *
+	 * @param mixed $value Value to encode.
+	 * @return string|false
+	 */
+	function wp_json_encode( $value ) {
+		return json_encode( $value ); // phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_encode -- This function is the test double.
+	}
+}
+
+if ( ! function_exists( 'wp_generate_uuid4' ) ) {
+	/**
+	 * Test double for wp_generate_uuid4().
+	 *
+	 * @return string
+	 */
+	function wp_generate_uuid4() {
+		static $counter = 0;
+		++$counter;
+		return sprintf( '00000000-0000-4000-8000-%012d', $counter );
+	}
+}
+
+if ( ! function_exists( 'current_time' ) ) {
+	/**
+	 * Test double for current_time().
+	 *
+	 * @param string $type Time format.
+	 * @param bool   $gmt  Whether to return GMT.
+	 * @return string
+	 */
+	function current_time( $type = 'mysql', $gmt = false ) {
+		unset( $type, $gmt );
+		return '2026-07-15 12:00:00';
+	}
+}
+
+if ( ! function_exists( 'get_current_user_id' ) ) {
+	/**
+	 * Test double for get_current_user_id().
+	 *
+	 * @return int
+	 */
+	function get_current_user_id() {
+		return 1;
+	}
+}
+
 require_once dirname( __DIR__ ) . '/includes/class-occidg-loader.php';
+require_once dirname( __DIR__ ) . '/includes/class-occidg-database.php';
+require_once dirname( __DIR__ ) . '/includes/class-occidg-image-support.php';
+require_once dirname( __DIR__ ) . '/includes/class-occidg-metadata.php';
 require_once dirname( __DIR__ ) . '/includes/class-occidg-background-jobs.php';
 require_once dirname( __DIR__ ) . '/includes/class-occidg-background-worker.php';
 require_once dirname( __DIR__ ) . '/includes/class-occidg-logger.php';

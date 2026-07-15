@@ -18,7 +18,7 @@
  * Plugin Name:       OneClickContent - Image Detail Generator
  * Plugin URI:        https://github.com/jwilson529/oneclickcontent-images
  * Description:       Free AI-powered image metadata generation for Media Library images using your own OpenAI or Gemini API key.
- * Version:           1.2.4
+ * Version:           2.0.2
  * Author:            James Wilson
  * Author URI:        https://github.com/jwilson529
  * License:           GPL-2.0+
@@ -38,7 +38,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @since 1.0.0
  */
-define( 'OCCIDG_VERSION', '1.2.4' );
+define( 'OCCIDG_VERSION', '2.0.2' );
 define( 'OCCIDG_PRODUCT_SLUG', 'oneclickcontent-image-meta-generator' );
 define( 'OCCIDG_PLUGIN_FILE', __FILE__ );
 define( 'OCCIDG_LOG_FILE', plugin_dir_path( __FILE__ ) . 'plugin-error.log' );
@@ -52,6 +52,8 @@ define( 'OCCIDG_LOG_FILE', plugin_dir_path( __FILE__ ) . 'plugin-error.log' );
  */
 function occidg_activate() {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-occidg-logger.php';
+	require_once plugin_dir_path( __FILE__ ) . 'includes/class-occidg-database.php';
+	require_once plugin_dir_path( __FILE__ ) . 'includes/class-occidg-capabilities.php';
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-occidg-activator.php';
 	Occidg_Activator::activate();
 }

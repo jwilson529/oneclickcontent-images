@@ -172,7 +172,8 @@ class Occidg_Background_Worker {
 			return true;
 		}
 
-		return wp_schedule_single_event( time() + self::RESCHEDULE_DELAY, self::CRON_HOOK, array( $job_id ) );
+		$delay = max( self::RESCHEDULE_DELAY, (int) get_option( 'occ_idg_delay_between_requests', self::RESCHEDULE_DELAY ) );
+		return wp_schedule_single_event( time() + $delay, self::CRON_HOOK, array( $job_id ) );
 	}
 
 	/**
@@ -227,20 +228,43 @@ class Occidg_Background_Worker {
 			$batch_limit = min( $job['total'], $job['next_index'] + $this->batch_size );
 
 			for ( $index = $job['next_index']; $index < $batch_limit; $index++ ) {
-				$image_id = $job['image_ids'][ $index ];
-				$result   = call_user_func( $this->metadata_generator, $image_id, $this->build_generation_context( $job ) );
+				$image_id    = $job['image_ids'][ $index ];
+				$result      = call_user_func( $this->metadata_generator, $image_id, $this->build_generation_context( $job ) );
+				$max_retries = max( 0, (int) get_option( 'occ_idg_retry_count', 3 ) );
+				if ( is_array( $result ) && empty( $result['success'] ) && ! empty( $result['temporary'] ) && $job['current_retry_count'] < $max_retries ) {
+					$retry_count = $job['current_retry_count'] + 1;
+					$job         = $this->jobs->update_job(
+						$job_id,
+						array(
+							'status'              => 'queued',
+							'current_retry_count' => $retry_count,
+							'last_error'          => isset( $result['error'] ) ? sanitize_text_field( $result['error'] ) : __( 'Temporary provider error.', 'occidg' ),
+						)
+					);
+					$delay       = min( HOUR_IN_SECONDS, max( 5, (int) pow( 2, $retry_count ) * 5 ) );
+					wp_schedule_single_event( time() + $delay, self::CRON_HOOK, array( $job_id ) );
+					return $job;
+				}
 
 				$this->merge_result_outcome( $batch_results, $image_id, $result );
 				$batch_results['next_index'] = $index + 1;
+				$job['current_retry_count']  = 0;
 			}
 
 			$job = $this->jobs->record_job_progress( $job_id, $batch_results );
+			if ( false !== $job && 0 !== $job['current_retry_count'] ) {
+				$job = $this->jobs->update_job( $job_id, array( 'current_retry_count' => 0 ) );
+			}
 			if ( false === $job ) {
 				return false;
 			}
 
 			if ( $job['processed'] < $job['total'] && in_array( $job['status'], array( 'queued', 'running' ), true ) ) {
 				$this->schedule_job( $job_id );
+			} elseif ( in_array( $job['status'], array( 'completed', 'completed_with_errors' ), true ) ) {
+				$batch_id = isset( $job['batch_id'] ) ? (int) $job['batch_id'] : 0;
+				do_action( 'occ_idg_batch_completed', $batch_id );
+				do_action( 'occidg_batch_completed', $batch_id );
 			}
 
 			return $job;
@@ -260,6 +284,11 @@ class Occidg_Background_Worker {
 	 */
 	private function merge_result_outcome( &$batch_results, $image_id, $result ) {
 		++$batch_results['processed'];
+
+		if ( is_array( $result ) && ! empty( $result['success'] ) && ! empty( $result['skipped'] ) ) {
+			++$batch_results['skipped'];
+			return;
+		}
 
 		if ( is_array( $result ) && ! empty( $result['success'] ) ) {
 			++$batch_results['succeeded'];
@@ -293,11 +322,16 @@ class Occidg_Background_Worker {
 	 */
 	private function build_generation_context( $job ) {
 		return array(
-			'provider'          => isset( $job['provider'] ) ? $job['provider'] : '',
-			'model'             => isset( $job['model'] ) ? $job['model'] : '',
-			'language'          => isset( $job['language'] ) ? $job['language'] : '',
-			'selected_fields'   => isset( $job['selected_fields'] ) ? $job['selected_fields'] : array(),
-			'override_metadata' => ! empty( $job['override_metadata'] ),
+			'provider'            => isset( $job['provider'] ) ? $job['provider'] : '',
+			'model'               => isset( $job['model'] ) ? $job['model'] : '',
+			'language'            => isset( $job['language'] ) ? $job['language'] : '',
+			'selected_fields'     => isset( $job['selected_fields'] ) ? $job['selected_fields'] : array(),
+			'override_metadata'   => ! empty( $job['override_metadata'] ),
+			'mode'                => isset( $job['mode'] ) ? $job['mode'] : 'fill_missing',
+			'batch_id'            => isset( $job['batch_id'] ) ? (int) $job['batch_id'] : 0,
+			'initiated_by'        => isset( $job['initiated_by'] ) ? (int) $job['initiated_by'] : 0,
+			'overwrite_confirmed' => ! empty( $job['overwrite_confirmed'] ),
+			'current_retry_count' => isset( $job['current_retry_count'] ) ? (int) $job['current_retry_count'] : 0,
 		);
 	}
 

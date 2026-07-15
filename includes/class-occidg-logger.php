@@ -41,6 +41,10 @@ class Occidg_Logger {
 	 * @return bool
 	 */
 	public static function debug( $message, $context = array() ) {
+		$enabled = defined( 'OCC_IDG_DEBUG' ) ? (bool) OCC_IDG_DEBUG : (bool) get_option( 'occ_idg_debug_logging', false );
+		if ( ! $enabled ) {
+			return false;
+		}
 		return self::instance()->log( 'debug', $message, $context );
 	}
 
@@ -156,11 +160,31 @@ class Occidg_Logger {
 	 * @return string
 	 */
 	private function encode_context( $context ) {
+		$context = $this->redact_context( $context );
 		if ( function_exists( 'wp_json_encode' ) ) {
 			return (string) wp_json_encode( $context );
 		}
 
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_encode -- Test/runtime fallback when wp_json_encode() is unavailable.
 		return (string) json_encode( $context );
+	}
+
+	/**
+	 * Recursively redact credentials and authorization data.
+	 *
+	 * @param array $context Context data.
+	 * @return array Redacted context.
+	 */
+	private function redact_context( $context ) {
+		$redacted = array();
+		foreach ( (array) $context as $key => $value ) {
+			$key_text = strtolower( (string) $key );
+			if ( false !== strpos( $key_text, 'api_key' ) || false !== strpos( $key_text, 'authorization' ) || false !== strpos( $key_text, 'credential' ) || 'token' === $key_text ) {
+				$redacted[ $key ] = '[redacted]';
+			} else {
+				$redacted[ $key ] = is_array( $value ) ? $this->redact_context( $value ) : $value;
+			}
+		}
+		return $redacted;
 	}
 }

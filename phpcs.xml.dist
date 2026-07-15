@@ -5,6 +5,20 @@
 	<rule ref="WordPress-Core" />
 	<rule ref="WordPress-Docs" />
 	<rule ref="WordPress-Extra" />
+	<rule ref="WordPress.WP.Capabilities">
+		<properties>
+			<property name="custom_capabilities" type="array">
+				<element value="occ_idg_view_dashboard" />
+				<element value="occ_idg_generate_metadata" />
+				<element value="occ_idg_review_suggestions" />
+				<element value="occ_idg_overwrite_metadata" />
+				<element value="occ_idg_restore_metadata" />
+				<element value="occ_idg_manage_batches" />
+				<element value="occ_idg_manage_settings" />
+				<element value="occ_idg_export_reports" />
+			</property>
+		</properties>
+	</rule>
 
 	<exclude-pattern>*/node_modules/*</exclude-pattern>
 	<exclude-pattern>*/vendor/*</exclude-pattern>

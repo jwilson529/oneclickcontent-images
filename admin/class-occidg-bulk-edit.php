@@ -23,6 +23,49 @@ defined( 'ABSPATH' ) || exit;
  * @since 1.0.0
  */
 class Occidg_Bulk_Edit {
+	/**
+	 * Database service used to load saved suggestions.
+	 *
+	 * @var Occidg_Database|null
+	 */
+	private $database;
+
+	/**
+	 * Construct the bulk editor.
+	 *
+	 * @param Occidg_Database|null $database Database service.
+	 */
+	public function __construct( $database = null ) {
+		$this->database = $database;
+	}
+
+	/**
+	 * Render the editable table inside the unified Image Library.
+	 *
+	 * @param array $filters       Sanitized Image Library filters.
+	 * @param bool  $filter_active Whether the filters should be applied.
+	 * @return void
+	 */
+	public function render_library_table( $filters = array(), $filter_active = false ) {
+		$filters = is_array( $filters ) ? $filters : array();
+		?>
+		<div id="occidg_bulk_edit" class="occidg-library-editor" data-filter-active="<?php echo $filter_active ? '1' : '0'; ?>" data-library-filters="<?php echo esc_attr( wp_json_encode( $filters ) ); ?>">
+			<table id="image-metadata-table" class="wp-list-table widefat fixed striped">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'Thumbnail', 'occidg' ); ?></th>
+						<th><?php esc_html_e( 'Title', 'occidg' ); ?></th>
+						<th><?php esc_html_e( 'Alt Text', 'occidg' ); ?></th>
+						<th><?php esc_html_e( 'Description', 'occidg' ); ?></th>
+						<th><?php esc_html_e( 'Caption', 'occidg' ); ?></th>
+						<th><?php esc_html_e( 'Actions', 'occidg' ); ?></th>
+					</tr>
+				</thead>
+				<tbody></tbody>
+			</table>
+		</div>
+		<?php
+	}
 
 	/**
 	 * Renders the bulk edit tab interface in the admin area.
@@ -31,26 +74,13 @@ class Occidg_Bulk_Edit {
 	 * @return void
 	 */
 	public function render_bulk_edit_tab() {
-		$fallback_image_url = plugin_dir_url( __FILE__ ) . 'assets/icon.png';
-		$gate_state         = Occidg_Admin_Settings::get_generation_gate_state();
-		$generate_attrs     = $gate_state['has_selected_provider_key']
+		$gate_state     = Occidg_Admin_Settings::get_generation_gate_state();
+		$generate_attrs = $gate_state['has_selected_provider_key']
 			? ''
 			: sprintf(
 				' disabled="disabled" aria-disabled="true" title="%s"',
 				esc_attr( $gate_state['missing_key_message'] )
 			);
-		$provider_help_html = '<div class="bulk-edit-provider-help compact">
-	        <div class="cta-left">
-	            <img src="' . esc_url( $fallback_image_url ) . '" alt="' . esc_attr__( 'Plugin icon', 'occidg' ) . '" style="float: left; margin-right: 10px; width: 50px; height: auto;">
-	            <h2>' . esc_html__( 'Free, bring-your-own-key bulk metadata', 'occidg' ) . '</h2>
-	            <p>' . esc_html__( 'Set up OpenAI or Gemini in Settings, then generate image title, description, alt text, and caption across your Media Library.', 'occidg' ) . '</p>
-	            <ul class="benefits-list">
-	                <li>' . esc_html__( 'Use your own provider credentials', 'occidg' ) . '</li>
-	                <li>' . esc_html__( 'Run the plugin for free with the provider account you choose', 'occidg' ) . '</li>
-	                <li>' . esc_html__( 'Review and edit results in one place', 'occidg' ) . '</li>
-	            </ul>
-	        </div>
-	    </div>';
 
 		wp_localize_script(
 			'occidg-bulk-edit',
@@ -65,8 +95,6 @@ class Occidg_Bulk_Edit {
 			<h2><?php esc_html_e( 'Bulk Edit Image Metadata', 'occidg' ); ?></h2>
 			
 			<div class="usage-info-section">
-				<?php echo wp_kses_post( $provider_help_html ); ?>
-
 				<div class="bulk-edit-header">
 					<button id="generate-all-metadata" class="button button-primary button-hero"<?php echo wp_kses_post( $generate_attrs ); ?>>
 						<?php esc_html_e( 'Generate All Metadata', 'occidg' ); ?>
@@ -156,7 +184,7 @@ class Occidg_Bulk_Edit {
 	 */
 	public function get_image_metadata() {
 		check_ajax_referer( 'occidg_bulk_edit', 'nonce' );
-		if ( ! current_user_can( 'edit_posts' ) ) {
+		if ( ! current_user_can( 'occ_idg_view_dashboard' ) ) {
 			wp_send_json_error( __( 'Permission denied.', 'occidg' ) );
 		}
 
@@ -165,7 +193,25 @@ class Occidg_Bulk_Edit {
 		$length       = isset( $_REQUEST['length'] ) ? intval( $_REQUEST['length'] ) : 10;
 		$search_value = isset( $_REQUEST['search']['value'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['search']['value'] ) ) : '';
 
-		$page = $start / $length + 1;
+		$length        = min( 100, max( 1, $length ) );
+		$page          = (int) floor( $start / $length ) + 1;
+		$filter_active = ! empty( $_REQUEST['filter_active'] );
+			$filters   = isset( $_REQUEST['library_filters'] ) && ! is_array( $_REQUEST['library_filters'] )
+				? json_decode( wp_unslash( $_REQUEST['library_filters'] ), true ) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- JSON is recursively sanitized below.
+				: array();
+		$filters       = is_array( $filters ) ? map_deep( $filters, 'sanitize_text_field' ) : array();
+		$filtered_ids  = $filter_active ? ( new Occidg_Preflight() )->query_ids( $filters, 10000 ) : array();
+
+		if ( $filter_active && empty( $filtered_ids ) ) {
+			wp_send_json(
+				array(
+					'draw'            => $draw,
+					'recordsTotal'    => 0,
+					'recordsFiltered' => 0,
+					'data'            => array(),
+				)
+			);
+		}
 
 		// Base query arguments.
 		$args = array(
@@ -175,6 +221,12 @@ class Occidg_Bulk_Edit {
 			'posts_per_page' => $length,
 			'paged'          => $page,
 		);
+		if ( ! current_user_can( 'edit_others_posts' ) ) {
+			$args['author'] = get_current_user_id();
+		}
+		if ( $filter_active ) {
+			$args['post__in'] = array_slice( $filtered_ids, 0, 10000 );
+		}
 
 		if ( '' !== $search_value ) {
 			$args['s'] = $search_value;
@@ -221,15 +273,23 @@ class Occidg_Bulk_Edit {
 
 		$data = array();
 		foreach ( $query->posts as $post ) {
-			$thumbnail = wp_get_attachment_image( $post->ID, 'thumbnail', false, array( 'style' => 'max-width: 50px;' ) );
-			$data[]    = array(
-				'thumbnail'   => $thumbnail,
-				'title'       => esc_html( get_the_title( $post->ID ) ),
-				'alt_text'    => esc_attr( get_post_meta( $post->ID, '_wp_attachment_image_alt', true ) ),
-				'description' => esc_textarea( $post->post_content ),
-				'caption'     => esc_textarea( $post->post_excerpt ),
-				'id'          => $post->ID,
+			$row = $this->prepare_metadata_row(
+				$post->ID,
+				wp_get_attachment_image( $post->ID, 'thumbnail', false, array( 'style' => 'max-width: 50px;' ) ),
+				array(
+					'title'       => get_the_title( $post->ID ),
+					'alt_text'    => get_post_meta( $post->ID, '_wp_attachment_image_alt', true ),
+					'description' => $post->post_content,
+					'caption'     => $post->post_excerpt,
+				),
+				$post->post_mime_type
 			);
+
+			$row['pending_suggestions'] = $this->get_pending_suggestions( $post->ID );
+			$row['pending_count']       = count( $row['pending_suggestions'] );
+			$row['edit_url']            = get_edit_post_link( $post->ID, 'raw' );
+			$row['history_url']         = admin_url( 'admin.php?page=occ-idg-history&attachment_id=' . $post->ID );
+			$data[]                     = $row;
 		}
 
 		wp_send_json(
@@ -243,6 +303,79 @@ class Occidg_Bulk_Edit {
 	}
 
 	/**
+	 * Return pending suggestions in a safe JSON shape for inline review.
+	 *
+	 * @param int $image_id Attachment ID.
+	 * @return array
+	 */
+	private function get_pending_suggestions( $image_id ) {
+		if ( ! $this->database || ! current_user_can( 'occ_idg_review_suggestions' ) ) {
+			return array();
+		}
+
+		$rows = $this->database->get_suggestions(
+			array(
+				'status'        => 'pending',
+				'attachment_id' => $image_id,
+				'limit'         => 20,
+			)
+		);
+
+		return array_map(
+			function ( $row ) {
+				return array(
+					'id'                => (int) $row['id'],
+					'field_name'        => sanitize_key( $row['field_name'] ),
+					'current_value'     => (string) $row['current_value'],
+					'suggested_value'   => (string) $row['suggested_value'],
+					'confidence'        => sanitize_key( $row['confidence'] ),
+					'confidence_reason' => sanitize_text_field( $row['confidence_reason'] ),
+					'provider'          => sanitize_key( $row['provider'] ),
+					'model'             => sanitize_text_field( $row['model'] ),
+					'generated_at'      => sanitize_text_field( $row['generated_at'] ),
+					'nonce'             => wp_create_nonce( 'occ_idg_suggestion_' . (int) $row['id'] ),
+				);
+			},
+			$rows
+		);
+	}
+
+	/**
+	 * Prepare an attachment row for JSON transport.
+	 *
+	 * Metadata must remain unescaped in the JSON response. The bulk-edit script
+	 * escapes each value for its HTML context when it renders the form controls.
+	 * Escaping here as well would expose entities such as &#039; to users.
+	 *
+	 * @since 1.2.5
+	 * @param int    $image_id Attachment ID.
+	 * @param string $thumbnail Rendered attachment thumbnail HTML.
+	 * @param array  $metadata Raw attachment metadata.
+	 * @param string $mime_type Attachment MIME type.
+	 * @return array<string, array|bool|int|string> DataTables row data.
+	 */
+	private function prepare_metadata_row( $image_id, $thumbnail, $metadata, $mime_type = '' ) {
+		$svg_unsupported = Occidg_Image_Support::is_svg_mime_type( $mime_type ) || Occidg_Image_Support::is_svg_attachment( $image_id );
+		$empty_fields    = array();
+		foreach ( array_keys( Occidg_Metadata::FIELDS ) as $field ) {
+			$empty_fields[ $field ] = Occidg_Metadata::is_empty( isset( $metadata[ $field ] ) ? $metadata[ $field ] : '' );
+		}
+
+		return array(
+			'thumbnail'            => $thumbnail,
+			'title'                => $metadata['title'],
+			'alt_text'             => $metadata['alt_text'],
+			'description'          => $metadata['description'],
+			'caption'              => $metadata['caption'],
+			'id'                   => $image_id,
+			'mime_type'            => sanitize_text_field( $mime_type ),
+			'generation_supported' => ! $svg_unsupported,
+			'generation_message'   => $svg_unsupported ? Occidg_Image_Support::get_svg_generation_message() : '',
+			'empty_fields'         => $empty_fields,
+		);
+	}
+
+	/**
 	 * Save edited metadata via AJAX.
 	 *
 	 * @since 1.0.0
@@ -250,9 +383,6 @@ class Occidg_Bulk_Edit {
 	 */
 	public function save_bulk_metadata() {
 		check_ajax_referer( 'occidg_bulk_edit', 'nonce' );
-		if ( false === current_user_can( 'edit_posts' ) ) {
-			wp_send_json_error( __( 'Permission denied.', 'occidg' ) );
-		}
 		$image_id = isset( $_POST['image_id'] ) ? absint( $_POST['image_id'] ) : 0;
 
 		// Explicitly check for empty strings using strict comparison.
@@ -261,33 +391,127 @@ class Occidg_Bulk_Edit {
 		$description = ( isset( $_POST['description'] ) && '' !== $_POST['description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['description'] ) ) : '';
 		$caption     = ( isset( $_POST['caption'] ) && '' !== $_POST['caption'] ) ? sanitize_textarea_field( wp_unslash( $_POST['caption'] ) ) : '';
 
-		if ( 0 === $image_id ) {
-			wp_send_json_error( __( 'Invalid image ID.', 'occidg' ) );
+		if ( 0 === $image_id || 'attachment' !== get_post_type( $image_id ) || 0 !== strpos( (string) get_post_mime_type( $image_id ), 'image/' ) || ! current_user_can( 'edit_post', $image_id ) ) {
+			wp_send_json_error( __( 'Invalid image or insufficient permission.', 'occidg' ) );
+			return;
 		}
 
-		// Update the metadata.
-		update_post_meta( $image_id, '_wp_attachment_image_alt', $alt_text );
-
-		// Force update with empty values.
-		$post_update_args = array(
-			'ID'           => $image_id,
-			'post_title'   => $title,
-			'post_content' => $description,
-			'post_excerpt' => $caption,
-		);
-
-		// Use wp_update_post with the 'force_update' parameter.
-		wp_update_post( $post_update_args, true );
+		if ( class_exists( 'Occidg_Metadata' ) && class_exists( 'Occidg_Database' ) ) {
+			$metadata_service = new Occidg_Metadata( new Occidg_Database() );
+			foreach ( array(
+				'title'       => $title,
+				'alt_text'    => $alt_text,
+				'description' => $description,
+				'caption'     => $caption,
+			) as $field => $value ) {
+				$metadata_service->update_field(
+					$image_id,
+					$field,
+					$value,
+					array(
+						'action_type'     => 'manual_edit',
+						'processing_mode' => 'bulk_edit',
+						'approved_by'     => get_current_user_id(),
+					)
+				);
+			}
+		} else {
+			update_post_meta( $image_id, '_wp_attachment_image_alt', $alt_text );
+			wp_update_post(
+				array(
+					'ID'           => $image_id,
+					'post_title'   => $title,
+					'post_content' => $description,
+					'post_excerpt' => $caption,
+				),
+				true
+			);
+		}
 
 		// Return the updated metadata.
-		$updated_data = array(
-			'id'          => $image_id,
-			'title'       => $title,
-			'alt_text'    => $alt_text,
-			'description' => $description,
-			'caption'     => $caption,
-			'thumbnail'   => wp_get_attachment_image( $image_id, 'thumbnail', false, array( 'class' => 'thumbnail-preview' ) ),
+		$updated_data = $this->prepare_metadata_row(
+			$image_id,
+			wp_get_attachment_image( $image_id, 'thumbnail', false, array( 'class' => 'thumbnail-preview' ) ),
+			array(
+				'title'       => $title,
+				'alt_text'    => $alt_text,
+				'description' => $description,
+				'caption'     => $caption,
+			),
+			get_post_mime_type( $image_id )
 		);
 		wp_send_json_success( $updated_data );
+	}
+
+	/**
+	 * Apply one explicitly approved AI suggestion from the Bulk Edit preview.
+	 *
+	 * This is a manual per-field decision, so it is intentionally independent
+	 * from the automatic overwrite setting. The approved change is still stored
+	 * in the immutable history ledger.
+	 *
+	 * @since 2.0.0
+	 * @return void
+	 */
+	public function apply_bulk_suggestion() {
+		check_ajax_referer( 'occidg_bulk_edit', 'nonce' );
+
+		$image_id = isset( $_POST['image_id'] ) ? absint( $_POST['image_id'] ) : 0;
+		$field    = isset( $_POST['field'] ) ? sanitize_key( wp_unslash( $_POST['field'] ) ) : '';
+		if ( ! $image_id || ! isset( Occidg_Metadata::FIELDS[ $field ] ) || ! current_user_can( 'occ_idg_generate_metadata' ) || ! current_user_can( 'edit_post', $image_id ) ) {
+			wp_send_json_error( __( 'Invalid image field or insufficient permission.', 'occidg' ) );
+			return;
+		}
+
+		if ( in_array( $field, array( 'description', 'caption' ), true ) ) {
+			$value           = isset( $_POST['value'] ) && ! is_array( $_POST['value'] ) ? sanitize_textarea_field( wp_unslash( $_POST['value'] ) ) : '';
+			$suggested_value = isset( $_POST['suggested_value'] ) && ! is_array( $_POST['suggested_value'] ) ? sanitize_textarea_field( wp_unslash( $_POST['suggested_value'] ) ) : $value;
+		} else {
+			$value           = isset( $_POST['value'] ) && ! is_array( $_POST['value'] ) ? sanitize_text_field( wp_unslash( $_POST['value'] ) ) : '';
+			$suggested_value = isset( $_POST['suggested_value'] ) && ! is_array( $_POST['suggested_value'] ) ? sanitize_text_field( wp_unslash( $_POST['suggested_value'] ) ) : $value;
+		}
+		$provider = get_option( 'occidg_provider', 'openai' );
+		$model    = get_option( 'gemini' === $provider ? 'occidg_gemini_model' : 'occidg_openai_model', '' );
+		$metadata = new Occidg_Metadata( new Occidg_Database() );
+		$result   = $metadata->update_field(
+			$image_id,
+			$field,
+			$value,
+			array(
+				'provider'        => $provider,
+				'model'           => $model,
+				'confidence'      => 'medium',
+				'action_type'     => 'suggestion_approved',
+				'processing_mode' => 'bulk_preview',
+				'initiated_by'    => get_current_user_id(),
+				'approved_by'     => get_current_user_id(),
+				'suggested_value' => $suggested_value,
+				'was_edited'      => $value !== $suggested_value,
+				'prompt_version'  => Occidg_Workflow::PROMPT_VERSION,
+			)
+		);
+
+		if ( empty( $result['success'] ) ) {
+			wp_send_json_error( isset( $result['error'] ) ? $result['error'] : __( 'Unable to apply this suggestion.', 'occidg' ) );
+			return;
+		}
+
+		$current = $metadata->get_all( $image_id );
+		$row     = $this->prepare_metadata_row(
+			$image_id,
+			wp_get_attachment_image( $image_id, 'thumbnail', false, array( 'class' => 'thumbnail-preview' ) ),
+			$current,
+			get_post_mime_type( $image_id )
+		);
+
+		wp_send_json_success(
+			array(
+				'field'    => $field,
+				'value'    => $result['new_value'],
+				'is_empty' => Occidg_Metadata::is_empty( $result['new_value'] ),
+				'row'      => $row,
+				'message'  => __( 'Suggestion applied.', 'occidg' ),
+			)
+		);
 	}
 }

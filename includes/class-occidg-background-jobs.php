@@ -138,6 +138,10 @@ class Occidg_Background_Jobs {
 				'language'            => isset( $args['language'] ) ? $args['language'] : '',
 				'selected_fields'     => isset( $args['selected_fields'] ) ? $args['selected_fields'] : array(),
 				'override_metadata'   => ! empty( $args['override_metadata'] ),
+				'mode'                => isset( $args['mode'] ) ? $args['mode'] : 'fill_missing',
+				'batch_id'            => isset( $args['batch_id'] ) ? $args['batch_id'] : 0,
+				'initiated_by'        => isset( $args['initiated_by'] ) ? $args['initiated_by'] : 0,
+				'overwrite_confirmed' => ! empty( $args['overwrite_confirmed'] ),
 				'retried_from_job_id' => isset( $args['retried_from_job_id'] ) ? $args['retried_from_job_id'] : '',
 				'image_ids'           => $image_ids,
 				'next_index'          => 0,
@@ -149,6 +153,7 @@ class Occidg_Background_Jobs {
 				'failed_image_ids'    => array(),
 				'recent_failures'     => array(),
 				'last_error'          => '',
+				'current_retry_count' => 0,
 			)
 		);
 
@@ -215,6 +220,10 @@ class Occidg_Background_Jobs {
 					'language'            => $job['language'],
 					'selected_fields'     => $job['selected_fields'],
 					'override_metadata'   => $job['override_metadata'],
+					'mode'                => $job['mode'],
+					'batch_id'            => $job['batch_id'],
+					'initiated_by'        => $job['initiated_by'],
+					'overwrite_confirmed' => $job['overwrite_confirmed'],
 					'retried_from_job_id' => $job['id'],
 					'image_ids'           => $retry_image_ids,
 				),
@@ -438,6 +447,10 @@ class Occidg_Background_Jobs {
 			'language'            => isset( $job['language'] ) ? sanitize_text_field( $job['language'] ) : '',
 			'selected_fields'     => $this->normalize_selected_fields( isset( $job['selected_fields'] ) ? $job['selected_fields'] : array() ),
 			'override_metadata'   => ! empty( $job['override_metadata'] ),
+			'mode'                => $this->sanitize_mode( isset( $job['mode'] ) ? $job['mode'] : ( ! empty( $job['override_metadata'] ) ? 'overwrite' : 'fill_missing' ) ),
+			'batch_id'            => isset( $job['batch_id'] ) ? $this->normalize_non_negative_int( $job['batch_id'] ) : 0,
+			'initiated_by'        => isset( $job['initiated_by'] ) ? $this->normalize_non_negative_int( $job['initiated_by'] ) : 0,
+			'overwrite_confirmed' => ! empty( $job['overwrite_confirmed'] ),
 			'retried_from_job_id' => isset( $job['retried_from_job_id'] ) ? $this->sanitize_job_id( $job['retried_from_job_id'] ) : '',
 			'image_ids'           => $image_ids,
 			'next_index'          => min(
@@ -464,6 +477,7 @@ class Occidg_Background_Jobs {
 			'failed_image_ids'    => $this->normalize_image_ids( isset( $job['failed_image_ids'] ) ? $job['failed_image_ids'] : array() ),
 			'recent_failures'     => $this->normalize_recent_failures( isset( $job['recent_failures'] ) ? $job['recent_failures'] : array() ),
 			'last_error'          => isset( $job['last_error'] ) ? sanitize_text_field( $job['last_error'] ) : '',
+			'current_retry_count' => isset( $job['current_retry_count'] ) ? $this->normalize_non_negative_int( $job['current_retry_count'] ) : 0,
 		);
 	}
 
@@ -577,6 +591,17 @@ class Occidg_Background_Jobs {
 		$status = is_scalar( $status ) ? trim( (string) $status ) : '';
 
 		return in_array( $status, $allowed_statuses, true ) ? $status : 'queued';
+	}
+
+	/**
+	 * Sanitize a processing mode.
+	 *
+	 * @param string $mode Candidate processing mode.
+	 * @return string Supported processing mode.
+	 */
+	private function sanitize_mode( $mode ) {
+		$mode = is_scalar( $mode ) ? strtolower( preg_replace( '/[^a-z0-9_\-]/i', '', (string) $mode ) ) : '';
+		return in_array( $mode, array( 'fill_missing', 'suggestion', 'overwrite', 'dry_run' ), true ) ? $mode : 'fill_missing';
 	}
 
 	/**

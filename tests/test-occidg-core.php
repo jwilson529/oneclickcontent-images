@@ -23,7 +23,7 @@ final class Test_Occidg_Core extends TestCase {
 	 */
 	public static function setUpBeforeClass(): void {
 		if ( ! defined( 'OCCIDG_VERSION' ) ) {
-			define( 'OCCIDG_VERSION', '1.2.4' );
+			define( 'OCCIDG_VERSION', '2.0.2' );
 		}
 
 		if ( ! defined( 'OCCIDG_PLUGIN_FILE' ) ) {
@@ -50,7 +50,7 @@ final class Test_Occidg_Core extends TestCase {
 		$plugin = new Occidg();
 
 		$this->assertSame( 'occidg', $plugin->get_occidg_images() );
-		$this->assertSame( '1.2.4', $plugin->get_version() );
+		$this->assertSame( '2.0.2', $plugin->get_version() );
 		$this->assertInstanceOf( Occidg_Loader::class, $plugin->get_loader() );
 
 		$plugin->run();
@@ -58,8 +58,9 @@ final class Test_Occidg_Core extends TestCase {
 		$action_hooks = array_column( $GLOBALS['occidg_registered_actions'], 'hook' );
 		$filter_hooks = array_column( $GLOBALS['occidg_registered_filters'], 'hook' );
 
-		$this->assertContains( 'plugins_loaded', $action_hooks );
 		$this->assertContains( 'admin_menu', $action_hooks );
+		$this->assertContains( 'admin_post_occ_idg_create_batch', $action_hooks );
+		$this->assertContains( 'admin_post_occ_idg_review_suggestion', $action_hooks );
 		$this->assertContains( Occidg_Background_Worker::CRON_HOOK, $action_hooks );
 		$this->assertContains( 'wp_ajax_occidg_create_background_job', $action_hooks );
 		$this->assertContains( 'wp_ajax_occidg_get_background_job_status', $action_hooks );

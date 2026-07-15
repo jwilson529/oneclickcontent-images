@@ -1,0 +1,2098 @@
+# Copyright (C) 2026 James Wilson
+# This file is distributed under the GPL-2.0+.
+msgid ""
+msgstr ""
+"Project-Id-Version: One Click Content - Image Description Generator 2.0.2\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/occidg\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-07-15T18:54:10+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: occidg\n"
+
+#. Plugin Name of the plugin
+#: occidg.php
+msgid "OneClickContent - Image Detail Generator"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: occidg.php
+msgid "https://github.com/jwilson529/oneclickcontent-images"
+msgstr ""
+
+#. Description of the plugin
+#: occidg.php
+msgid "Free AI-powered image metadata generation for Media Library images using your own OpenAI or Gemini API key."
+msgstr ""
+
+#. Author of the plugin
+#: occidg.php
+msgid "James Wilson"
+msgstr ""
+
+#. Author URI of the plugin
+#: occidg.php
+msgid "https://github.com/jwilson529"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:165
+msgid "Choose Metadata Fields"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:172
+msgid "Metadata Fields"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:180
+msgid "AI Provider Settings"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:187
+msgid "Provider"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:196
+msgid "OpenAI API Key"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:205
+msgid "OpenAI Model"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:214
+msgid "Gemini API Key"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:223
+msgid "Gemini Model"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:232
+msgid "Metadata Settings"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:239
+msgid "Auto Add Details on Upload"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:248
+msgid "Override Existing Details"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:257
+msgid "Language"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:286
+msgid "Generate metadata in the language that best fits the site or audience you are optimizing for."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:310
+msgid "English"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:311
+msgid "Spanish"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:312
+msgid "French"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:313
+msgid "German"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:314
+msgid "Italian"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:315
+msgid "Chinese"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:316
+msgid "Japanese"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:317
+msgid "Portuguese"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:318
+msgid "Russian"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:319
+msgid "Arabic"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:320
+msgid "Korean"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:321
+msgid "Dutch"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:322
+msgid "Turkish"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:323
+msgid "Polish"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:324
+msgid "Swedish"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:325
+msgid "Hindi"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:336
+msgid "Choose which details the plugin should generate. Existing values stay protected unless overwrite mode is deliberately enabled."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:353
+msgid "Overwrite existing metadata"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:354
+msgid "Replace titles, alt text, descriptions, and captions that already exist on attachments."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:358
+msgid "Enable overwrite mode under Safety and Review → Advanced workflow settings before using this control."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:373
+#: admin/class-occidg-admin.php:394
+#: admin/class-occidg-admin.php:506
+#: admin/class-occidg-bulk-edit.php:57
+#: admin/class-occidg-bulk-edit.php:166
+#: admin/class-occidg-workflow-admin.php:362
+#: admin/class-occidg-workflow-admin.php:378
+msgid "Title"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:374
+msgid "Update the attachment title used throughout the Media Library."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:377
+#: admin/class-occidg-admin.php:395
+#: admin/class-occidg-admin.php:508
+#: admin/class-occidg-bulk-edit.php:59
+#: admin/class-occidg-bulk-edit.php:168
+#: admin/class-occidg-workflow-admin.php:364
+#: admin/class-occidg-workflow-admin.php:378
+msgid "Description"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:378
+msgid "Fill the longer attachment description with richer context."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:381
+#: admin/class-occidg-admin.php:396
+#: admin/class-occidg-admin.php:507
+#: admin/class-occidg-bulk-edit.php:58
+#: admin/class-occidg-bulk-edit.php:167
+msgid "Alt Text"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:382
+msgid "Improve accessibility and image SEO for screen readers and search."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:385
+#: admin/class-occidg-admin.php:397
+#: admin/class-occidg-admin.php:509
+#: admin/class-occidg-bulk-edit.php:60
+#: admin/class-occidg-bulk-edit.php:169
+#: admin/class-occidg-workflow-admin.php:363
+#: admin/class-occidg-workflow-admin.php:378
+msgid "Caption"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:386
+msgid "Generate the visible caption field shown alongside the image."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:443
+msgid "Choose how metadata should be generated and applied inside your Media Library."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:453
+msgid "Use your own API credentials. This plugin supports OpenAI and Gemini and stores your keys locally in WordPress settings."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:465
+#: admin/class-occidg-admin-settings.php:599
+#: admin/class-occidg-admin-settings.php:677
+#: admin/class-occidg-admin.php:378
+#: admin/class-occidg-admin.php:528
+msgid "Gemini"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:465
+#: admin/class-occidg-admin-settings.php:598
+#: admin/class-occidg-admin-settings.php:689
+#: admin/class-occidg-admin.php:381
+#: admin/class-occidg-admin.php:527
+msgid "OpenAI"
+msgstr ""
+
+#. translators: %s: provider name.
+#: admin/class-occidg-admin-settings.php:478
+#: admin/class-occidg-admin.php:526
+#, php-format
+msgid "Add and save a %s API key in Settings to enable metadata generation."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:601
+msgid "Choose which provider OCCIDG should use when generating metadata."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:617
+msgid "Generate metadata on upload"
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:618
+msgid "Apply your selected provider and field rules as soon as new images enter the Media Library."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:682
+msgid "Paste your Gemini API key. OCCIDG will validate it, save it, and load the available Gemini models for this site."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:683
+msgid "Choose from the Gemini models returned for your saved key. Only Gemini models that support content generation are listed."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:694
+msgid "Paste your OpenAI API key. OCCIDG will validate it, save it, and load the available multimodal OpenAI models for this site."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:695
+msgid "Choose from the compatible OpenAI models returned for your saved key. OCCIDG lists supported image-capable chat models only."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:718
+msgid "Saved key (enter a new key to replace)"
+msgstr ""
+
+#. translators: %s: environment constant name.
+#: admin/class-occidg-admin-settings.php:726
+#, php-format
+msgid "Managed externally by %s."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:870
+#: admin/class-occidg-admin-settings.php:955
+#: admin/class-occidg-admin-settings.php:2518
+#: admin/class-occidg-admin-settings.php:2595
+#: admin/class-occidg-admin-settings.php:2660
+msgid "Nonce verification failed."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:879
+#: admin/class-occidg-admin-settings.php:964
+#: admin/class-occidg-admin-settings.php:2523
+#: admin/class-occidg-admin-settings.php:2600
+#: admin/class-occidg-admin-settings.php:2665
+#: admin/class-occidg-admin.php:868
+#: admin/class-occidg-admin.php:917
+#: admin/class-occidg-admin.php:944
+#: admin/class-occidg-auto-generate.php:105
+#: admin/class-occidg-auto-generate.php:130
+#: admin/class-occidg-auto-generate.php:151
+#: admin/class-occidg-background-jobs-admin.php:238
+#: admin/class-occidg-background-jobs-admin.php:266
+#: admin/class-occidg-background-jobs-admin.php:332
+#: admin/class-occidg-bulk-edit.php:188
+msgid "Permission denied."
+msgstr ""
+
+#. translators: %s: provider name.
+#: admin/class-occidg-admin-settings.php:900
+#, php-format
+msgid "%s API key cleared."
+msgstr ""
+
+#. translators: %s: provider name.
+#: admin/class-occidg-admin-settings.php:935
+#, php-format
+msgid "%s API key validated and saved."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:977
+msgid "A model selection is required."
+msgstr ""
+
+#. translators: %s: provider name.
+#: admin/class-occidg-admin-settings.php:991
+#, php-format
+msgid "%s model saved."
+msgstr ""
+
+#. translators: %s: provider name.
+#: admin/class-occidg-admin-settings.php:1070
+#: admin/class-occidg-admin-settings.php:1692
+#, php-format
+msgid "Failed to communicate with %s."
+msgstr ""
+
+#. translators: %s: provider name.
+#: admin/class-occidg-admin-settings.php:1086
+#: admin/class-occidg-admin-settings.php:1707
+#: admin/class-occidg-admin-settings.php:1732
+#, php-format
+msgid "Invalid response from %s."
+msgstr ""
+
+#. translators: %s: provider name.
+#: admin/class-occidg-admin-settings.php:1098
+#: admin/class-occidg-admin-settings.php:1721
+#: admin/class-occidg-admin-settings.php:1744
+#, php-format
+msgid "%s returned an error response."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:1116
+msgid "The provider key was valid, but no compatible models were returned."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:1348
+msgid "Insufficient permissions."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:1354
+msgid "Invalid nonce."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:1359
+msgid "Settings data missing or invalid."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:1451
+msgid "No metadata fields require generation, and \"Override Metadata\" is disabled."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:1494
+msgid "Metadata processing failed."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:1538
+msgid "OpenAI is selected, but no OpenAI API key is configured."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:1589
+msgid "Gemini is selected, but no Gemini API key is configured."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:1664
+#: admin/class-occidg-admin-settings.php:1777
+#: admin/class-occidg-admin-settings.php:1813
+msgid "Unknown provider error."
+msgstr ""
+
+#. translators: %s: provider name
+#: admin/class-occidg-admin-settings.php:1757
+#, php-format
+msgid "Unable to extract metadata from the %s response."
+msgstr ""
+
+#. translators: %s: error code
+#: admin/class-occidg-admin-settings.php:1790
+#, php-format
+msgid "OpenAI error: %s."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:2120
+msgid "This server cannot prepare this AVIF file for AI preview. You can still edit its metadata manually."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:2128
+msgid "WordPress could not create a temporary image for this AVIF preview."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:2144
+msgid "This server could not convert the AVIF file for AI preview. You can still edit its metadata manually."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:2159
+msgid "Unable to detect a supported image format for metadata generation."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:2177
+msgid "WordPress could not read this image for AI metadata generation."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:2215
+msgid "Response body was empty."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:2266
+msgid "Invalid image ID(s)."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:2531
+#: admin/class-occidg-admin-settings.php:2606
+msgid "Invalid image ID or insufficient permission."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:2564
+msgid "Generated using your overwrite settings."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:2565
+msgid "Generated. Existing metadata was protected."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:2566
+msgid "Metadata generated successfully."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:2579
+msgid "Failed to generate metadata."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:2613
+msgid "Choose at least one metadata field in Settings before generating a preview."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:2627
+msgid "Failed to generate metadata preview."
+msgstr ""
+
+#: admin/class-occidg-admin-settings.php:2647
+msgid "Preview ready. Nothing has been changed."
+msgstr ""
+
+#: admin/class-occidg-admin.php:87
+#: admin/class-occidg-admin.php:130
+msgid "AI Image Metadata"
+msgstr ""
+
+#: admin/class-occidg-admin.php:88
+msgid "Image Metadata"
+msgstr ""
+
+#: admin/class-occidg-admin.php:134
+msgid "Settings"
+msgstr ""
+
+#: admin/class-occidg-admin.php:144
+#: admin/class-occidg-admin.php:246
+msgid "Plugin icon"
+msgstr ""
+
+#: admin/class-occidg-admin.php:145
+msgid "Free, bring-your-own-key image metadata"
+msgstr ""
+
+#: admin/class-occidg-admin.php:146
+msgid "Configure OpenAI or Gemini, choose which metadata fields to fill, and generate title, description, alt text, and caption directly from your own provider account."
+msgstr ""
+
+#: admin/class-occidg-admin.php:148
+msgid "Use your own API key"
+msgstr ""
+
+#: admin/class-occidg-admin.php:149
+msgid "Run the plugin for free with the provider account you choose"
+msgstr ""
+
+#: admin/class-occidg-admin.php:150
+msgid "Keep metadata generation focused on your Media Library"
+msgstr ""
+
+#: admin/class-occidg-admin.php:151
+msgid "Control which fields get updated"
+msgstr ""
+
+#: admin/class-occidg-admin.php:161
+#: admin/class-occidg-bulk-edit.php:100
+msgid "Generate All Metadata"
+msgstr ""
+
+#: admin/class-occidg-admin.php:164
+#: admin/class-occidg-bulk-edit.php:102
+msgid "Click to generate metadata for all your images using your configured provider."
+msgstr ""
+
+#: admin/class-occidg-admin.php:173
+#: admin/class-occidg-bulk-edit.php:111
+msgid "Bulk Generation Progress"
+msgstr ""
+
+#: admin/class-occidg-admin.php:181
+#: admin/class-occidg-bulk-edit.php:119
+#: admin/class-occidg-workflow-admin.php:632
+msgid "Pause"
+msgstr ""
+
+#: admin/class-occidg-admin.php:184
+#: admin/class-occidg-bulk-edit.php:122
+#: admin/class-occidg-workflow-admin.php:634
+msgid "Resume"
+msgstr ""
+
+#: admin/class-occidg-admin.php:187
+#: admin/class-occidg-admin.php:232
+#: admin/class-occidg-bulk-edit.php:125
+#: admin/class-occidg-bulk-edit.php:156
+#: admin/class-occidg-workflow-admin.php:636
+msgid "Cancel"
+msgstr ""
+
+#: admin/class-occidg-admin.php:190
+#: admin/class-occidg-bulk-edit.php:128
+msgid "Retry Failed"
+msgstr ""
+
+#: admin/class-occidg-admin.php:203
+msgid "Save Settings"
+msgstr ""
+
+#: admin/class-occidg-admin.php:207
+msgid "Settings overview"
+msgstr ""
+
+#: admin/class-occidg-admin.php:215
+#: admin/class-occidg-bulk-edit.php:139
+msgid "Confirm Bulk Metadata Generation"
+msgstr ""
+
+#: admin/class-occidg-admin.php:216
+#: admin/class-occidg-bulk-edit.php:140
+msgid "Generate metadata for all images in your library? This may take some time."
+msgstr ""
+
+#: admin/class-occidg-admin.php:218
+#: admin/class-occidg-bulk-edit.php:142
+msgid "Warning:"
+msgstr ""
+
+#: admin/class-occidg-admin.php:219
+#: admin/class-occidg-bulk-edit.php:143
+msgid "This will overwrite any existing image metadata."
+msgstr ""
+
+#: admin/class-occidg-admin.php:229
+#: admin/class-occidg-bulk-edit.php:153
+msgid "Yes, Generate"
+msgstr ""
+
+#: admin/class-occidg-admin.php:247
+msgid "Welcome to free AI image metadata generation"
+msgstr ""
+
+#: admin/class-occidg-admin.php:249
+msgid "This plugin helps you generate alt text, titles, captions, and descriptions for existing Media Library images using your own OpenAI or Gemini API key."
+msgstr ""
+
+#: admin/class-occidg-admin.php:251
+msgid "Use your own provider."
+msgstr ""
+
+#: admin/class-occidg-admin.php:252
+msgid "Add an OpenAI or Gemini API key in Settings, choose a model, and start generating metadata with your own account."
+msgstr ""
+
+#: admin/class-occidg-admin.php:255
+msgid "Your Image Library is ready when you are."
+msgstr ""
+
+#: admin/class-occidg-admin.php:256
+msgid "Review, generate, and clean up image metadata across your library in one table whenever you want."
+msgstr ""
+
+#: admin/class-occidg-admin.php:258
+msgid "Here’s how to get started:"
+msgstr ""
+
+#: admin/class-occidg-admin.php:261
+msgid "Settings Tab:"
+msgstr ""
+
+#: admin/class-occidg-admin.php:262
+msgid "Choose your provider, enter your API key, and decide which metadata fields to generate."
+msgstr ""
+
+#: admin/class-occidg-admin.php:265
+msgid "Image Library:"
+msgstr ""
+
+#: admin/class-occidg-admin.php:266
+msgid "Filter your images, edit fields inline, preview or generate metadata, and review saved suggestions in one place."
+msgstr ""
+
+#: admin/class-occidg-admin.php:269
+msgid "Automatic Generation:"
+msgstr ""
+
+#: admin/class-occidg-admin.php:270
+msgid "Turn on auto-generation to create metadata for new uploads using your selected provider."
+msgstr ""
+
+#: admin/class-occidg-admin.php:274
+msgid "Built for existing media."
+msgstr ""
+
+#: admin/class-occidg-admin.php:275
+msgid "This plugin focuses on image metadata only. It does not generate new images."
+msgstr ""
+
+#: admin/class-occidg-admin.php:279
+msgid "Start Setup"
+msgstr ""
+
+#. translators: %s: provider name.
+#: admin/class-occidg-admin.php:304
+#, php-format
+msgid "%s API key saved in WordPress."
+msgstr ""
+
+#. translators: %s: provider name.
+#: admin/class-occidg-admin.php:309
+#, php-format
+msgid "%s API key still needs to be added."
+msgstr ""
+
+#: admin/class-occidg-admin.php:315
+msgid "Current setup"
+msgstr ""
+
+#: admin/class-occidg-admin.php:331
+msgid "Enabled fields"
+msgstr ""
+
+#: admin/class-occidg-admin.php:335
+msgid "Auto on upload"
+msgstr ""
+
+#: admin/class-occidg-admin.php:336
+#: admin/class-occidg-admin.php:340
+msgid "On"
+msgstr ""
+
+#: admin/class-occidg-admin.php:336
+#: admin/class-occidg-admin.php:340
+msgid "Off"
+msgstr ""
+
+#: admin/class-occidg-admin.php:339
+msgid "Overwrite existing"
+msgstr ""
+
+#: admin/class-occidg-admin.php:346
+msgid "Before You Generate"
+msgstr ""
+
+#: admin/class-occidg-admin.php:348
+msgid "Choose OpenAI or Gemini, then save the matching API key."
+msgstr ""
+
+#: admin/class-occidg-admin.php:349
+msgid "Pick only the metadata fields you actually want to fill."
+msgstr ""
+
+#: admin/class-occidg-admin.php:350
+msgid "Turn on overwrite only when you want AI to replace existing text."
+msgstr ""
+
+#: admin/class-occidg-admin.php:355
+msgid "Selected Fields"
+msgstr ""
+
+#: admin/class-occidg-admin.php:363
+msgid "No fields are enabled yet. Pick at least one field before generating metadata."
+msgstr ""
+
+#: admin/class-occidg-admin.php:485
+msgid "Preview"
+msgstr ""
+
+#: admin/class-occidg-admin.php:486
+msgid "Creating preview..."
+msgstr ""
+
+#: admin/class-occidg-admin.php:487
+msgid "Hide preview"
+msgstr ""
+
+#: admin/class-occidg-admin.php:488
+msgid "Generate"
+msgstr ""
+
+#: admin/class-occidg-admin.php:489
+msgid "Generating..."
+msgstr ""
+
+#: admin/class-occidg-admin.php:490
+msgid "Metadata generated using current rules."
+msgstr ""
+
+#: admin/class-occidg-admin.php:491
+msgid "Unable to generate metadata."
+msgstr ""
+
+#: admin/class-occidg-admin.php:492
+msgid "Compare AI suggestions before applying them."
+msgstr ""
+
+#: admin/class-occidg-admin.php:493
+msgid "Apply metadata automatically using your current settings."
+msgstr ""
+
+#: admin/class-occidg-admin.php:494
+msgid "Preview ready"
+msgstr ""
+
+#: admin/class-occidg-admin.php:495
+msgid "Unable to create a metadata preview."
+msgstr ""
+
+#: admin/class-occidg-admin.php:496
+msgid "Review AI suggestions"
+msgstr ""
+
+#: admin/class-occidg-admin.php:497
+msgid "Nothing changes until you approve a suggestion below."
+msgstr ""
+
+#: admin/class-occidg-admin.php:498
+msgid "Current value"
+msgstr ""
+
+#: admin/class-occidg-admin.php:499
+msgid "Suggested value"
+msgstr ""
+
+#: admin/class-occidg-admin.php:500
+msgid "Empty"
+msgstr ""
+
+#: admin/class-occidg-admin.php:501
+msgid "Use this suggestion"
+msgstr ""
+
+#: admin/class-occidg-admin.php:502
+msgid "Applying..."
+msgstr ""
+
+#: admin/class-occidg-admin.php:503
+msgid "Applied"
+msgstr ""
+
+#: admin/class-occidg-admin.php:504
+#: admin/class-occidg-bulk-edit.php:492
+msgid "Unable to apply this suggestion."
+msgstr ""
+
+#: admin/class-occidg-admin.php:505
+msgid "The provider did not return a value for this field."
+msgstr ""
+
+#: admin/class-occidg-admin.php:510
+msgid "Review"
+msgstr ""
+
+#: admin/class-occidg-admin.php:511
+msgid "Hide review"
+msgstr ""
+
+#: admin/class-occidg-admin.php:512
+msgid "Edit attachment"
+msgstr ""
+
+#: admin/class-occidg-admin.php:513
+#: admin/class-occidg-workflow-admin.php:82
+#: admin/class-occidg-workflow-admin.php:223
+#: admin/class-occidg-workflow-admin.php:280
+msgid "History"
+msgstr ""
+
+#: admin/class-occidg-admin.php:514
+msgid "Saved suggestions"
+msgstr ""
+
+#: admin/class-occidg-admin.php:515
+msgid "Approve, edit, reject, or decide later without leaving the Image Library."
+msgstr ""
+
+#. translators: %d: number of suggestions awaiting review.
+#: admin/class-occidg-admin.php:517
+#, php-format
+msgid "%d awaiting review"
+msgstr ""
+
+#: admin/class-occidg-admin.php:518
+msgid "Suggested value — you can edit this"
+msgstr ""
+
+#: admin/class-occidg-admin.php:519
+msgid "Approve"
+msgstr ""
+
+#: admin/class-occidg-admin.php:520
+msgid "Reject"
+msgstr ""
+
+#: admin/class-occidg-admin.php:521
+msgid "Decide later"
+msgstr ""
+
+#: admin/class-occidg-admin.php:522
+msgid "Flag for manual review"
+msgstr ""
+
+#. translators: %s: confidence level such as high or low.
+#: admin/class-occidg-admin.php:524
+#, php-format
+msgid "%s confidence"
+msgstr ""
+
+#: admin/class-occidg-admin.php:531
+msgid "Checking API key..."
+msgstr ""
+
+#: admin/class-occidg-admin.php:532
+msgid "Clearing saved API key..."
+msgstr ""
+
+#: admin/class-occidg-admin.php:533
+msgid "Loading available models..."
+msgstr ""
+
+#: admin/class-occidg-admin.php:534
+msgid "Available models updated."
+msgstr ""
+
+#: admin/class-occidg-admin.php:535
+msgid "Saving model..."
+msgstr ""
+
+#: admin/class-occidg-admin.php:536
+msgid "No compatible models were returned for this provider key."
+msgstr ""
+
+#: admin/class-occidg-admin.php:537
+msgid "Add and save a key to load available models."
+msgstr ""
+
+#: admin/class-occidg-admin.php:538
+msgid "Unable to validate the provider key right now."
+msgstr ""
+
+#: admin/class-occidg-admin.php:539
+msgid "Unable to save the selected model right now."
+msgstr ""
+
+#: admin/class-occidg-admin.php:540
+msgid "Finish API key validation before saving settings."
+msgstr ""
+
+#: admin/class-occidg-admin.php:541
+msgid "Creating background job..."
+msgstr ""
+
+#: admin/class-occidg-admin.php:542
+msgid "Unable to create a background job right now."
+msgstr ""
+
+#: admin/class-occidg-admin.php:543
+msgid "Unable to refresh the background job status right now."
+msgstr ""
+
+#: admin/class-occidg-admin.php:544
+msgid "Unable to pause the background job right now."
+msgstr ""
+
+#: admin/class-occidg-admin.php:545
+msgid "Unable to resume the background job right now."
+msgstr ""
+
+#: admin/class-occidg-admin.php:546
+msgid "Unable to cancel the background job right now."
+msgstr ""
+
+#: admin/class-occidg-admin.php:547
+msgid "Unable to retry the background job right now."
+msgstr ""
+
+#: admin/class-occidg-admin.php:548
+msgid "Background job active"
+msgstr ""
+
+#: admin/class-occidg-admin.php:549
+msgid "Metadata generation is paused."
+msgstr ""
+
+#: admin/class-occidg-admin.php:550
+msgid "Metadata generation was cancelled."
+msgstr ""
+
+#: admin/class-occidg-admin.php:551
+msgid "All metadata generation complete."
+msgstr ""
+
+#: admin/class-occidg-admin.php:552
+msgid "Metadata generation finished with some errors."
+msgstr ""
+
+#: admin/class-occidg-admin.php:553
+msgid "Creating retry job..."
+msgstr ""
+
+#. translators: 1: succeeded image count, 2: failed image count, 3: skipped image count.
+#: admin/class-occidg-admin.php:555
+#, php-format
+msgid "%1$d succeeded, %2$d failed, %3$d skipped."
+msgstr ""
+
+#. translators: 1: queue state label, 2: processed image count, 3: total image count.
+#: admin/class-occidg-admin.php:557
+#, php-format
+msgid "%1$s: %2$d of %3$d images processed."
+msgstr ""
+
+#: admin/class-occidg-admin.php:558
+msgid "Recent failures"
+msgstr ""
+
+#: admin/class-occidg-admin.php:559
+msgid "No recent failures recorded."
+msgstr ""
+
+#. translators: %d: WordPress attachment ID.
+#: admin/class-occidg-admin.php:561
+#, php-format
+msgid "Image %d"
+msgstr ""
+
+#: admin/class-occidg-admin.php:562
+msgid "Queueing..."
+msgstr ""
+
+#: admin/class-occidg-admin.php:712
+#: admin/class-occidg-admin.php:718
+msgid "Generate Metadata"
+msgstr ""
+
+#: admin/class-occidg-admin.php:738
+msgid "Generate Details"
+msgstr ""
+
+#: admin/class-occidg-admin.php:758
+msgid "You are not allowed to generate image metadata."
+msgstr ""
+
+#: admin/class-occidg-admin.php:763
+#: admin/class-occidg-admin.php:863
+#: admin/class-occidg-admin.php:939
+msgid "Security check failed."
+msgstr ""
+
+#. translators: %d: number of media items.
+#: admin/class-occidg-admin.php:822
+#, php-format
+msgid "Metadata generated for %d media item."
+msgid_plural "Metadata generated for %d media items."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of skipped items.
+#: admin/class-occidg-admin.php:832
+#, php-format
+msgid "Skipped %d non-image."
+msgid_plural "Skipped %d non-images."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of skipped SVG files.
+#: admin/class-occidg-admin.php:842
+#, php-format
+msgid "Skipped %d SVG because AI generation is unavailable for that format."
+msgid_plural "Skipped %d SVGs because AI generation is unavailable for that format."
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/class-occidg-admin.php:874
+msgid "Invalid image ID."
+msgstr ""
+
+#: admin/class-occidg-admin.php:883
+msgid "Thumbnail not found."
+msgstr ""
+
+#: admin/class-occidg-auto-generate.php:114
+msgid "No error data found."
+msgstr ""
+
+#: admin/class-occidg-auto-generate.php:136
+msgid "Transient removed successfully."
+msgstr ""
+
+#: admin/class-occidg-background-jobs-admin.php:68
+#: includes/class-occidg-background-jobs.php:130
+#: includes/class-occidg-background-jobs.php:439
+msgid "Bulk metadata generation"
+msgstr ""
+
+#: admin/class-occidg-background-jobs-admin.php:249
+msgid "Unable to create a background job for the selected images."
+msgstr ""
+
+#: admin/class-occidg-background-jobs-admin.php:274
+msgid "Background job not found."
+msgstr ""
+
+#: admin/class-occidg-background-jobs-admin.php:350
+msgid "Unable to update the selected background job."
+msgstr ""
+
+#: admin/class-occidg-background-jobs-admin.php:366
+#: admin/class-occidg-background-jobs-admin.php:375
+msgid "Queued"
+msgstr ""
+
+#: admin/class-occidg-background-jobs-admin.php:367
+msgid "Running"
+msgstr ""
+
+#: admin/class-occidg-background-jobs-admin.php:368
+msgid "Paused"
+msgstr ""
+
+#: admin/class-occidg-background-jobs-admin.php:369
+msgid "Completed"
+msgstr ""
+
+#: admin/class-occidg-background-jobs-admin.php:370
+msgid "Completed with Errors"
+msgstr ""
+
+#: admin/class-occidg-background-jobs-admin.php:371
+msgid "Cancelled"
+msgstr ""
+
+#: admin/class-occidg-background-jobs-admin.php:372
+#: admin/class-occidg-workflow-admin.php:574
+msgid "Failed"
+msgstr ""
+
+#: admin/class-occidg-bulk-edit.php:56
+#: admin/class-occidg-bulk-edit.php:165
+msgid "Thumbnail"
+msgstr ""
+
+#: admin/class-occidg-bulk-edit.php:61
+#: admin/class-occidg-bulk-edit.php:170
+msgid "Actions"
+msgstr ""
+
+#: admin/class-occidg-bulk-edit.php:95
+msgid "Bulk Edit Image Metadata"
+msgstr ""
+
+#: admin/class-occidg-bulk-edit.php:395
+msgid "Invalid image or insufficient permission."
+msgstr ""
+
+#: admin/class-occidg-bulk-edit.php:462
+msgid "Invalid image field or insufficient permission."
+msgstr ""
+
+#: admin/class-occidg-bulk-edit.php:510
+msgid "Suggestion applied."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:78
+msgid "Metadata Preflight"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:78
+#: admin/class-occidg-workflow-admin.php:220
+msgid "Dashboard"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:79
+#: admin/class-occidg-workflow-admin.php:221
+#: admin/class-occidg-workflow-admin.php:562
+msgid "Image Library"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:80
+msgid "Suggestion Review"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:80
+msgid "Review Queue"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:81
+msgid "Metadata Batches"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:81
+#: admin/class-occidg-workflow-admin.php:222
+#: admin/class-occidg-workflow-admin.php:598
+msgid "Batches"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:82
+msgid "Metadata Change History"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:128
+msgid "Safety and Review"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:129
+msgid "Recommended Protections"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:134
+msgid "The recommended settings protect existing work and send uncertain results to a person for review."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:135
+msgid "Safe defaults are already on."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:135
+msgid "You only need the advanced controls when your site has a special editorial, privacy, or processing requirement."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:141
+msgid "Protect human-written metadata"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:141
+msgid "Keep existing titles, alt text, captions, and descriptions unless overwrite mode is deliberately enabled."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:142
+msgid "Review captions before publishing"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:142
+msgid "Captions can be visible to visitors, so hold them for a quick human check."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:143
+msgid "Review uncertain suggestions"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:143
+msgid "Keep low-confidence results as saved suggestions in the Image Library instead of applying them automatically."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:158
+msgid "Advanced workflow settings"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:158
+msgid "Processing limits, editorial guidance, privacy, overwrite, and data removal"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:160
+msgid "Processing limits"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:160
+msgid "The defaults are intentionally conservative and work well for most sites."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:162
+msgid "Default batch size"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:163
+msgid "Maximum batch size"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:164
+msgid "Retry attempts"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:165
+msgid "Request timeout (seconds)"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:166
+msgid "Images per queue step"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:167
+msgid "Delay between queue steps"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:168
+msgid "Maximum response tokens"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:169
+msgid "Daily request ceiling"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:170
+msgid "Maximum alt-text length"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:171
+msgid "History retention days (0 keeps all)"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:172
+msgid "Estimated batch cost cap in USD (0 disables)"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:179
+msgid "Editorial guidance"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:179
+msgid "Leave these blank unless generated text needs to follow an established house style."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:181
+msgid "Organization name"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:182
+msgid "Site or audience description"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:183
+msgid "Editorial tone"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:184
+msgid "Preferred terminology"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:185
+msgid "Words or phrases to avoid"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:186
+msgid "Additional instructions"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:193
+msgid "Overwrite and privacy"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:195
+msgid "Allow overwrite mode"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:195
+msgid "Makes the destructive overwrite option available to authorized users."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:196
+msgid "Require overwrite confirmation"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:196
+msgid "Ask for an explicit confirmation every time overwrite mode is used."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:197
+msgid "Use unpublished parent context"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:197
+msgid "Allow draft and pending parent content to guide metadata."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:198
+msgid "Use private parent context"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:198
+msgid "Private content may be sent to the selected AI provider. Leave this off unless approved."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:203
+msgid "Privacy reminder"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:203
+msgid "The selected image and configured context are sent to the external AI provider. An AI API does not automatically make processing compliant with HIPAA, GDPR, or another regulation."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:205
+msgid "Data removal"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:205
+msgid "Delete plugin data when uninstalled"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:205
+msgid "Permanently remove workflow history, suggestions, batches, and plugin settings during uninstall."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:226
+msgid "Image Metadata workflow"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:228
+#: admin/class-occidg-workflow-admin.php:247
+msgid "Open Image Library"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:231
+msgid "Image metadata workflow"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:246
+msgid "Metadata Dashboard"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:246
+msgid "See what needs attention, then run a safe preview before changing anything."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:247
+msgid "At a glance"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:247
+msgid "Your Media Library"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:249
+msgid "Total image attachments"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:250
+#: admin/class-occidg-workflow-admin.php:563
+msgid "Missing alt text"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:251
+msgid "Missing titles"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:252
+#: admin/class-occidg-workflow-admin.php:563
+msgid "Missing captions"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:253
+msgid "Missing descriptions"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:254
+msgid "Complete for enabled fields"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:255
+msgid "Pending suggestions"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:256
+#: admin/class-occidg-workflow-admin.php:578
+msgid "Previously processed"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:257
+msgid "Human reviewed"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:258
+msgid "Failed attempts"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:259
+#: admin/class-occidg-workflow-admin.php:579
+msgid "Decorative"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:260
+msgid "Queued or processing"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:266
+msgid "More library details"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:266
+msgid "Titles, captions, descriptions, review status, and processing totals"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:275
+msgid "Reports and advanced tools"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:275
+msgid "Download CSV reports for analysis or record keeping"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:277
+msgid "Missing metadata"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:278
+msgid "Suggestions"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:279
+msgid "Failures"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:281
+msgid "Provider usage"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:339
+msgid "Run Preview"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:340
+msgid "Create Suggestions"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:341
+msgid "Fill Missing Metadata"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:342
+msgid "Run Overwrite"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:348
+msgid "Batch planner"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:349
+msgid "Choose what to run"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:350
+msgid "Your choices are remembered for next time. Preview mode estimates the work without changing metadata."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:353
+msgid "Last choices restored"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:353
+msgid "Safe defaults selected"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:359
+msgid "Choose the details to check"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:361
+#: admin/class-occidg-workflow-admin.php:378
+msgid "Alternative text"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:361
+msgid "Recommended for accessibility."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:362
+msgid "Helps organize the Media Library."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:363
+msgid "May be visible to website visitors."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:364
+msgid "Adds longer internal context."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:368
+msgid "Choose how many images to include"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:368
+msgid "Batch size"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:372
+msgid "Custom"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:372
+msgid "Custom batch size"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:374
+msgid "Advanced batch options"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:374
+msgid "Apply suggestions, fill missing fields, change image selection, or use overwrite mode"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:374
+msgid "What should this batch do?"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:374
+msgid "Preview only — change nothing"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:374
+msgid "Create suggestions for review"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:374
+msgid "Fill missing fields"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:376
+msgid "Overwrite selected fields"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:378
+msgid "Which images come first?"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:378
+msgid "Oldest eligible"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:378
+msgid "Newest eligible"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:378
+msgid "Random sample"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:378
+msgid "Only include images missing"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:378
+msgid "Any selected detail"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:378
+msgid "I understand overwrite mode can replace existing metadata."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:379
+msgid "These choices will be saved to your WordPress account when you run the batch. Overwrite confirmation is never remembered."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:414
+msgid "Select at least one metadata field."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:417
+msgid "Overwrite mode requires permission, settings activation, and immediate confirmation."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:436
+msgid "The estimated batch cost exceeds the configured safety limit."
+msgstr ""
+
+#. translators: 1: processing mode, 2: batch creation time.
+#: admin/class-occidg-workflow-admin.php:441
+#, php-format
+msgid "%1$s batch — %2$s"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:453
+msgid "The batch could not be saved. Verify that eligible images and metadata fields are selected, then try again."
+msgstr ""
+
+#. translators: %d: metadata batch ID.
+#: admin/class-occidg-workflow-admin.php:458
+#, php-format
+msgid "Metadata batch #%d"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:476
+msgid "The background batch could not be queued. Verify provider credentials."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:503
+msgid "This suggestion is unavailable or you cannot edit its image."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:562
+msgid "Find, edit, preview, generate, and review image metadata without leaving this page."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:563
+msgid "Quick filters"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:563
+#: admin/class-occidg-workflow-admin.php:564
+msgid "All images"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:563
+#: admin/class-occidg-workflow-admin.php:574
+msgid "Awaiting review"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:564
+msgid "Show me"
+msgstr ""
+
+#. translators: %s: metadata field label.
+#: admin/class-occidg-workflow-admin.php:572
+#, php-format
+msgid "Missing %s"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:574
+msgid "Review status"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:574
+#: admin/class-occidg-workflow-admin.php:579
+msgid "Any status"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:574
+msgid "Approved"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:574
+msgid "Needs manual review"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:574
+msgid "Include decorative images"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:574
+msgid "Apply filters"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:575
+msgid "Advanced filters"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:575
+msgid "File type, owner, processing history, confidence, or batch"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:576
+msgid "MIME type"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:576
+msgid "File extension"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:577
+msgid "Uploader ID"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:577
+msgid "Parent post ID"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:578
+msgid "Processing history"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:578
+msgid "Any history"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:578
+msgid "Never processed"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:579
+msgid "Decorative status"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:579
+msgid "Not decorative"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:580
+msgid "Confidence"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:580
+msgid "Any confidence"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:580
+msgid "High"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:580
+msgid "Medium"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:580
+msgid "Low"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:581
+msgid "Batch ID"
+msgstr ""
+
+#. translators: %s: number of matching Media Library images.
+#: admin/class-occidg-workflow-admin.php:584
+#, php-format
+msgid "%s matching image"
+msgid_plural "%s matching images"
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/class-occidg-workflow-admin.php:586
+msgid "All image metadata"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:588
+msgid "Edit and generate"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:588
+msgid "Changes you type are saved automatically. Preview lets you choose field by field; Generate applies your saved rules."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:598
+msgid "Follow active jobs, retry failures, or restore a completed batch when needed."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:600
+msgid "No batches yet"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:600
+msgid "Run a safe preview from the Dashboard when you are ready."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:600
+msgid "Plan a Preview"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:603
+msgid "Batch"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:603
+msgid "What it does"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:603
+msgid "AI provider"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:603
+msgid "Progress"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:603
+msgid "Estimated usage"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:603
+msgid "Status and actions"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:614
+msgid "requests"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:614
+msgid "estimated"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:618
+msgid "Restore options"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:618
+msgid "Restore metadata changed by this batch when the current values still match."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:618
+msgid "Restore Batch"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:638
+msgid "Retry failures"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:674
+msgid "Change History"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:674
+msgid "See what changed and restore an earlier value when a result is not right."
+msgstr ""
+
+#. translators: %d: WordPress attachment ID.
+#: admin/class-occidg-workflow-admin.php:677
+#, php-format
+msgid "Showing history for image #%d"
+msgstr ""
+
+#. translators: %d: WordPress attachment ID.
+#: admin/class-occidg-workflow-admin.php:677
+msgid "Show all history"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:680
+msgid "No changes recorded yet"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:680
+msgid "Changes made through the workflow will appear here."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:683
+msgid "When"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:683
+msgid "Image and field"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:683
+msgid "Previous value"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:683
+msgid "New value"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:683
+msgid "How it changed"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:683
+msgid "People"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:683
+msgid "Action"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:686
+msgid "System"
+msgstr ""
+
+#. translators: %s: display name of the user who approved the metadata change.
+#: admin/class-occidg-workflow-admin.php:689
+#, php-format
+msgid "Approved by %s"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:691
+msgid "Restore"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:704
+msgid "Confirm restore over newer edit"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:745
+msgid "Metadata status"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:759
+msgid "Not reviewed"
+msgstr ""
+
+#. translators: %1$d: number of complete metadata fields.
+#: admin/class-occidg-workflow-admin.php:779
+#, php-format
+msgid "%1$d of 4 metadata fields complete."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:784
+msgid "Review:"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:784
+msgid "Decorative:"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:784
+msgid "Yes"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:784
+msgid "No"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:784
+msgid "Last generated:"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:784
+msgid "Provider / model:"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:786
+msgid "Mark decorative"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:786
+msgid "Remove decorative status"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:789
+msgid "Review suggestions"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:789
+msgid "View history / restore"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:789
+msgid "Mark reviewed"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:791
+msgid "Image Detail Generator"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:889
+msgid "Preview complete"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:889
+msgid "No metadata was changed"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:889
+msgid "Use this estimate to decide whether you want to create suggestions or fill missing fields."
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:889
+msgid "Safe preview"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:895
+msgid "Download Preview as CSV"
+msgstr ""
+
+#: admin/class-occidg-workflow-admin.php:905
+msgid "You do not have permission to perform this action."
+msgstr ""
+
+#. translators: %s: original background job label.
+#: includes/class-occidg-background-jobs.php:216
+#, php-format
+msgid "Retry: %s"
+msgstr ""
+
+#: includes/class-occidg-background-worker.php:206
+msgid "Background metadata generator is not configured."
+msgstr ""
+
+#: includes/class-occidg-background-worker.php:241
+msgid "Temporary provider error."
+msgstr ""
+
+#: includes/class-occidg-background-worker.php:300
+msgid "Unknown metadata generation error."
+msgstr ""
+
+#: includes/class-occidg-database.php:400
+msgid "Metadata batch"
+msgstr ""
+
+#: includes/class-occidg-image-support.php:61
+msgid "AI metadata generation is not available for SVG files. You can edit this file's metadata manually."
+msgstr ""
+
+#: includes/class-occidg-metadata.php:118
+msgid "Invalid image attachment or metadata field."
+msgstr ""
+
+#: includes/class-occidg-metadata.php:126
+msgid "This image field is already being processed."
+msgstr ""
+
+#: includes/class-occidg-metadata.php:230
+msgid "History event not found."
+msgstr ""
+
+#: includes/class-occidg-metadata.php:242
+msgid "The current value has changed since this plugin update. Confirm before replacing the newer edit."
+msgstr ""
+
+#: includes/class-occidg-provider-adapter.php:60
+msgid "Provider generator is unavailable."
+msgstr ""
+
+#: includes/class-occidg-workflow.php:82
+msgid "Unsupported attachment or no metadata fields were selected."
+msgstr ""
+
+#: includes/class-occidg-workflow.php:125
+msgid "Overwrite was not authorized."
+msgstr ""
+
+#: includes/class-occidg-workflow.php:126
+msgid "Overwrite mode is disabled or was not confirmed immediately before this batch."
+msgstr ""
+
+#: includes/class-occidg-workflow.php:130
+msgid "Attachment generation lock is held."
+msgstr ""
+
+#: includes/class-occidg-workflow.php:131
+msgid "This attachment is already being generated or reviewed."
+msgstr ""
+
+#: includes/class-occidg-workflow.php:140
+msgid "Provider credentials are unavailable."
+msgstr ""
+
+#: includes/class-occidg-workflow.php:141
+msgid "The selected provider is unavailable or has no configured API key."
+msgstr ""
+
+#: includes/class-occidg-workflow.php:145
+msgid "Daily request ceiling reached."
+msgstr ""
+
+#: includes/class-occidg-workflow.php:146
+msgid "The configured daily provider request ceiling has been reached."
+msgstr ""
+
+#: includes/class-occidg-workflow.php:152
+msgid "Provider generation failed."
+msgstr ""
+
+#: includes/class-occidg-workflow.php:182
+msgid "The suggestion contains configured prohibited terminology."
+msgstr ""
+
+#: includes/class-occidg-workflow.php:291
+msgid "The selected provider is not registered."
+msgstr ""
+
+#: includes/class-occidg-workflow.php:293
+msgid "The selected provider does not have a configured API key."
+msgstr ""
+
+#: includes/class-occidg-workflow.php:312
+msgid "Suggestion is unavailable for approval."
+msgstr ""

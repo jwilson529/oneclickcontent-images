@@ -101,7 +101,20 @@ class Occidg_Admin {
 	 * @return void
 	 */
 	public function render_admin_page() {
-		$tab            = $this->get_active_tab();
+		$requested_tab = filter_input( INPUT_GET, 'tab', FILTER_UNSAFE_RAW );
+		if ( is_string( $requested_tab ) && 'bulk-edit' === sanitize_key( $requested_tab ) ) {
+			wp_safe_redirect( admin_url( 'admin.php?page=occ-idg-audit' ) );
+			exit;
+		}
+		$tab          = $this->get_active_tab();
+		$can_settings = current_user_can( 'occ_idg_manage_settings' ) || current_user_can( 'manage_options' );
+		if ( 'settings' === $tab && ! $can_settings ) {
+			$tab = 'bulk-edit';
+		}
+		if ( 'bulk-edit' === $tab ) {
+			wp_safe_redirect( admin_url( 'admin.php?page=occ-idg-audit' ) );
+			exit;
+		}
 		$first_time_key = 'occidg_first_time';
 		$is_first_time  = get_option( $first_time_key, true );
 		$tab_nonce      = wp_create_nonce( 'oneclickcontent_tab_switch' );
@@ -116,12 +129,11 @@ class Occidg_Admin {
 		<div class="wrap">
 			<h1><?php esc_html_e( 'AI Image Metadata', 'occidg' ); ?></h1>
 			<h2 class="nav-tab-wrapper">
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=occidg&tab=settings&_wpnonce=' . $tab_nonce ) ); ?>" class="nav-tab <?php echo 'settings' === $tab ? 'nav-tab-active' : ''; ?>">
-					<?php esc_html_e( 'Settings', 'occidg' ); ?>
-				</a>
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=occidg&tab=bulk-edit&_wpnonce=' . $tab_nonce ) ); ?>" class="nav-tab <?php echo 'bulk-edit' === $tab ? 'nav-tab-active' : ''; ?>">
-					<?php esc_html_e( 'Bulk Edit', 'occidg' ); ?>
-				</a>
+				<?php if ( $can_settings ) : ?>
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=occidg&tab=settings&_wpnonce=' . $tab_nonce ) ); ?>" class="nav-tab <?php echo 'settings' === $tab ? 'nav-tab-active' : ''; ?>">
+						<?php esc_html_e( 'Settings', 'occidg' ); ?>
+					</a>
+				<?php endif; ?>
 			</h2>
 
 			<?php if ( 'settings' === $tab ) : ?>
@@ -223,8 +235,6 @@ class Occidg_Admin {
 						</div>
 					</div>
 				</div><!-- End #occidg_images -->
-			<?php elseif ( 'bulk-edit' === $tab ) : ?>
-				<?php $this->bulk_edit->render_bulk_edit_tab(); ?>
 			<?php endif; ?>
 		</div>
 
@@ -242,7 +252,7 @@ class Occidg_Admin {
 						<?php esc_html_e( 'Add an OpenAI or Gemini API key in Settings, choose a model, and start generating metadata with your own account.', 'occidg' ); ?>
 					</p>
 					<p>
-						<strong><?php esc_html_e( 'Bulk Edit is ready when you are.', 'occidg' ); ?></strong><br>
+						<strong><?php esc_html_e( 'Your Image Library is ready when you are.', 'occidg' ); ?></strong><br>
 						<?php esc_html_e( 'Review, generate, and clean up image metadata across your library in one table whenever you want.', 'occidg' ); ?>
 					</p>
 					<p><?php esc_html_e( 'Here’s how to get started:', 'occidg' ); ?></p>
@@ -252,8 +262,8 @@ class Occidg_Admin {
 							<?php esc_html_e( 'Choose your provider, enter your API key, and decide which metadata fields to generate.', 'occidg' ); ?>
 						</li>
 						<li>
-							<strong><?php esc_html_e( 'Bulk Edit Tab:', 'occidg' ); ?></strong>
-							<?php esc_html_e( 'View your images in one place, generate metadata in bulk, and edit fields inline.', 'occidg' ); ?>
+							<strong><?php esc_html_e( 'Image Library:', 'occidg' ); ?></strong>
+							<?php esc_html_e( 'Filter your images, edit fields inline, preview or generate metadata, and review saved suggestions in one place.', 'occidg' ); ?>
 						</li>
 						<li>
 							<strong><?php esc_html_e( 'Automatic Generation:', 'occidg' ); ?></strong>
@@ -284,8 +294,8 @@ class Occidg_Admin {
 	private function render_settings_sidebar() {
 		$provider                    = get_option( 'occidg_provider', 'openai' );
 		$provider_label              = $this->get_provider_label( $provider );
-		$has_openai_key              = ! empty( get_option( 'occidg_openai_api_key', '' ) );
-		$has_gemini_key              = ! empty( get_option( 'occidg_gemini_api_key', '' ) );
+		$has_openai_key              = '' !== Occidg_Admin_Settings::get_provider_api_key( 'openai' );
+		$has_gemini_key              = '' !== Occidg_Admin_Settings::get_provider_api_key( 'gemini' );
 		$selected_provider_key_ready = 'gemini' === $provider ? $has_gemini_key : $has_openai_key;
 		$key_status_class            = $selected_provider_key_ready ? 'is-ready' : 'is-missing';
 		$key_status_text             = $selected_provider_key_ready
@@ -404,8 +414,9 @@ class Occidg_Admin {
 	 * @since 1.0.0
 	 */
 	public function enqueue_styles() {
-		$screen = get_current_screen();
-		if ( ! $screen || ! in_array( $screen->base, array( 'upload', 'post', 'post-new', 'toplevel_page_occidg' ), true ) ) {
+		$screen             = get_current_screen();
+		$is_workflow_screen = $screen && false !== strpos( (string) $screen->id, 'occ-idg-' );
+		if ( ! $screen || ( ! $is_workflow_screen && ! in_array( $screen->base, array( 'upload', 'post', 'post-new', 'toplevel_page_occidg' ), true ) ) ) {
 			return;
 		}
 
@@ -417,8 +428,8 @@ class Occidg_Admin {
 			$this->version
 		);
 
-		// DataTables on Bulk-Edit tab.
-		if ( 'toplevel_page_occidg' === $screen->id && $this->is_bulk_edit_tab() ) {
+		// DataTables on table-heavy plugin screens.
+		if ( $is_workflow_screen || ( 'toplevel_page_occidg' === $screen->id && $this->is_bulk_edit_tab() ) ) {
 			wp_enqueue_style(
 				"{$this->plugin_name}-datatables",
 				plugin_dir_url( __FILE__ ) . 'css/datatables.min.css',
@@ -440,8 +451,9 @@ class Occidg_Admin {
 			return;
 		}
 
-		$screen = get_current_screen();
-		if ( ! $screen || ! in_array( $screen->base, array( 'upload', 'post', 'post-new', 'toplevel_page_occidg' ), true ) ) {
+		$screen             = get_current_screen();
+		$is_workflow_screen = $screen && false !== strpos( (string) $screen->id, 'occ-idg-' );
+		if ( ! $screen || ( ! $is_workflow_screen && ! in_array( $screen->base, array( 'upload', 'post', 'post-new', 'toplevel_page_occidg' ), true ) ) ) {
 			return;
 		}
 
@@ -469,6 +481,47 @@ class Occidg_Admin {
 				'has_gemini_key'                      => $gate_state['has_gemini_key'],
 				'selected_provider_ready'             => $gate_state['has_selected_provider_key'],
 				'missing_key_message'                 => $gate_state['missing_key_message'],
+				'unsupported_svg_message'             => Occidg_Image_Support::get_svg_generation_message(),
+				'preview_ai_label'                    => __( 'Preview', 'occidg' ),
+				'previewing_ai_label'                 => __( 'Creating preview...', 'occidg' ),
+				'hide_preview_label'                  => __( 'Hide preview', 'occidg' ),
+				'generate_ai_label'                   => __( 'Generate', 'occidg' ),
+				'generating_ai_label'                 => __( 'Generating...', 'occidg' ),
+				'generation_ready_message'            => __( 'Metadata generated using current rules.', 'occidg' ),
+				'generation_error_message'            => __( 'Unable to generate metadata.', 'occidg' ),
+				'preview_button_title'                => __( 'Compare AI suggestions before applying them.', 'occidg' ),
+				'generate_button_title'               => __( 'Apply metadata automatically using your current settings.', 'occidg' ),
+				'preview_ready_message'               => __( 'Preview ready', 'occidg' ),
+				'preview_error_message'               => __( 'Unable to create a metadata preview.', 'occidg' ),
+				'preview_heading'                     => __( 'Review AI suggestions', 'occidg' ),
+				'preview_safety_message'              => __( 'Nothing changes until you approve a suggestion below.', 'occidg' ),
+				'current_value_label'                 => __( 'Current value', 'occidg' ),
+				'suggested_value_label'               => __( 'Suggested value', 'occidg' ),
+				'empty_value_label'                   => __( 'Empty', 'occidg' ),
+				'use_suggestion_label'                => __( 'Use this suggestion', 'occidg' ),
+				'applying_suggestion_label'           => __( 'Applying...', 'occidg' ),
+				'applied_suggestion_label'            => __( 'Applied', 'occidg' ),
+				'apply_suggestion_error'              => __( 'Unable to apply this suggestion.', 'occidg' ),
+				'empty_suggestion_message'            => __( 'The provider did not return a value for this field.', 'occidg' ),
+				'field_title_label'                   => __( 'Title', 'occidg' ),
+				'field_alt_text_label'                => __( 'Alt Text', 'occidg' ),
+				'field_description_label'             => __( 'Description', 'occidg' ),
+				'field_caption_label'                 => __( 'Caption', 'occidg' ),
+				'review_label'                        => __( 'Review', 'occidg' ),
+				'hide_review_label'                   => __( 'Hide review', 'occidg' ),
+				'edit_attachment_label'               => __( 'Edit attachment', 'occidg' ),
+				'history_label'                       => __( 'History', 'occidg' ),
+				'saved_suggestions_heading'           => __( 'Saved suggestions', 'occidg' ),
+				'saved_suggestions_help'              => __( 'Approve, edit, reject, or decide later without leaving the Image Library.', 'occidg' ),
+				/* translators: %d: number of suggestions awaiting review. */
+				'awaiting_review_count'               => __( '%d awaiting review', 'occidg' ),
+				'suggestion_editable_label'           => __( 'Suggested value — you can edit this', 'occidg' ),
+				'approve_label'                       => __( 'Approve', 'occidg' ),
+				'reject_label'                        => __( 'Reject', 'occidg' ),
+				'decide_later_label'                  => __( 'Decide later', 'occidg' ),
+				'flag_manual_review_label'            => __( 'Flag for manual review', 'occidg' ),
+				/* translators: %s: confidence level such as high or low. */
+				'confidence_label_template'           => __( '%s confidence', 'occidg' ),
 				/* translators: %s: provider name. */
 				'missing_key_message_template'        => __( 'Add and save a %s API key in Settings to enable metadata generation.', 'occidg' ),
 				'openai_label'                        => __( 'OpenAI', 'occidg' ),
@@ -555,6 +608,41 @@ class Occidg_Admin {
 			}
 		}
 
+		if ( $is_workflow_screen ) {
+			wp_enqueue_script(
+				"{$this->plugin_name}-datatables",
+				plugin_dir_url( __FILE__ ) . 'js/datatables.min.js',
+				array( 'jquery' ),
+				'2.2.2',
+				true
+			);
+			wp_enqueue_script(
+				"{$this->plugin_name}-workflow-ui",
+				plugin_dir_url( __FILE__ ) . 'js/workflow-ui.js',
+				array( 'jquery', "{$this->plugin_name}-datatables" ),
+				$this->version,
+				true
+			);
+			if ( false !== strpos( (string) $screen->id, 'occ-idg-audit' ) ) {
+				wp_enqueue_script(
+					"{$this->plugin_name}-bulk-edit",
+					plugin_dir_url( __FILE__ ) . 'js/bulk-edit.js',
+					array( "{$this->plugin_name}-datatables", $this->plugin_name ),
+					$this->version,
+					true
+				);
+				wp_localize_script(
+					"{$this->plugin_name}-bulk-edit",
+					'occidg_bulk_vars',
+					array(
+						'ajax_url'       => admin_url( 'admin-ajax.php' ),
+						'admin_post_url' => admin_url( 'admin-post.php' ),
+						'nonce'          => wp_create_nonce( 'occidg_bulk_edit' ),
+					)
+				);
+			}
+		}
+
 		// Media-edit screen settings.
 		if ( 'post' === $screen->base && 'attachment' === $screen->post_type && 'edit' === $screen->action ) {
 			wp_enqueue_script(
@@ -589,23 +677,36 @@ class Occidg_Admin {
 	 */
 	public function add_generate_metadata_button( $form_fields, $post ) {
 		// Bail if not an image.
-		if ( strpos( $post->post_mime_type, 'image/' ) !== 0 ) {
+		if ( strpos( $post->post_mime_type, 'image/' ) !== 0 || ! current_user_can( 'occ_idg_generate_metadata' ) ) {
 			return $form_fields;
 		}
 
-		$gate_state       = Occidg_Admin_Settings::get_generation_gate_state();
-		$disabled_attrs   = $gate_state['has_selected_provider_key']
-			? ''
-			: sprintf(
-				' disabled="disabled" aria-disabled="true" title="%s"',
-				esc_attr( $gate_state['missing_key_message'] )
+		$gate_state = Occidg_Admin_Settings::get_generation_gate_state();
+		$is_svg     = Occidg_Image_Support::is_svg_attachment( $post->ID );
+		if ( $is_svg ) {
+			$svg_message      = Occidg_Image_Support::get_svg_generation_message();
+			$disabled_attrs   = sprintf(
+				' disabled="disabled" aria-disabled="true" data-occidg-generation-unsupported="true" title="%s"',
+				esc_attr( $svg_message )
 			);
-		$description_html = $gate_state['has_selected_provider_key']
-			? ''
-			: sprintf(
+			$description_html = sprintf(
 				'<p class="description occidg-generation-gate-message">%s</p>',
-				esc_html( $gate_state['missing_key_message'] )
+				esc_html( $svg_message )
 			);
+		} else {
+			$disabled_attrs   = $gate_state['has_selected_provider_key']
+				? ''
+				: sprintf(
+					' disabled="disabled" aria-disabled="true" title="%s"',
+					esc_attr( $gate_state['missing_key_message'] )
+				);
+			$description_html = $gate_state['has_selected_provider_key']
+				? ''
+				: sprintf(
+					'<p class="description occidg-generation-gate-message">%s</p>',
+					esc_html( $gate_state['missing_key_message'] )
+				);
+		}
 
 		$form_fields['generate_metadata'] = array(
 			'label' => __( 'Generate Metadata', 'occidg' ),
@@ -631,6 +732,9 @@ class Occidg_Admin {
 	 * @return array Modified bulk actions with "Generate Details" added.
 	 */
 	public function add_generate_details_bulk_action( $bulk_actions ) {
+		if ( ! current_user_can( 'occ_idg_generate_metadata' ) ) {
+			return $bulk_actions;
+		}
 		$bulk_actions['generate_details'] = __( 'Generate Details', 'occidg' );
 		return $bulk_actions;
 	}
@@ -650,20 +754,26 @@ class Occidg_Admin {
 		if ( 'generate_details' !== $action ) {
 			return $redirect_to;
 		}
+		if ( ! current_user_can( 'occ_idg_generate_metadata' ) ) {
+			wp_die( esc_html__( 'You are not allowed to generate image metadata.', 'occidg' ) );
+		}
 
 		$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['_wpnonce'] ) ) : '';
 		if ( ! wp_verify_nonce( $nonce, 'bulk-media' ) ) {
 			wp_die( esc_html__( 'Security check failed.', 'occidg' ) );
 		}
 
-		$image_ids = array();
+		$image_ids         = array();
+		$skipped_svg_count = 0;
 		foreach ( $post_ids as $post_id ) {
-			if ( wp_attachment_is_image( $post_id ) ) {
+			if ( Occidg_Image_Support::is_svg_attachment( $post_id ) ) {
+				++$skipped_svg_count;
+			} elseif ( wp_attachment_is_image( $post_id ) ) {
 				$image_ids[] = intval( $post_id );
 			}
 		}
 
-		$skipped_count = count( $post_ids ) - count( $image_ids );
+		$skipped_count = count( $post_ids ) - count( $image_ids ) - $skipped_svg_count;
 
 		foreach ( $image_ids as $image_id ) {
 			$this->admin_settings->occidg_generate_metadata( $image_id );
@@ -677,6 +787,9 @@ class Occidg_Admin {
 		);
 		if ( $skipped_count ) {
 			$args['skipped_non_images'] = $skipped_count;
+		}
+		if ( $skipped_svg_count ) {
+			$args['skipped_svg_images'] = $skipped_svg_count;
 		}
 
 		return add_query_arg( $args, $redirect_to );
@@ -721,40 +834,20 @@ class Occidg_Admin {
 			);
 		}
 
+		if ( ! empty( $_REQUEST['skipped_svg_images'] ) ) {
+			$skipped_svg = intval( wp_unslash( $_REQUEST['skipped_svg_images'] ) );
+
+			$message .= ' ' . sprintf(
+				/* translators: %d: number of skipped SVG files. */
+				_n( 'Skipped %d SVG because AI generation is unavailable for that format.', 'Skipped %d SVGs because AI generation is unavailable for that format.', $skipped_svg, 'occidg' ),
+				$skipped_svg
+			);
+		}
+
 		// Output the admin notice.
 		printf(
 			'<div class="notice notice-success is-dismissible"><p>%s</p></div>',
 			esc_html( $message )
-		);
-	}
-
-	/**
-	 * Register a custom image size for the plugin.
-	 *
-	 * Adds a 500x500 pixel cropped image size for API usage.
-	 *
-	 * @since 1.0.0
-	 * @return void
-	 */
-	public function occidg_register_custom_image_size() {
-		add_image_size( 'one-click-image-api', 500, 500, true );
-	}
-
-	/**
-	 * Add custom image size to the Media Library image size dropdown.
-	 *
-	 * Allows users to select the 'OCC Image' size when inserting images.
-	 *
-	 * @since 1.0.0
-	 * @param array $sizes Existing image sizes.
-	 * @return array Modified list of image sizes.
-	 */
-	public function occidg_add_custom_image_sizes( $sizes ) {
-		return array_merge(
-			$sizes,
-			array(
-				'one-click-image-api' => __( 'OCC Image', 'occidg' ),
-			)
 		);
 	}
 

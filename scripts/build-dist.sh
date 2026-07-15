@@ -63,6 +63,7 @@ rm -f \
 	"$stage_dir/DESIGN_SYSTEM.md" \
 	"$stage_dir/FRONTEND_GUIDELINES.md" \
 	"$stage_dir/MEMORY.md" \
+	"$stage_dir/OneClickContent Image Detail Generator.md" \
 	"$stage_dir/PLAN.md" \
 	"$stage_dir/PLAYBOOK.md" \
 	"$stage_dir/README.md" \

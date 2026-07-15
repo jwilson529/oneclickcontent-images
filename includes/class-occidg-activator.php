@@ -36,6 +36,18 @@ class Occidg_Activator {
 		if ( false === get_option( 'occidg_first_time' ) ) {
 			add_option( 'occidg_first_time', true );
 		}
+		if ( class_exists( 'Occidg_Database' ) ) {
+			Occidg_Database::install();
+		}
+		if ( class_exists( 'Occidg_Capabilities' ) && function_exists( 'get_role' ) ) {
+			Occidg_Capabilities::install();
+		}
+		add_option( 'occ_idg_allow_overwrite', false );
+		add_option( 'occ_idg_require_overwrite_confirmation', true );
+		add_option( 'occ_idg_require_caption_review', true );
+		add_option( 'occ_idg_require_low_confidence_review', true );
+		add_option( 'occ_idg_preserve_human_metadata', true );
+		add_option( 'occ_idg_remove_data_on_uninstall', false );
 
 		Occidg_Logger::info( 'Plugin activated.' );
 	}

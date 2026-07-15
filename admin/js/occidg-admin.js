@@ -27,6 +27,11 @@
                 return;
             }
 
+            if ('true' === button.attr('data-occidg-generation-unsupported')) {
+                e.preventDefault();
+                return;
+            }
+
             if (button.is(':disabled') || !isSelectedProviderReady()) {
                 e.preventDefault();
                 return;
@@ -65,7 +70,9 @@
                     window.alert('An error occurred while generating metadata.');
                 })
                 .always(function() {
-                    button.prop('disabled', false).text('Generate Metadata');
+                    button
+                        .prop('disabled', 'true' === button.attr('data-occidg-generation-unsupported'))
+                        .text('Generate Metadata');
                 });
         });
     });

@@ -23,6 +23,21 @@ defined( 'ABSPATH' ) || exit;
  * @since 1.0.0
  */
 class Occidg_Auto_Generate {
+	/**
+	 * Safe metadata workflow.
+	 *
+	 * @var Occidg_Workflow|null
+	 */
+	private $workflow;
+
+	/**
+	 * Construct the automatic generation handler.
+	 *
+	 * @param Occidg_Workflow|null $workflow Safe metadata workflow.
+	 */
+	public function __construct( $workflow = null ) {
+		$this->workflow = $workflow instanceof Occidg_Workflow ? $workflow : null;
+	}
 
 	/**
 	 * Automatically generate metadata for an image if the setting is enabled.
@@ -35,7 +50,7 @@ class Occidg_Auto_Generate {
 	 * @return array The unmodified metadata.
 	 */
 	public function auto_generate_metadata( $metadata, $attachment_id ) {
-		if ( ! wp_attachment_is_image( $attachment_id ) ) {
+		if ( Occidg_Image_Support::is_svg_attachment( $attachment_id ) || ! wp_attachment_is_image( $attachment_id ) || ! current_user_can( 'occ_idg_generate_metadata' ) ) {
 			return $metadata;
 		}
 
@@ -46,8 +61,20 @@ class Occidg_Auto_Generate {
 				return $metadata; // Fail gracefully if the class is not loaded.
 			}
 
-			$occidg_admin = new Occidg_Admin_Settings();
-			$result       = $occidg_admin->occidg_generate_metadata( $attachment_id );
+			if ( $this->workflow ) {
+				$result = $this->workflow->process_attachment(
+					$attachment_id,
+					array(
+						'mode'            => 'fill_missing',
+						'selected_fields' => get_option( 'occidg_metadata_fields', array() ),
+						'provider'        => get_option( 'occidg_provider', 'openai' ),
+						'initiated_by'    => get_current_user_id(),
+					)
+				);
+			} else {
+				$occidg_admin = new Occidg_Admin_Settings();
+				$result       = $occidg_admin->occidg_generate_metadata( $attachment_id, array( 'override_metadata' => false ) );
+			}
 
 			if ( isset( $result['error'] ) ) {
 				set_transient(
@@ -74,7 +101,7 @@ class Occidg_Auto_Generate {
 	public function check_image_error() {
 		check_ajax_referer( 'occidg_ajax_nonce', 'nonce' );
 
-		if ( ! current_user_can( 'upload_files' ) ) {
+		if ( ! current_user_can( 'occ_idg_generate_metadata' ) ) {
 			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'occidg' ) ) );
 			return;
 		}
@@ -99,7 +126,7 @@ class Occidg_Auto_Generate {
 	public function occidg_remove_image_error_transient() {
 		check_ajax_referer( 'occidg_ajax_nonce', 'nonce' );
 
-		if ( ! current_user_can( 'upload_files' ) ) {
+		if ( ! current_user_can( 'occ_idg_generate_metadata' ) ) {
 			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'occidg' ) ) );
 			return;
 		}
@@ -120,7 +147,7 @@ class Occidg_Auto_Generate {
 	public function occidg_get_all_media_ids() {
 		check_ajax_referer( 'occidg_ajax_nonce', 'nonce' );
 
-		if ( ! current_user_can( 'upload_files' ) ) {
+		if ( ! current_user_can( 'occ_idg_generate_metadata' ) ) {
 			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'occidg' ) ) );
 			return;
 		}

@@ -288,6 +288,24 @@ final class Test_Occidg_Admin_Settings extends TestCase {
 		$this->assertSame( '', $settings->sanitize_api_key( array( 'bad' ) ) );
 	}
 
+	/** A blank masked OpenAI field must not erase an existing installation's key. */
+	public function test_blank_masked_openai_key_preserves_existing_option() {
+		$GLOBALS['occidg_options']['occidg_openai_api_key'] = 'existing-openai-key';
+		$settings = new Occidg_Admin_Settings();
+
+		$this->assertSame( 'existing-openai-key', $settings->sanitize_openai_api_key_option( '' ) );
+		$this->assertSame( 'replacement-openai-key', $settings->sanitize_openai_api_key_option( " replacement-openai-key\n" ) );
+	}
+
+	/** A blank masked Gemini field must not erase an existing installation's key. */
+	public function test_blank_masked_gemini_key_preserves_existing_option() {
+		$GLOBALS['occidg_options']['occidg_gemini_api_key'] = 'existing-gemini-key';
+		$settings = new Occidg_Admin_Settings();
+
+		$this->assertSame( 'existing-gemini-key', $settings->sanitize_gemini_api_key_option( '' ) );
+		$this->assertSame( '', ( new Occidg_Admin_Settings() )->sanitize_openai_api_key_option( '' ) );
+	}
+
 	/**
 	 * Model sanitizer callbacks should trim and keep a safe fallback value.
 	 *
@@ -502,5 +520,28 @@ final class Test_Occidg_Admin_Settings extends TestCase {
 		$this->assertSame( 'jpeg', $this->invoke_private_method( $settings, 'sanitize_image_type', array( 'jpg' ) ) );
 		$this->assertSame( 'png', $this->invoke_private_method( $settings, 'sanitize_image_type', array( '', 'image/png' ) ) );
 		$this->assertSame( '', $this->invoke_private_method( $settings, 'sanitize_image_type', array( 'bmp' ) ) );
+	}
+
+	/** Row-level generation should treat its click as caption approval. */
+	public function test_explicit_generation_does_not_queue_caption_for_review() {
+		$GLOBALS['occidg_options']['occ_idg_require_caption_review'] = true;
+		$settings = new Occidg_Admin_Settings();
+
+		$this->assertFalse(
+			$this->invoke_private_method(
+				$settings,
+				'should_queue_caption_for_review',
+				array( 'caption', array( 'caption_review_confirmed' => true ) )
+			)
+		);
+	}
+
+	/** Automatic generation should keep caption review enabled. */
+	public function test_automatic_generation_still_queues_caption_for_review() {
+		$GLOBALS['occidg_options']['occ_idg_require_caption_review'] = true;
+		$settings = new Occidg_Admin_Settings();
+
+		$this->assertTrue( $this->invoke_private_method( $settings, 'should_queue_caption_for_review', array( 'caption', array() ) ) );
+		$this->assertFalse( $this->invoke_private_method( $settings, 'should_queue_caption_for_review', array( 'alt_text', array() ) ) );
 	}
 }

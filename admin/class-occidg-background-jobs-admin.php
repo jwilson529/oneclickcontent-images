@@ -46,9 +46,10 @@ class Occidg_Background_Jobs_Admin {
 	 * @since 1.2.0
 	 * @param array  $image_ids Image IDs.
 	 * @param string $label     Optional job label.
+	 * @param array  $overrides Optional job setting overrides.
 	 * @return array|false
 	 */
-	public function create_job_from_image_ids( $image_ids, $label = '' ) {
+	public function create_job_from_image_ids( $image_ids, $label = '', $overrides = array() ) {
 		$image_ids = $this->normalize_image_ids( $image_ids );
 		if ( empty( $image_ids ) ) {
 			return false;
@@ -63,18 +64,21 @@ class Occidg_Background_Jobs_Admin {
 		$provider_label = $gate_state['provider_label'];
 		$model_option   = 'gemini' === $provider ? 'occidg_gemini_model' : 'occidg_openai_model';
 		$default_model  = 'gemini' === $provider ? 'gemini-1.5-flash' : 'gpt-4o-mini';
-		$job            = $this->jobs->create_job(
-			array(
-				'label'             => '' !== $label ? $label : __( 'Bulk metadata generation', 'occidg' ),
-				'provider'          => $provider,
-				'provider_label'    => $provider_label,
-				'model'             => get_option( $model_option, $default_model ),
-				'language'          => get_option( 'occidg_language', 'en' ),
-				'selected_fields'   => get_option( 'occidg_metadata_fields', array() ),
-				'override_metadata' => get_option( 'occidg_override_metadata', false ),
-				'image_ids'         => $image_ids,
-			)
+		$job_args       = array(
+			'label'             => '' !== $label ? $label : __( 'Bulk metadata generation', 'occidg' ),
+			'provider'          => $provider,
+			'provider_label'    => $provider_label,
+			'model'             => get_option( $model_option, $default_model ),
+			'language'          => get_option( 'occidg_language', 'en' ),
+			'selected_fields'   => get_option( 'occidg_metadata_fields', array() ),
+			'override_metadata' => get_option( 'occidg_override_metadata', false ),
+			'image_ids'         => $image_ids,
+			'mode'              => 'fill_missing',
+			'initiated_by'      => function_exists( 'get_current_user_id' ) ? get_current_user_id() : 0,
 		);
+		$overrides      = is_array( $overrides ) ? $overrides : array();
+		$allowed        = array( 'provider', 'provider_label', 'model', 'language', 'selected_fields', 'override_metadata', 'mode', 'batch_id', 'initiated_by', 'overwrite_confirmed' );
+		$job            = $this->jobs->create_job( array_merge( $job_args, array_intersect_key( $overrides, array_flip( $allowed ) ) ) );
 
 		if ( false === $job ) {
 			return false;
@@ -115,6 +119,8 @@ class Occidg_Background_Jobs_Admin {
 			'provider'            => isset( $job['provider'] ) ? (string) $job['provider'] : '',
 			'provider_label'      => isset( $job['provider_label'] ) ? (string) $job['provider_label'] : '',
 			'model'               => isset( $job['model'] ) ? (string) $job['model'] : '',
+			'mode'                => isset( $job['mode'] ) ? (string) $job['mode'] : 'fill_missing',
+			'batch_id'            => isset( $job['batch_id'] ) ? (int) $job['batch_id'] : 0,
 			'language'            => isset( $job['language'] ) ? (string) $job['language'] : '',
 			'total'               => $total,
 			'processed'           => $processed,
@@ -228,7 +234,7 @@ class Occidg_Background_Jobs_Admin {
 	public function ajax_create_job() {
 		check_ajax_referer( 'occidg_ajax_nonce', 'nonce' );
 
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( 'occ_idg_generate_metadata' ) ) {
 			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'occidg' ) ) );
 			return;
 		}
@@ -256,7 +262,7 @@ class Occidg_Background_Jobs_Admin {
 	public function ajax_get_job_status() {
 		check_ajax_referer( 'occidg_ajax_nonce', 'nonce' );
 
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( 'occ_idg_manage_batches' ) ) {
 			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'occidg' ) ) );
 			return;
 		}
@@ -322,7 +328,7 @@ class Occidg_Background_Jobs_Admin {
 	private function ajax_update_job_state( $action_name ) {
 		check_ajax_referer( 'occidg_ajax_nonce', 'nonce' );
 
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( 'occ_idg_manage_batches' ) ) {
 			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'occidg' ) ) );
 			return;
 		}

@@ -188,9 +188,7 @@ class Occidg_Workflow {
 						break;
 					}
 				}
-				$must_review = 'suggestion' === $mode
-					|| 'low' === $confidence
-					|| ( 'caption' === $field && get_option( 'occ_idg_require_caption_review', true ) && empty( $context['caption_review_confirmed'] ) );
+				$must_review = $this->should_queue_for_review( $field, $confidence, $mode, $context );
 
 				if ( $must_review ) {
 					$suggestion_id                  = $this->store_suggestion( $attachment_id, $field, $value, $confidence, $reason, $context, $generation_context );
@@ -230,6 +228,22 @@ class Occidg_Workflow {
 				delete_option( $generation_lock );
 			}
 		}
+	}
+
+	/**
+	 * Decide whether a generated value must remain in the review queue.
+	 *
+	 * @since 2.0.4
+	 * @param string $field      Metadata field.
+	 * @param string $confidence Normalized confidence level.
+	 * @param string $mode       Processing mode.
+	 * @param array  $context    Generation context.
+	 * @return bool
+	 */
+	private function should_queue_for_review( $field, $confidence, $mode, $context ) {
+		return 'suggestion' === $mode
+			|| ( 'low' === $confidence && (bool) get_option( 'occ_idg_require_low_confidence_review', true ) )
+			|| ( 'caption' === $field && (bool) get_option( 'occ_idg_require_caption_review', true ) && empty( $context['caption_review_confirmed'] ) );
 	}
 
 	/**

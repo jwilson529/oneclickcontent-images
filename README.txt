@@ -210,5 +210,5 @@ Major workflow upgrade with safe previews, selected-image background batches, re
 * Added selected-image background batches with live progress, pause, resume, cancel, retry, and a lock-protected browser fallback when normal WP-Cron spawning is disabled.
 * Added field-level suggestion review, history, audit records, decorative decisions, and conflict-aware field or batch rollback.
 * Added OpenAI/Gemini provider abstraction, environment-key constants, masked key fields, privacy disclosure, and credential-redacted logging.
-* Fixed caption generation for uploads, single-image requests, and bulk workflows, preserved masked API keys during normal saves, and improved the Image Library, Batches, and History interfaces.
+* Fixed caption generation for uploads, single-image requests, and bulk workflows, honored the low-confidence review setting, preserved masked API keys during normal saves, and improved the Image Library, Batches, and History interfaces.
 * Added custom role capabilities, CSV reports, safe uninstall controls, and `wp occ-idg` operational commands.

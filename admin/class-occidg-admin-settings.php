@@ -393,7 +393,7 @@ class Occidg_Admin_Settings {
 			printf(
 				'<label class="occidg-choice-card occidg-metadata-field-card%1$s" for="occidg_metadata_fields_%2$s">',
 				$is_checked ? ' is-checked' : '',
-				esc_attr( $key ),
+				esc_attr( $key )
 			);
 			printf(
 				'<input type="checkbox" class="metadata-field-checkbox" id="occidg_metadata_fields_%1$s" name="occidg_metadata_fields[%1$s]" value="1" %2$s>',
@@ -2554,6 +2554,40 @@ class Occidg_Admin_Settings {
 	}
 
 	/**
+	 * Build the context for an explicit Generate request.
+	 *
+	 * Explicit requests approve captions. Applying configured overwrite rules is
+	 * a separate opt-in used by the Image Library row action.
+	 *
+	 * @since 2.0.4
+	 * @param bool $apply_configured_rules Whether to honor configured overwrite rules.
+	 * @return array Generation context.
+	 */
+	private function build_explicit_generation_context( $apply_configured_rules ) {
+		$context = array(
+			'caption_review_confirmed' => true,
+			'approved_by'              => get_current_user_id(),
+		);
+
+		if ( ! $apply_configured_rules ) {
+			return $context;
+		}
+
+		$overwrite_mode = (bool) get_option( 'occidg_override_metadata', false )
+			&& (bool) get_option( 'occ_idg_allow_overwrite', false )
+			&& current_user_can( 'occ_idg_overwrite_metadata' );
+
+		return array_merge(
+			$context,
+			array(
+				'override_metadata'   => $overwrite_mode,
+				'overwrite_confirmed' => $overwrite_mode,
+				'mode'                => $overwrite_mode ? 'overwrite' : 'fill_missing',
+			)
+		);
+	}
+
+	/**
 	 * AJAX handler to generate metadata for an image.
 	 *
 	 * @since 1.0.0
@@ -2578,20 +2612,8 @@ class Occidg_Admin_Settings {
 			return;
 		}
 
-		$generation_context = array();
-		$overwrite_mode     = false;
-		if ( $apply_configured_rules ) {
-			$overwrite_mode     = (bool) get_option( 'occidg_override_metadata', false )
-				&& (bool) get_option( 'occ_idg_allow_overwrite', false )
-				&& current_user_can( 'occ_idg_overwrite_metadata' );
-			$generation_context = array(
-				'override_metadata'        => $overwrite_mode,
-				'overwrite_confirmed'      => $overwrite_mode,
-				'caption_review_confirmed' => true,
-				'approved_by'              => get_current_user_id(),
-				'mode'                     => $overwrite_mode ? 'overwrite' : 'fill_missing',
-			);
-		}
+		$generation_context = $this->build_explicit_generation_context( $apply_configured_rules );
+		$overwrite_mode     = ! empty( $generation_context['override_metadata'] );
 
 		$metadata = $this->occidg_generate_metadata( $image_id, $generation_context );
 

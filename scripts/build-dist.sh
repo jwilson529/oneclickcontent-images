@@ -82,5 +82,7 @@ rm -f \
 
 rm -f "$stage_dir"/*.log "$stage_dir"/*.zip
 
+find "$stage_dir" -type f \( -name '.DS_Store' -o -name 'Thumbs.db' \) -exec rm -f {} +
+
 cd "$stage_root"
 zip -r "$root_dir/$zip_name" "$plugin_slug"

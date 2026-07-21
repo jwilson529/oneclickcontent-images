@@ -22,7 +22,7 @@ Use your own **OpenAI** or **Gemini** API key to generate:
 
 This plugin is focused on metadata generation for images already in your Media Library. It does not create images.
 
-SVG attachments remain available for audits and manual metadata editing. AI metadata generation skips SVG files consistently across single-image, bulk, automatic, background, and WP-CLI workflows without making a provider request.
+SVG attachments remain available for audits and manual editing. AI generation skips them without making a provider request.
 
 **Key Benefits:**
 - Improve SEO for image search and content relevance
@@ -54,16 +54,24 @@ SVG attachments remain available for audits and manual metadata editing. AI meta
 This plugin connects directly to the AI provider you configure.
 
 = OpenAI =
-- Endpoint: `https://api.openai.com/v1/chat/completions`
-- Data sent: image data and generation instructions needed to return image metadata
-- Purpose: generate title, description, alt text, and caption
+- Model-list endpoint: `https://api.openai.com/v1/models`
+- When used: when an administrator validates an OpenAI API key and loads compatible model choices
+- Data sent for model listing: the configured OpenAI API key in the authorization header; no image or site content is sent
+- Generation endpoint: `https://api.openai.com/v1/chat/completions`
+- When used: when an authorized user requests image metadata generation, including upload processing, single-image generation, or a batch
+- Data sent for generation: the configured OpenAI API key, image data, filename, existing title/description/alt text/caption, site name, configured organization and editorial guidance, and the parent content title/excerpt/type when available. Published parent context is included by default; draft or private parent context is included only when the corresponding administrator opt-in is enabled.
+- Purpose: validate credentials, provide compatible model choices, and generate title, description, alt text, and caption
 - Terms: https://openai.com/policies/terms-of-use/
 - Privacy: https://openai.com/policies/privacy-policy/
 
 = Gemini =
-- Endpoint: `https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent`
-- Data sent: image data and generation instructions needed to return image metadata
-- Purpose: generate title, description, alt text, and caption
+- Model-list endpoint: `https://generativelanguage.googleapis.com/v1beta/models?key={api_key}`
+- When used: when an administrator validates a Gemini API key and loads compatible model choices
+- Data sent for model listing: the configured Gemini API key; no image or site content is sent
+- Generation endpoint: `https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}`
+- When used: when an authorized user requests image metadata generation, including upload processing, single-image generation, or a batch
+- Data sent for generation: the configured Gemini API key, image data, filename, existing title/description/alt text/caption, site name, configured organization and editorial guidance, and the parent content title/excerpt/type when available. Published parent context is included by default; draft or private parent context is included only when the corresponding administrator opt-in is enabled.
+- Purpose: validate credentials, provide compatible model choices, and generate title, description, alt text, and caption
 - Terms: https://ai.google.dev/terms
 - Privacy: https://policies.google.com/privacy
 
@@ -76,7 +84,7 @@ This plugin connects directly to the AI provider you configure.
 
 == Source Code ==
 
-Full source code, including unminified JavaScript files, is available at the [GitHub Repository](https://github.com/jwilson529/oneclickcontent-images).
+Full source code and unminified JavaScript are available on [GitHub](https://github.com/jwilson529/oneclickcontent-images).
 
 == Installation ==
 
@@ -158,7 +166,7 @@ OpenAI and Gemini.
 
 = Does this support GPT-5.6? =
 
-The OpenAI model dropdown is populated from the models returned for your API key. OCCIDG accepts GPT-5.6-compatible model IDs, including `gpt-5.6`, `gpt-5.6-sol`, `gpt-5.6-terra`, and `gpt-5.6-luna`, and will list them when they are available through the OpenAI API.
+The model dropdown uses the models returned for your API key. Compatible GPT-5.6 model IDs appear when OpenAI makes them available to your account.
 
 = Which fields can it generate? =
 
@@ -182,141 +190,25 @@ The plugin supports the language options currently provided in the admin setting
 
 == Screenshots ==
 
-1. **Settings Screen:** Configure provider, API key, model, language, and auto-generate settings.
-2. **Media Library Integration:** Generate metadata directly from the WordPress Media Library.
-3. **Image Library:** Filter images, edit metadata inline, preview or generate values, and review saved suggestions.
-4. **Generated Image Details:** Preview and edit AI-generated titles, captions, alt texts, and descriptions.
+1. **Dashboard:** Review library coverage and configure a safe preview or background batch.
+2. **Image Library:** Filter images, select exactly what to process, edit metadata, and generate or review suggestions.
+3. **Batches:** Monitor durable background work with live totals and pause, resume, cancel, retry, or restore controls.
+4. **History:** Audit generated changes and restore individual metadata fields when needed.
+5. **Settings:** Configure safe review controls, metadata fields, providers, and defaults.
 
 == Upgrade Notice ==
 
 = 2.0.4 =
 
-Keeps interactive background batches moving on hosts such as Pantheon that disable normal WP-Cron spawning.
-
-= 2.0.3 =
-
-Adds selected-image background generation with clearer live progress, restores caption generation, and refreshes workflow table layouts.
-
-= 2.0.2 =
-
-Prevents API-key clearing during normal settings saves and fixes reliable creation of repeated background batches.
-
-= 2.0.1 =
-
-Adds a clearer how-to guide for setup, previews, safe generation, batches, review, and restoration. Also tightens release packaging.
-
-= 2.0.0 =
-
-This major upgrade adds the production-safe preflight, review, queue, history, rollback, permissions, and reporting workflow. Existing metadata remains preserved by default.
-
-= 1.2.4 =
-
-This release adds GPT-5.6-compatible OpenAI model filtering and verifies live GPT-5.6 metadata generation.
-
-= 1.2.3 =
-
-This release declares compatibility with WordPress 7.0.
-
-= 1.2.2 =
-
-This release trims the WordPress.org plugin tags to the supported five-tag limit.
-
-= 1.2.1 =
-
-This release adds forward-compatible OpenAI model filtering for GPT-5.5 API model IDs and tightens release packaging automation.
-
-= 1.2.0 =
-
-This release repositions the plugin as a free, bring-your-own-key AI metadata generator for the Media Library with OpenAI and Gemini support.
+Major workflow upgrade with safe previews, selected-image background batches, review, history, rollback, and reliable processing on hosts with WP-Cron spawning disabled. Existing metadata is preserved by default; test a small preview before the first production batch.
 
 == Changelog ==
 
 = 2.0.4 =
-* Added an authenticated, lock-protected browser fallback that processes one due batch item per status poll when normal WP-Cron spawning is disabled.
-* Preserved scheduled retry delays and platform cron as the durable backstop for background batches.
-
-= 2.0.3 =
-* Added selected-image bulk generation to the Image Library with durable background processing and live progress feedback.
-* Fixed caption generation for upload and bulk workflows, including four-field completion reporting.
-* Improved the workflow UX with styled confirmations, full-width Batches and History tables, and clearer DataTables controls.
-* Removed the obsolete settings tab and legacy provider-help panel.
-
-= 2.0.2 =
-* Fixed an upgrade regression where saving the main settings form could clear an existing provider API key because the masked key field submits an empty value.
-* Added regression coverage that preserves existing OpenAI and Gemini keys while still accepting explicit replacement keys.
-* Fixed batch persistence so requested fields are stored correctly and multiple background batches can be created safely.
-* Hardened approved-suggestion sanitization and destructive uninstall cleanup.
-
-= 2.0.1 =
-* Added step-by-step instructions for installation, configuration, Preview, Generate, batch processing, suggestion review, and restoration.
-* Documented the recommended first-run workflow and the difference between Preview and Generate.
-* Excluded the internal upgrade specification from installable release packages.
-
-= 2.0.0 =
 * Added preflight metrics, missing-field filters, safe batch presets, and exportable dry runs with request and cost estimates.
 * Added fill-missing, suggestion, explicitly confirmed overwrite, and dry-run processing modes.
-* Added field-level confidence, suggestion review/edit/approval/rejection, decorative decisions, and attachment status integrations.
-* Added custom suggestions, history, batches, and batch-item tables with immutable audit records and conflict-aware field/batch rollback.
-* Added resumable background batches with pause, resume, cancellation, temporary-error backoff, retry, locking, request ceilings, and item-level failures.
+* Added selected-image background batches with live progress, pause, resume, cancel, retry, and a lock-protected browser fallback when normal WP-Cron spawning is disabled.
+* Added field-level suggestion review, history, audit records, decorative decisions, and conflict-aware field or batch rollback.
 * Added OpenAI/Gemini provider abstraction, environment-key constants, masked key fields, privacy disclosure, and credential-redacted logging.
-* Added custom role capabilities, CSV reports, and `wp occ-idg` operational commands.
-
-= 1.2.4 =
-* Added GPT-5.6-compatible OpenAI model ID coverage for the API model dropdown, including gpt-5.6, gpt-5.6-sol, gpt-5.6-terra, and gpt-5.6-luna.
-* Verified live OpenAI metadata generation with gpt-5.6-sol.
-
-= 1.2.3 =
-* Declared compatibility with WordPress 7.0.
-
-= 1.2.2 =
-* Limited WordPress.org readme tags to five canonical tags to satisfy plugin directory import rules.
-
-= 1.2.1 =
-* Added explicit GPT-5.5-compatible OpenAI model ID coverage for the API model dropdown.
-* Improved metadata field selector layout on the settings screen.
-* Fixed the GitHub Actions deploy packaging step for the WordPress.org release workflow.
-
-= 1.2.0 =
-* Re-released the plugin as a free, bring-your-own-key AI image metadata solution.
-* Centered the user experience on OpenAI and Gemini provider settings.
-* Removed public-facing migration and handoff notes from the plugin readme.
-* Cleaned up release packaging so the distributable zip stays focused on runtime files.
-
-= 1.1.15 =
-* Update to media library API calls
-
-= 1.1.13 =
-* Plugin description, FAQs, and marketing language improved.
-* Minor settings screen layout enhancements.
-* Preparation for upcoming new language expansions.
-
-= 1.1.11 =
-* Vendor DataTables assets restored.
-* Asset loading issues corrected.
-
-= 1.1.10 =
-* Security enhancements, WPCS compliance updates.
-* Improved nonce verification and asset handling.
-
-= 1.1.8 =
-* Improved settings management and bulk edit handling.
-* Better transient management for update checking.
-
-= 1.1.7 =
-* Fixed nonce issue in get_thumbnail AJAX call.
-
-= 1.1.6 =
-* Redirects to settings screen on first activation.
-
-= 1.1.5 =
-* Update system fixes and performance improvements.
-
-= 1.1.1 =
-* Multilingual generation support added.
-* Data transparency improvements.
-
-= 1.1.0 =
-* Auto-generation of metadata on image upload.
-
-= 1.0.0 =
-* Initial plugin release.
+* Fixed caption generation for uploads, single-image requests, and bulk workflows, preserved masked API keys during normal saves, and improved the Image Library, Batches, and History interfaces.
+* Added custom role capabilities, CSV reports, safe uninstall controls, and `wp occ-idg` operational commands.

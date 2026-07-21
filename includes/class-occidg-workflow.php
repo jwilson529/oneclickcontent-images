@@ -9,7 +9,7 @@ defined( 'ABSPATH' ) || exit;
 
 /** Coordinates providers, metadata safety rules, and operational records. */
 class Occidg_Workflow {
-	const PROMPT_VERSION = 'centerstone-2.0';
+	const PROMPT_VERSION = 'occidg-2.0';
 
 	/**
 	 * Database service.

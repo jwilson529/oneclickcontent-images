@@ -19,6 +19,8 @@
  * Plugin URI:        https://github.com/jwilson529/oneclickcontent-images
  * Description:       Free AI-powered image metadata generation for Media Library images using your own OpenAI or Gemini API key.
  * Version:           2.0.4
+ * Requires at least: 5.0
+ * Requires PHP:      7.2
  * Author:            James Wilson
  * Author URI:        https://github.com/jwilson529
  * License:           GPL-2.0+

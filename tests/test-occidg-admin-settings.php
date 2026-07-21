@@ -555,6 +555,23 @@ final class Test_Occidg_Admin_Settings extends TestCase {
 		);
 	}
 
+	/** Explicit Generate requests should confirm caption review without enabling overwrite. */
+	public function test_single_image_generation_context_confirms_caption_only() {
+		$GLOBALS['occidg_options']['occ_idg_require_caption_review'] = true;
+		$settings = new Occidg_Admin_Settings();
+		$context  = $this->invoke_private_method( $settings, 'build_explicit_generation_context', array( false ) );
+
+		$this->assertFalse(
+			$this->invoke_private_method(
+				$settings,
+				'should_queue_caption_for_review',
+				array( 'caption', $context )
+			)
+		);
+		$this->assertArrayNotHasKey( 'override_metadata', $context );
+		$this->assertSame( 1, $context['approved_by'] );
+	}
+
 	/** Automatic generation should keep caption review enabled. */
 	public function test_automatic_generation_still_queues_caption_for_review() {
 		$GLOBALS['occidg_options']['occ_idg_require_caption_review'] = true;

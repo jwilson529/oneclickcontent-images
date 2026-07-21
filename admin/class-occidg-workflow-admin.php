@@ -508,7 +508,7 @@ class Occidg_Workflow_Admin {
 			return;
 		}
 
-		$raw_ids = isset( $_POST['image_ids'] ) && is_array( $_POST['image_ids'] ) ? wp_unslash( $_POST['image_ids'] ) : array();
+		$raw_ids = isset( $_POST['image_ids'] ) && is_array( $_POST['image_ids'] ) ? array_map( 'absint', wp_unslash( $_POST['image_ids'] ) ) : array();
 		$ids     = $this->normalize_selected_image_ids( $raw_ids );
 		$max     = max( 1, absint( get_option( 'occ_idg_max_batch_size', 1000 ) ) );
 		if ( count( $ids ) > $max ) {

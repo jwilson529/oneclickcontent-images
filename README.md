@@ -172,7 +172,7 @@ OpenAI and Gemini.
 
 ## Release Highlights
 
-- Current release: 2.0.4
+- Current release: 2.0.5
 - Unified, searchable Image Library with inline editing, Preview, Generate, and suggestion review
 - Safe fill-missing behavior with opt-in, confirmed overwrite controls
 - Preflight estimates and remembered batch-planner choices
@@ -206,6 +206,11 @@ Build an installable ZIP:
 ```bash
 npm run dist
 ```
+
+## Release 2.0.5
+
+- Updated WordPress Coding Standards to 3.4.1 to address CVE-2026-45293 in development and automated code checks.
+- Updated PHP_CodeSniffer to 3.13.6 or later for CVE-2026-67434 and added dependency auditing to CI.
 
 ## Developers
 

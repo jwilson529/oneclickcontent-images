@@ -33,6 +33,9 @@ jobs:
           npm ci
           composer install --prefer-dist --no-interaction
 
+      - name: Audit Composer dependencies
+        run: composer audit --locked
+
       - name: Run WordPress coding standards
         run: npm run check
 

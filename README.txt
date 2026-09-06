@@ -2,7 +2,7 @@
 Contributors: jwilson529
 Tags: images, seo, alt-text, openai, gemini
 Requires at least: 5.0
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 7.2
 Stable tag: 2.0.5
 License: GPLv2 or later
@@ -208,6 +208,7 @@ Major workflow upgrade with safe previews, selected-image background batches, re
 == Changelog ==
 
 = 2.0.5 =
+* Updated tested WordPress compatibility to 7.1 after successful activation on the current release.
 * Updated WordPress Coding Standards to 3.4.1 to address CVE-2026-45293 in development and automated code checks.
 * Updated PHP_CodeSniffer to 3.13.6 or later for CVE-2026-67434 and added dependency auditing to CI.
 
